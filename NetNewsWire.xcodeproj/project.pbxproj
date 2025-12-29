@@ -98,7 +98,7 @@
 /* Begin PBXFileReference section */
 		513C5CE6232571C2003D4054 /* NetNewsWire iOS Share Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "NetNewsWire iOS Share Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		518B2ED22351B3DD00400001 /* NetNewsWire-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "NetNewsWire-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		840D617C2029031C009BC708 /* NetNewsWire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetNewsWire.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		840D617C2029031C009BC708 /* Reed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		845B14A51FC2299E0013CF92 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		848CEF1E2DB74B56002B35B5 /* NetNewsWire-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "NetNewsWire-iOS.xctestplan"; sourceTree = "<group>"; };
 		848E84CA2DB743FF0023F3BA /* NetNewsWire.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = NetNewsWire.xctestplan; sourceTree = "<group>"; };
@@ -237,7 +237,7 @@
 		849C64611ED37A5D003D8FC0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				840D617C2029031C009BC708 /* NetNewsWire.app */,
+				840D617C2029031C009BC708 /* Reed.app */,
 				513C5CE6232571C2003D4054 /* NetNewsWire iOS Share Extension.appex */,
 				518B2ED22351B3DD00400001 /* NetNewsWire-iOSTests.xctest */,
 			);
@@ -324,7 +324,7 @@
 				84EE434A2DB8A44C009D3A8D /* RSDatabase */,
 			);
 			productName = "NetNewsWire-iOS";
-			productReference = 840D617C2029031C009BC708 /* NetNewsWire.app */;
+			productReference = 840D617C2029031C009BC708 /* Reed.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -350,7 +350,6 @@
 					};
 					840D617B2029031C009BC708 = {
 						CreatedOnToolsVersion = 9.3;
-						DevelopmentTeam = SHJK2V3AJG;
 						LastSwiftMigration = 1250;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -524,6 +523,7 @@
 			baseConfigurationReferenceAnchor = 84719F372DB9C60400EEF332 /* xcconfig */;
 			baseConfigurationReferenceRelativePath = NetNewsWire_iOSapp_target.xcconfig;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 568T6RKXH7;
 			};
 			name = Debug;
 		};
@@ -532,6 +532,7 @@
 			baseConfigurationReferenceAnchor = 84719F372DB9C60400EEF332 /* xcconfig */;
 			baseConfigurationReferenceRelativePath = NetNewsWire_iOSapp_target.xcconfig;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 568T6RKXH7;
 			};
 			name = Release;
 		};
