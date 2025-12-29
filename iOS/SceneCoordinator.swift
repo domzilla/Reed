@@ -112,7 +112,7 @@ struct FeedNode: Hashable, Sendable {
 	private let treeController: TreeController
 
 	var stateRestorationActivity: NSUserActivity {
-		let activity = NSUserActivity(activityType: "com.ranchero.NetNewsWire.restoration")
+		let activity = NSUserActivity(activityType: "net.domzilla.reed.restoration")
 		activity.persistentIdentifier = UUID().uuidString
 		return activity
 	}

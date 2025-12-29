@@ -232,15 +232,15 @@ private extension AppDelegate {
 	private func initializeHomeScreenQuickActions() {
 		let unreadTitle = NSLocalizedString("First Unread", comment: "First Unread")
 		let unreadIcon = UIApplicationShortcutIcon(systemImageName: "chevron.down.circle")
-		let unreadItem = UIApplicationShortcutItem(type: "com.ranchero.NetNewsWire.FirstUnread", localizedTitle: unreadTitle, localizedSubtitle: nil, icon: unreadIcon, userInfo: nil)
+		let unreadItem = UIApplicationShortcutItem(type: "net.domzilla.reed.FirstUnread", localizedTitle: unreadTitle, localizedSubtitle: nil, icon: unreadIcon, userInfo: nil)
 
 		let searchTitle = NSLocalizedString("Search", comment: "Search")
 		let searchIcon = UIApplicationShortcutIcon(systemImageName: "magnifyingglass")
-		let searchItem = UIApplicationShortcutItem(type: "com.ranchero.NetNewsWire.ShowSearch", localizedTitle: searchTitle, localizedSubtitle: nil, icon: searchIcon, userInfo: nil)
+		let searchItem = UIApplicationShortcutItem(type: "net.domzilla.reed.ShowSearch", localizedTitle: searchTitle, localizedSubtitle: nil, icon: searchIcon, userInfo: nil)
 
 		let addTitle = NSLocalizedString("Add Feed", comment: "Add Feed")
 		let addIcon = UIApplicationShortcutIcon(systemImageName: "plus")
-		let addItem = UIApplicationShortcutItem(type: "com.ranchero.NetNewsWire.ShowAdd", localizedTitle: addTitle, localizedSubtitle: nil, icon: addIcon, userInfo: nil)
+		let addItem = UIApplicationShortcutItem(type: "net.domzilla.reed.ShowAdd", localizedTitle: addTitle, localizedSubtitle: nil, icon: addIcon, userInfo: nil)
 
 		UIApplication.shared.shortcutItems = [addItem, searchItem, unreadItem]
 	}
@@ -343,7 +343,7 @@ private extension AppDelegate {
 	/// Register all background tasks.
 	func registerBackgroundTasks() {
 		// Register background feed refresh.
-		BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.ranchero.NetNewsWire.FeedRefresh", using: nil) { (task) in
+		BGTaskScheduler.shared.register(forTaskWithIdentifier: "net.domzilla.reed.FeedRefresh", using: nil) { (task) in
 			self.performBackgroundFeedRefresh(with: task as! BGAppRefreshTask)
 		}
 	}
@@ -354,7 +354,7 @@ private extension AppDelegate {
 		// task scheduler can hang indefinitely.
 		backgroundTaskDispatchQueue.async {
 			do {
-				let request = BGAppRefreshTaskRequest(identifier: "com.ranchero.NetNewsWire.FeedRefresh")
+				let request = BGAppRefreshTaskRequest(identifier: "net.domzilla.reed.FeedRefresh")
 				request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
 				try BGTaskScheduler.shared.submit(request)
 			} catch {

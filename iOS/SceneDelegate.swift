@@ -182,11 +182,11 @@ private extension SceneDelegate {
 
 	func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
 		switch shortcutItem.type {
-		case "com.ranchero.NetNewsWire.FirstUnread":
+		case "net.domzilla.reed.FirstUnread":
 			coordinator.selectFirstUnreadInAllUnread()
-		case "com.ranchero.NetNewsWire.ShowSearch":
+		case "net.domzilla.reed.ShowSearch":
 			coordinator.showSearch()
-		case "com.ranchero.NetNewsWire.ShowAdd":
+		case "net.domzilla.reed.ShowAdd":
 			coordinator.showAddFeed()
 		default:
 			break
