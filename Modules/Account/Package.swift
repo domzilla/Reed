@@ -21,7 +21,6 @@ let package = Package(
 		.package(path: "../RSParser"),
 		.package(path: "../RSCore"),
 		.package(path: "../RSDatabase"),
-		.package(path: "../NewsBlur")
 	],
 	targets: [
 		.target(
@@ -37,7 +36,6 @@ let package = Package(
 				"FeedFinder",
 				"Secrets",
 				"SyncDatabase",
-				"NewsBlur"
 			],
 			swiftSettings: [
 				.enableUpcomingFeature("NonisolatedNonsendingByDefault"),

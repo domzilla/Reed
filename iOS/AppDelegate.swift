@@ -93,7 +93,6 @@ import Secrets
 		UNUserNotificationCenter.current().delegate = self
 		UserNotificationManager.shared.start()
 
-		ArticleThemesManager.shared.start()
 		NetworkMonitor.shared.start()
 		ExtensionContainersFile.shared.start()
 		ExtensionFeedAddRequestFile.shared.start()
@@ -324,7 +323,6 @@ private extension AppDelegate {
 
 		AccountManager.shared.suspendNetworkAll()
 		AccountManager.shared.suspendDatabaseAll()
-		ArticleThemeDownloader.shared.cleanUp()
 
 		CoalescingQueue.standard.performCallsImmediately()
 		for scene in UIApplication.shared.connectedScenes {

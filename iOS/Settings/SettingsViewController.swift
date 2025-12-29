@@ -21,7 +21,6 @@ final class SettingsViewController: UITableViewController {
 	@IBOutlet var timelineSortOrderSwitch: UISwitch!
 	@IBOutlet var groupByFeedSwitch: UISwitch!
 	@IBOutlet var refreshClearsReadArticlesSwitch: UISwitch!
-	@IBOutlet var articleThemeDetailLabel: UILabel!
 	@IBOutlet var confirmMarkAllAsReadSwitch: UISwitch!
 	@IBOutlet var showFullscreenArticlesSwitch: UISwitch!
 	@IBOutlet var colorPaletteDetailLabel: UILabel!
@@ -67,9 +66,6 @@ final class SettingsViewController: UITableViewController {
 		} else {
 			refreshClearsReadArticlesSwitch.isOn = false
 		}
-
-
-		articleThemeDetailLabel.text = ArticleThemesManager.shared.currentTheme.name
 
 		if AppDefaults.shared.confirmMarkAllAsRead {
 			confirmMarkAllAsReadSwitch.isOn = true
@@ -210,17 +206,9 @@ final class SettingsViewController: UITableViewController {
 				break
 			}
 		case 4:
-			switch indexPath.row {
-			case 0:
-				let articleThemes = UIStoryboard.settings.instantiateController(ofType: ArticleThemesTableViewController.self)
-				self.navigationController?.pushViewController(articleThemes, animated: true)
-			default:
-				break
-			}
-		case 5:
 			let colorPalette = UIStoryboard.settings.instantiateController(ofType: ColorPaletteTableViewController.self)
 			self.navigationController?.pushViewController(colorPalette, animated: true)
-		case 6:
+		case 5:
 			switch indexPath.row {
 			case 0:
 				openURL(HelpURL.helpHome.rawValue)

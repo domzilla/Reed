@@ -1208,12 +1208,6 @@ extension MainFeedCollectionViewController {
 			return
 		}
 
-		if let folder = deleteNode.representedObject as? Folder {
-			ActivityManager.cleanUp(folder)
-		} else if let feed = deleteNode.representedObject as? Feed {
-			ActivityManager.cleanUp(feed)
-		}
-
 		if indexPath == coordinator.currentFeedIndexPath {
 			coordinator.selectFeed(indexPath: nil)
 		}

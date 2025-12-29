@@ -34,8 +34,6 @@ import Account
 	static var page = Page(name: "page")
 
 	private let article: Article?
-	private let extractedArticle: ExtractedArticle?
-	private let articleTheme: ArticleTheme
 	private let title: String
 	private let body: String
 	private let baseURL: String?
@@ -103,44 +101,37 @@ import Account
 		return formatter
 	}()
 
-	private init(article: Article?, extractedArticle: ExtractedArticle?, theme: ArticleTheme) {
+	private init(article: Article?) {
 		self.article = article
-		self.extractedArticle = extractedArticle
-		self.articleTheme = theme
 		self.title = article?.sanitizedTitle() ?? ""
-		if let content = extractedArticle?.content {
-			self.body = content
-			self.baseURL = extractedArticle?.url
-		} else {
-			self.body = article?.body ?? ""
-			self.baseURL = article?.baseURL?.absoluteString
-		}
+		self.body = article?.body ?? ""
+		self.baseURL = article?.baseURL?.absoluteString
 	}
 
 	// MARK: - API
 
-	static func articleHTML(article: Article, extractedArticle: ExtractedArticle? = nil, theme: ArticleTheme) -> Rendering {
-		let renderer = ArticleRenderer(article: article, extractedArticle: extractedArticle, theme: theme)
+	static func articleHTML(article: Article) -> Rendering {
+		let renderer = ArticleRenderer(article: article)
 		return (renderer.articleCSS, renderer.articleHTML, renderer.title, renderer.baseURL ?? "")
 	}
 
-	static func multipleSelectionHTML(theme: ArticleTheme) -> Rendering {
-		let renderer = ArticleRenderer(article: nil, extractedArticle: nil, theme: theme)
+	static func multipleSelectionHTML() -> Rendering {
+		let renderer = ArticleRenderer(article: nil)
 		return (renderer.articleCSS, renderer.multipleSelectionHTML, renderer.title, renderer.baseURL ?? "")
 	}
 
-	static func loadingHTML(theme: ArticleTheme) -> Rendering {
-		let renderer = ArticleRenderer(article: nil, extractedArticle: nil, theme: theme)
+	static func loadingHTML() -> Rendering {
+		let renderer = ArticleRenderer(article: nil)
 		return (renderer.articleCSS, renderer.loadingHTML, renderer.title, renderer.baseURL ?? "")
 	}
 
-	static func noSelectionHTML(theme: ArticleTheme) -> Rendering {
-		let renderer = ArticleRenderer(article: nil, extractedArticle: nil, theme: theme)
+	static func noSelectionHTML() -> Rendering {
+		let renderer = ArticleRenderer(article: nil)
 		return (renderer.articleCSS, renderer.noSelectionHTML, renderer.title, renderer.baseURL ?? "")
 	}
 
-	static func noContentHTML(theme: ArticleTheme) -> Rendering {
-		let renderer = ArticleRenderer(article: nil, extractedArticle: nil, theme: theme)
+	static func noContentHTML() -> Rendering {
+		let renderer = ArticleRenderer(article: nil)
 		return (renderer.articleCSS, renderer.noContentHTML, renderer.title, renderer.baseURL ?? "")
 	}
 }
@@ -189,11 +180,11 @@ private extension ArticleRenderer {
 	}()
 
 	func styleString() -> String {
-		return articleTheme.css ?? ArticleRenderer.defaultStyleSheet
+		return ArticleRenderer.defaultStyleSheet
 	}
 
 	func template() -> String {
-		return articleTheme.template ?? ArticleRenderer.defaultTemplate
+		return ArticleRenderer.defaultTemplate
 	}
 
 	func articleSubstitutions() -> [String: String] {
@@ -335,7 +326,7 @@ private extension ArticleRenderer {
 			return nil
 		}
 
-		// Can’t use url-with-fragment as base URL. The webview won’t load. See scripting.com/rss.xml for example.
+		// Can't use url-with-fragment as base URL. The webview won't load. See scripting.com/rss.xml for example.
 		urlComponents!.fragment = nil
 		guard let url = urlComponents!.url, url.scheme == "http" || url.scheme == "https" else {
 			return nil
@@ -343,4 +334,3 @@ private extension ArticleRenderer {
 		return url
 	}
 }
-

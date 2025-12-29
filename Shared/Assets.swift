@@ -15,14 +15,7 @@ typealias RSColor = UIColor
 
 struct Assets {
 	struct Images {
-		static var accountBazQux: RSImage { RSImage(named: "accountBazQux")! }
 		static var accountCloudKit: RSImage { RSImage(named: "accountCloudKit")! }
-		static var accountFeedbin: RSImage { RSImage(named: "accountFeedbin")! }
-		static var accountFeedly: RSImage { RSImage(named: "accountFeedly")! }
-		static var accountFreshRSS: RSImage { RSImage(named: "accountFreshRSS")! }
-		static var accountInoreader: RSImage { RSImage(named: "accountInoreader")! }
-		static var accountNewsBlur: RSImage { RSImage(named: "accountNewsBlur")! }
-		static var accountTheOldReader: RSImage { RSImage(named: "accountTheOldReader")! }
 
 		static var starOpen: RSImage { RSImage(symbol: "star")! }
 		static var starClosed: RSImage { RSImage(symbol: "star.fill")! }
@@ -33,9 +26,6 @@ struct Assets {
 		static var nnwFeedIcon: RSImage { RSImage(named: "nnwFeedIcon")! }
 		static var faviconTemplate: RSImage { RSImage(named: "faviconTemplateImage")! }
 
-		static var articleExtractorError: RSImage { RSImage(named: "articleExtractorError")! }
-		static var articleExtractorOn: RSImage { RSImage(named: "articleExtractorOn")! }
-		static var articleExtractorOff: RSImage { RSImage(named: "articleExtractorOff")! }
 		static var share: RSImage { RSImage(symbol: "square.and.arrow.up")! }
 		static var folder: RSImage { RSImage(symbol: "folder")! }
 		static var starredFeed: IconImage {
@@ -47,15 +37,6 @@ struct Assets {
 
 		static var accountLocalPadImage: RSImage { RSImage(named: "accountLocalPad")! }
 		static var accountLocalPhoneImage: RSImage { RSImage(named: "accountLocalPhone")! }
-
-		static var articleExtractorOnSF: RSImage { RSImage(named: "articleExtractorOnSF")! }
-		static var articleExtractorOffSF: RSImage { RSImage(symbol: "doc.plaintext")! }
-		@MainActor static var articleExtractorOnTinted: RSImage {
-			articleExtractorOn.tinted(color: Assets.Colors.primaryAccent)!
-		}
-		@MainActor static var articleExtractorOffTinted: RSImage {
-			articleExtractorOff.tinted(color: Assets.Colors.primaryAccent)!
-		}
 
 		static var circleClosed: RSImage { RSImage(symbol: "largecircle.fill.circle")! }
 		static var markBelowAsRead: RSImage { RSImage(symbol: "arrowtriangle.down.circle")! }
@@ -122,20 +103,6 @@ struct Assets {
 			}
 		case .cloudKit:
 			return Assets.Images.accountCloudKit
-		case .bazQux:
-			return Assets.Images.accountBazQux
-		case .feedbin:
-			return Assets.Images.accountFeedbin
-		case .feedly:
-			return Assets.Images.accountFeedly
-		case .freshRSS:
-			return Assets.Images.accountFreshRSS
-		case .inoreader:
-			return Assets.Images.accountInoreader
-		case .newsBlur:
-			return Assets.Images.accountNewsBlur
-		case .theOldReader:
-			return Assets.Images.accountTheOldReader
 		}
 	}
 

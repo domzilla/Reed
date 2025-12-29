@@ -47,8 +47,6 @@ struct FeedNode: Hashable, Sendable {
 
 	lazy var webViewProvider = WebViewProvider(coordinator: self)
 
-	private var activityManager = ActivityManager()
-
 	private var rootSplitViewController: RootSplitViewController!
 
 	private var mainFeedCollectionViewController: MainFeedCollectionViewController!
@@ -114,7 +112,9 @@ struct FeedNode: Hashable, Sendable {
 	private let treeController: TreeController
 
 	var stateRestorationActivity: NSUserActivity {
-		activityManager.stateRestorationActivity
+		let activity = NSUserActivity(activityType: "com.ranchero.NetNewsWire.restoration")
+		activity.persistentIdentifier = UUID().uuidString
+		return activity
 	}
 
 	var isNavigationDisabled = false
@@ -332,8 +332,6 @@ struct FeedNode: Hashable, Sendable {
 		NotificationCenter.default.addObserver(self, selector: #selector(userDidAddFeed(_:)), name: .UserDidAddFeed, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(accountDidDownloadArticles(_:)), name: .AccountDidDownloadArticles, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(importDownloadedTheme(_:)), name: .didEndDownloadingTheme, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(themeDownloadDidFail(_:)), name: .didFailToImportThemeWithError, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(updateNavigationBarSubtitles(_:)), name: .combinedRefreshProgressDidChange, object: nil)
 
 		NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
@@ -399,21 +397,7 @@ struct FeedNode: Hashable, Sendable {
 	}
 
 	func handle(_ activity: NSUserActivity) {
-		selectFeed(indexPath: nil) {
-			guard let activityType = ActivityType(rawValue: activity.activityType) else { return }
-			switch activityType {
-			case .restoration:
-				break
-			case .selectFeed:
-				self.handleSelectFeed(activity.userInfo)
-			case .nextUnread:
-				self.selectFirstUnreadInAllUnread()
-			case .readArticle:
-				self.handleReadArticle(activity.userInfo)
-			case .addFeedIntent:
-				self.showAddFeed()
-			}
-		}
+		// Activity handling removed - no longer using Handoff/Spotlight
 	}
 
 	func handle(_ response: UNNotificationResponse) {
@@ -569,28 +553,6 @@ struct FeedNode: Hashable, Sendable {
 			queueFetchAndMergeArticles()
 		}
 	}
-
-	@objc func importDownloadedTheme(_ note: Notification) {
-		guard let userInfo = note.userInfo,
-			let url = userInfo["url"] as? URL else {
-			return
-		}
-
-		DispatchQueue.main.async {
-			self.importTheme(filename: url.path)
-		}
-	}
-
-	@objc func themeDownloadDidFail(_ note: Notification) {
-		guard let userInfo = note.userInfo,
-			  let error = userInfo["error"] as? Error else {
-				  return
-			  }
-		DispatchQueue.main.async {
-			self.rootSplitViewController.presentError(error, dismiss: nil)
-		}
-	}
-
 
 	/// Updates navigation bar subtitles in response to feed selection, unread count changes,
 	/// `combinedRefreshProgressDidChange` notifications, and a timed refresh every
@@ -914,7 +876,6 @@ struct FeedNode: Hashable, Sendable {
 
 		if let ip = indexPath, let node = nodeFor(ip), let sidebarItem = node.representedObject as? SidebarItem {
 
-			self.activityManager.selecting(sidebarItem: sidebarItem)
 			self.rootSplitViewController.show(.supplementary)
 			setTimelineFeed(sidebarItem, animated: false) {
 				if self.isReadFeedsFiltered {
@@ -930,7 +891,6 @@ struct FeedNode: Hashable, Sendable {
 				if self.isReadFeedsFiltered {
 					self.rebuildBackingStores()
 				}
-				self.activityManager.invalidateSelecting()
 				self.rootSplitViewController.show(.primary)
 				AppDefaults.shared.selectedSidebarItem = nil
 				completion?()
@@ -978,7 +938,6 @@ struct FeedNode: Hashable, Sendable {
 		guard article != currentArticle else { return }
 
 		currentArticle = article
-		activityManager.reading(feed: timelineFeed, article: article)
 
 		if article == nil {
 			articleViewController?.article = nil
@@ -994,8 +953,8 @@ struct FeedNode: Hashable, Sendable {
 
 		mainTimelineViewController?.updateArticleSelection(animations: animations)
 		articleViewController?.article = article
-		if let isShowingExtractedArticle = isShowingExtractedArticle, let articleWindowScrollY = articleWindowScrollY {
-			articleViewController?.restoreScrollPosition = (isShowingExtractedArticle, articleWindowScrollY)
+		if let articleWindowScrollY = articleWindowScrollY {
+			articleViewController?.restoreScrollPosition = articleWindowScrollY
 		}
 	}
 
@@ -1079,9 +1038,7 @@ struct FeedNode: Hashable, Sendable {
 	}
 
 	func selectFirstUnread() {
-		if selectFirstUnreadArticleInTimeline() {
-			activityManager.selectingNextUnread()
-		}
+		selectFirstUnreadArticleInTimeline()
 	}
 
 	func selectPrevUnread() {
@@ -1421,14 +1378,6 @@ struct FeedNode: Hashable, Sendable {
 		}
 	}
 
-	func importTheme(filename: String) {
-		do {
-			try ArticleThemeImporter.importTheme(controller: rootSplitViewController, url: URL(fileURLWithPath: filename))
-		} catch {
-			NotificationCenter.default.post(name: .didFailToImportThemeWithError, object: nil, userInfo: ["error" : error])
-		}
-
-	}
 
 	/// This will dismiss the foremost view controller if the user
 	/// has launched from an external action (i.e., a widget tap, or
@@ -1493,7 +1442,6 @@ extension SceneCoordinator: UINavigationControllerDelegate {
 
 		// If we are showing the Feeds and only the feeds start clearing stuff
 		if viewController === mainFeedCollectionViewController && !isTimelineViewControllerPending {
-			activityManager.invalidateCurrentActivities()
 			selectFeed(nil, animations: [.scroll, .select, .navigation])
 			return
 		}
@@ -1505,7 +1453,6 @@ extension SceneCoordinator: UINavigationControllerDelegate {
 		if viewController === mainTimelineViewController && rootSplitViewController.isCollapsed && !isArticleViewControllerPending {
 			currentArticle = nil
 			mainTimelineViewController?.updateArticleSelection(animations: [.scroll, .select, .navigation])
-			activityManager.invalidateReading()
 
 			// Restore any bars hidden by the article controller
 			showStatusBar()
