@@ -61,16 +61,6 @@ import Secrets
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		AppDefaults.registerDefaults()
 
-		let isFirstRun = AppDefaults.shared.isFirstRun
-		if isFirstRun {
-			Self.logger.info("Is first run.")
-		}
-
-		if isFirstRun && !AccountManager.shared.anyAccountHasAtLeastOneFeed() {
-			let localAccount = AccountManager.shared.defaultAccount
-			DefaultFeedsImporter.importDefaultFeeds(account: localAccount)
-		}
-
 		registerBackgroundTasks()
 		CacheCleaner.purgeIfNecessary()
 		initializeDownloaders()
