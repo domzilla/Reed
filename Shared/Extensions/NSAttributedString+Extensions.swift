@@ -7,24 +7,14 @@
 //
 
 import RSParser
-
-#if canImport(AppKit)
-import AppKit
-typealias Font = NSFont
-typealias FontDescriptor = NSFontDescriptor
-
-private let boldTrait = NSFontDescriptor.SymbolicTraits.bold
-private let italicTrait = NSFontDescriptor.SymbolicTraits.italic
-private let monoSpaceTrait = NSFontDescriptor.SymbolicTraits.monoSpace
-#else
 import UIKit
+
 typealias Font = UIFont
 typealias FontDescriptor = UIFontDescriptor
 
 private let boldTrait = UIFontDescriptor.SymbolicTraits.traitBold
 private let italicTrait = UIFontDescriptor.SymbolicTraits.traitItalic
 private let monoSpaceTrait = UIFontDescriptor.SymbolicTraits.traitMonoSpace
-#endif
 
 extension NSAttributedString {
 
@@ -48,11 +38,7 @@ extension NSAttributedString {
 
 			var descriptor = currentDescriptor.addingAttributes(baseDescriptor.fontAttributes)
 
-			#if canImport(AppKit)
-			descriptor = descriptor.withSymbolicTraits(symbolicTraits)
-			#else
 			descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
-			#endif
 
 			let newFont = Font(descriptor: descriptor, size: size)
 
@@ -214,18 +200,10 @@ extension NSAttributedString {
 				symbolicTraits.insert(monoSpaceTrait)
 			}
 
-			#if canImport(AppKit)
-			descriptor = descriptor.withSymbolicTraits(symbolicTraits)
-			#else
 			descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
-			#endif
 
 			func verticalPositionFeature(forSuperscript: Bool) -> [FontDescriptor.FeatureKey: Any] {
-				#if canImport(AppKit)
-				let features: [FontDescriptor.FeatureKey: Any] = [.typeIdentifier: kVerticalPositionType, .selectorIdentifier: forSuperscript ? kSuperiorsSelector : kInferiorsSelector]
-				#else
 				let features: [FontDescriptor.FeatureKey: Any] = [.type: kVerticalPositionType, .selector: forSuperscript ? kSuperiorsSelector : kInferiorsSelector]
-				#endif
 				return features
 			}
 

@@ -78,15 +78,7 @@ private extension Platform {
 		var dataFolder: URL?
 
 		do {
-			#if os(macOS)
-			dataFolder = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-
-			if let appName = appName ?? Bundle.main.infoDictionary?["CFBundleExecutable"] as? String {
-				dataFolder = dataFolder?.appendingPathComponent(appName)
-			}
-			#else // iOS
 			dataFolder = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-			#endif
 
 			if let dataFolder {
 				try FileManager.default.createDirectory(at: dataFolder, withIntermediateDirectories: true, attributes: nil)

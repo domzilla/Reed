@@ -8,13 +8,7 @@
 // Original Project: https://github.com/ngs/color-hash.swift
 
 import Foundation
-#if os(iOS) || os(tvOS)
 import UIKit
-#elseif os(watchOS)
-import WatchKit
-#elseif os(OSX)
-import AppKit
-#endif
 
 public class ColorHash {
 
@@ -59,16 +53,9 @@ public class ColorHash {
 		return (H, S, B)
 	}
 
-	#if os(iOS) || os(tvOS) || os(watchOS)
 	public var color: UIColor {
 		let (H, S, B) = HSB
 		return UIColor(hue: H, saturation: S, brightness: B, alpha: 1.0)
 	}
-	#elseif os(OSX)
-	public var color: NSColor {
-		let (H, S, B) = HSB
-		return NSColor(hue: H, saturation: S, brightness: B, alpha: 1.0)
-	}
-	#endif
 
 }

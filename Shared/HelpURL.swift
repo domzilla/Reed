@@ -20,9 +20,4 @@ enum HelpURL: String {
 	case technotes = "https://github.com/Ranchero-Software/NetNewsWire/tree/main/Technotes"
 	case privacyPolicy = "https://netnewswire.com/privacypolicy.html"
 
-#if os(macOS)
-	@MainActor func open() {
-		Browser.open(self.rawValue, inBackground: false)
-	}
-#endif
 }

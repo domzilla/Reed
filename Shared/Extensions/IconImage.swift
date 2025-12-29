@@ -6,12 +6,7 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-#if os(macOS)
-import AppKit
-#else
 import UIKit
-#endif
-
 import RSCore
 
 final class IconImage: @unchecked Sendable {
@@ -21,11 +16,7 @@ final class IconImage: @unchecked Sendable {
 	let preferredColor: CGColor?
 
 	private lazy var luminanceType: ImageLuminanceType = {
-		#if os(macOS)
-		guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return .regular }
-		#else
 		guard let cgImage = image.cgImage else { return .regular }
-		#endif
 		return cgImage.calculateLuminanceType() ?? .regular
 	}()
 

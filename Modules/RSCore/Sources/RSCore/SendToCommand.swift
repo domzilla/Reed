@@ -6,13 +6,7 @@
 //  Copyright © 2018 Ranchero Software. All rights reserved.
 //
 
-#if os(macOS)
-import AppKit
-#endif
-
-#if os(iOS)
 import UIKit
-#endif
 
 /// A type that sends an object's data to an external application.
 ///

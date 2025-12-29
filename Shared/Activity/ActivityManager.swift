@@ -22,22 +22,6 @@ import UniformTypeIdentifiers
 	private var readingActivity: NSUserActivity?
 	private var readingArticle: Article?
 
-	#if os(macOS)
-	var stateRestorationActivity: NSUserActivity {
-		if let activity = readingActivity {
-			return activity
-		}
-
-		if let activity = selectingActivity {
-			return activity
-		}
-
-		let activity = NSUserActivity(activityType: ActivityType.restoration.rawValue)
-		activity.persistentIdentifier = UUID().uuidString
-		activity.becomeCurrent()
-		return activity
-	}
-	#else // iOS
 	var stateRestorationActivity: NSUserActivity {
 		// State restoration is now handled via UserDefaults (AppDefaults.selectedSidebarItem and AppDefaults.selectedArticle).
 		// The reading/selecting activities are still maintained for Handoff, Spotlight, and Siri Shortcuts,
@@ -47,7 +31,6 @@ import UniformTypeIdentifiers
 		activity.becomeCurrent()
 		return activity
 	}
-	#endif
 
 	init() {
 		NotificationCenter.default.addObserver(self, selector: #selector(feedIconDidBecomeAvailable(_:)), name: .feedIconDidBecomeAvailable, object: nil)
@@ -82,12 +65,10 @@ import UniformTypeIdentifiers
 		nextUnreadActivity = NSUserActivity(activityType: ActivityType.nextUnread.rawValue)
 		nextUnreadActivity!.title = NSLocalizedString("See first unread article", comment: "First Unread")
 
-		#if os(iOS)
 		nextUnreadActivity!.suggestedInvocationPhrase = nextUnreadActivity!.title
 		nextUnreadActivity!.isEligibleForPrediction = true
 		nextUnreadActivity!.persistentIdentifier = "nextUnread:"
 		nextUnreadActivity!.contentAttributeSet?.relatedUniqueIdentifier = "nextUnread:"
-		#endif
 
 		donate(nextUnreadActivity!)
 	}
@@ -104,9 +85,7 @@ import UniformTypeIdentifiers
 		guard let article = article else { return }
 		readingActivity = makeReadArticleActivity(sidebarItem: feed, article: article)
 
-		#if os(iOS)
 		updateReadArticleSearchAttributes(with: article)
-		#endif
 
 		donate(readingActivity!)
 	}
@@ -117,7 +96,6 @@ import UniformTypeIdentifiers
 		readingArticle = nil
 	}
 
-	#if os(iOS)
 	static func cleanUp(_ account: Account) {
 		var ids = [String]()
 
@@ -148,18 +126,15 @@ import UniformTypeIdentifiers
 	static func cleanUp(_ feed: Feed) {
 		CSSearchableIndex.default().deleteSearchableItems(withIdentifiers: identifiers(for: feed))
 	}
-	#endif
 
 	@objc func feedIconDidBecomeAvailable(_ note: Notification) {
 		guard let feed = note.userInfo?[UserInfoKey.feed] as? Feed, let activityFeedId = selectingActivity?.userInfo?[ArticlePathKey.feedID] as? String else {
 			return
 		}
 
-		#if os(iOS)
 		if let article = readingArticle, activityFeedId == article.feedID {
 			updateReadArticleSearchAttributes(with: article)
 		}
-		#endif
 
 		if activityFeedId == feed.feedID {
 			updateSelectingActivityFeedSearchAttributes(with: feed)
@@ -188,11 +163,9 @@ import UniformTypeIdentifiers
 
 		activity.persistentIdentifier = sidebarItem.sidebarItemID?.description ?? ""
 
-		#if os(iOS)
 		activity.suggestedInvocationPhrase = title
 		activity.isEligibleForPrediction = true
 		activity.contentAttributeSet?.relatedUniqueIdentifier = sidebarItem.sidebarItemID?.description ?? ""
-		#endif
 
 		return activity
 	}
@@ -214,19 +187,16 @@ import UniformTypeIdentifiers
 
 		activity.persistentIdentifier = ActivityManager.identifier(for: article)
 
-		#if os(iOS)
 		activity.keywords = Set(makeKeywords(article))
 		activity.isEligibleForSearch = true
 		activity.isEligibleForPrediction = false
 		updateReadArticleSearchAttributes(with: article)
-		#endif
 
 		readingArticle = article
 
 		return activity
 	}
 
-	#if os(iOS)
 	func updateReadArticleSearchAttributes(with article: Article) {
 
 		let attributeSet = CSSearchableItemAttributeSet(itemContentType: UTType.compositeContent.identifier)
@@ -243,7 +213,6 @@ import UniformTypeIdentifiers
 		readingActivity?.needsSave = true
 
 	}
-	#endif
 
 	func makeKeywords(_ article: Article) -> [String] {
 		let feedNameKeywords = makeKeywords(article.feed?.nameForDisplay)

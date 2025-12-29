@@ -7,9 +7,7 @@
 //
 
 import Foundation
-#if os(iOS)
 import UIKit
-#endif
 import RSCore
 import Articles
 import Account
@@ -221,10 +219,6 @@ private extension ArticleRenderer {
 
 		d["body"] = body
 
-		#if os(macOS)
-		d["text_size_class"] = AppDefaults.shared.articleTextSize.cssClass
-		#endif
-
 		var components = URLComponents()
 		components.scheme = Self.imageIconScheme
 		components.path = article.articleID
@@ -311,18 +305,12 @@ private extension ArticleRenderer {
 		return byline
 	}
 
-	#if os(iOS)
 	func styleSubstitutions() -> [String: String] {
 		var d = [String: String]()
 		let bodyFont = UIFont.preferredFont(forTextStyle: .body)
 		d["font-size"] = String(describing: bodyFont.pointSize)
 		return d
 	}
-	#else
-	func styleSubstitutions() -> [String: String] {
-		return [String: String]()
-	}
-	#endif
 
 }
 

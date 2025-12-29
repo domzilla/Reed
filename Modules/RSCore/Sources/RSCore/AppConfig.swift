@@ -34,14 +34,7 @@ import Foundation
 	}
 
 	public static let dataFolder: URL = {
-
-#if os(macOS)
-		var dataFolder = try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-		dataFolder = dataFolder.appendingPathComponent(appName)
-#elseif os(iOS)
 		var dataFolder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-#endif
-
 		createFolderIfNecessary(dataFolder)
 		return dataFolder
 	}()

@@ -8,16 +8,9 @@
 
 import Foundation
 import os.log
-
-#if os(macOS)
-import AppKit
-public typealias RSImage = NSImage
-#endif
-
-#if os(iOS)
 import UIKit
+
 public typealias RSImage = UIImage
-#endif
 
 private let RSImageLogger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "RSImage")
 private let debugLoggingEnabled = false
@@ -30,11 +23,7 @@ public extension RSImage {
 	/// - Returns: A new masked image.
 	func maskWithColor(color: CGColor) -> RSImage? {
 
-		#if os(macOS)
-		guard let maskImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
-		#else
 		guard let maskImage = cgImage else { return nil }
-		#endif
 
 		let width = size.width
 		let height = size.height
@@ -49,11 +38,7 @@ public extension RSImage {
 		context.fill(bounds)
 
 		if let cgImage = context.makeImage() {
-			#if os(macOS)
-			let coloredImage = RSImage(cgImage: cgImage, size: CGSize(width: cgImage.width, height: cgImage.height))
-			#else
 			let coloredImage = RSImage(cgImage: cgImage)
-			#endif
 			return coloredImage
 		} else {
 			return nil
@@ -61,7 +46,6 @@ public extension RSImage {
 
 	}
 
-	#if os(iOS)
 	/// Tint an image.
 	///
 	/// - Parameter color: The color to use to tint the image.
@@ -81,27 +65,11 @@ public extension RSImage {
 			return self
 		}
 	}
-	#endif
-
-#if os(macOS)
-	/// Returns data as PNG. May be nil in some circumstances.
-	func pngData() -> Data? {
-		guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-			return nil
-		}
-		let bitmapRep = NSBitmapImageRep(cgImage: cgImage)
-		return bitmapRep.representation(using: .png, properties: [:])
-	}
-#endif
 
 	/// Returns a data representation of the image.
-	/// - Returns: Image data. Normally PNG, though in rare cases it might TIFF on macOS.
+	/// - Returns: Image data as PNG.
 	func dataRepresentation() -> Data? {
-#if os(macOS)
-		pngData() ?? tiffRepresentation
-#else
 		return pngData()
-#endif
 	}
 
 	/// Asynchronously initializes an image from data.

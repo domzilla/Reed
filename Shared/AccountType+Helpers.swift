@@ -8,11 +8,7 @@
 
 import Foundation
 import Account
-#if os(macOS)
-import AppKit
-#else
 import UIKit
-#endif
 import SwiftUI
 
 extension AccountType {
@@ -47,16 +43,11 @@ extension AccountType {
 	@MainActor func image() -> Image {
 		switch self {
 		case .onMyMac:
-			// If it's the multiplatform app, the asset catalog contains assets for 
-			#if os(macOS)
-			return Image("accountLocal")
-			#else
 			if UIDevice.current.userInterfaceIdiom == .pad {
 				return Image("accountLocalPad")
 			} else {
 				return Image("accountLocalPhone")
 			}
-			#endif
 		case .bazQux:
 			return Image("accountBazQux")
 		case .cloudKit:

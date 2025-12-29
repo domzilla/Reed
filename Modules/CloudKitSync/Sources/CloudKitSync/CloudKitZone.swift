@@ -64,15 +64,9 @@ public typealias CloudKitRecordKey = (recordType: CKRecord.RecordType, recordID:
 }
 
 public extension CloudKitZone {
-	// My observation has been that QoS is treated differently for CloudKit operations on macOS vs iOS.
 	// .userInitiated is too aggressive on iOS and can lead the UI slowing down and appearing to block.
-	// .default (or lower) on macOS will sometimes hang for extended periods of time and appear to hang.
 	static var qualityOfService: QualityOfService {
-		#if os(macOS) || targetEnvironment(macCatalyst)
-		return .userInitiated
-		#else
 		return .default
-		#endif
 	}
 
 	nonisolated private static var logger: Logger {
