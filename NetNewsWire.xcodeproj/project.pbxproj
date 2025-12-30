@@ -13,8 +13,6 @@
 		513F32722593EE6F0003048F /* Articles in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32702593EE6F0003048F /* Articles */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		513F32742593EE6F0003048F /* ArticlesDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32732593EE6F0003048F /* ArticlesDatabase */; };
 		513F32752593EE6F0003048F /* ArticlesDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32732593EE6F0003048F /* ArticlesDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		513F32772593EE6F0003048F /* Secrets in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32762593EE6F0003048F /* Secrets */; };
-		513F32782593EE6F0003048F /* Secrets in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32762593EE6F0003048F /* Secrets */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		513F327A2593EE6F0003048F /* SyncDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32792593EE6F0003048F /* SyncDatabase */; };
 		513F327B2593EE6F0003048F /* SyncDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32792593EE6F0003048F /* SyncDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		513F32812593EF180003048F /* Account in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 516B695E24D2F33B00B5702F /* Account */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -82,7 +80,6 @@
 				84EE434C2DB8A44C009D3A8D /* RSDatabase in Embed Frameworks */,
 				848E84D62DB749670023F3BA /* RSCore in Embed Frameworks */,
 				8424B31C2DB73D530053AA11 /* RSParser in Embed Frameworks */,
-				513F32782593EE6F0003048F /* Secrets in Embed Frameworks */,
 				843E2F1B2CF2B8C500ED170F /* RSWeb in Embed Frameworks */,
 				513F327B2593EE6F0003048F /* SyncDatabase in Embed Frameworks */,
 				84EE3F162DB8A0A0009D3A8D /* RSTree in Embed Frameworks */,
@@ -207,7 +204,6 @@
 				516B695F24D2F33B00B5702F /* Account in Frameworks */,
 				843E2F1A2CF2B8C500ED170F /* RSWeb in Frameworks */,
 				513F32712593EE6F0003048F /* Articles in Frameworks */,
-				513F32772593EE6F0003048F /* Secrets in Frameworks */,
 				84EE434B2DB8A44C009D3A8D /* RSDatabase in Frameworks */,
 				513F32742593EE6F0003048F /* ArticlesDatabase in Frameworks */,
 				513F327A2593EE6F0003048F /* SyncDatabase in Frameworks */,
@@ -314,7 +310,6 @@
 				516B695E24D2F33B00B5702F /* Account */,
 				513F32702593EE6F0003048F /* Articles */,
 				513F32732593EE6F0003048F /* ArticlesDatabase */,
-				513F32762593EE6F0003048F /* Secrets */,
 				513F32792593EE6F0003048F /* SyncDatabase */,
 				179D280A26F6F93D003B2E0A /* Zip */,
 				843E2F192CF2B8C500ED170F /* RSWeb */,
@@ -627,10 +622,6 @@
 		513F32732593EE6F0003048F /* ArticlesDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ArticlesDatabase;
-		};
-		513F32762593EE6F0003048F /* Secrets */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Secrets;
 		};
 		513F32792593EE6F0003048F /* SyncDatabase */ = {
 			isa = XCSwiftPackageProductDependency;

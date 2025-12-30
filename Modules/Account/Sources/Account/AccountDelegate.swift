@@ -9,7 +9,6 @@
 import Foundation
 import Articles
 import RSWeb
-import Secrets
 
 @MainActor protocol AccountDelegate {
 
@@ -18,7 +17,6 @@ import Secrets
 	var isOPMLImportInProgress: Bool { get }
 
 	var server: String? { get }
-	var credentials: Credentials? { get set }
 	var accountMetadata: AccountMetadata? { get set }
 
 	var refreshProgress: DownloadProgress { get }
@@ -51,8 +49,6 @@ import Secrets
 	func accountDidInitialize(_ account: Account)
 
 	func accountWillBeDeleted(_ account: Account)
-
-	static func validateCredentials(transport: Transport, credentials: Credentials, endpoint: URL?) async throws -> Credentials?
 
 	/// Suspend all network activity
 	func suspendNetwork()

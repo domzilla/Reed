@@ -17,7 +17,6 @@ import RSParser
 import RSDatabase
 import ArticlesDatabase
 import RSWeb
-import Secrets
 
 // Main thread only.
 
@@ -282,33 +281,6 @@ public enum FetchType {
 			self.delegate.accountDidInitialize(self)
 		}
 	}
-
-	// MARK: - Credentials
-
-	@MainActor public func storeCredentials(_ credentials: Credentials) throws {
-		username = credentials.username
-		guard let server = delegate.server else {
-			assertionFailure()
-			return
-		}
-		try CredentialsManager.storeCredentials(credentials, server: server)
-		delegate.credentials = credentials
-	}
-
-	@MainActor public func retrieveCredentials(type: CredentialsType) throws -> Credentials? {
-		guard let username = self.username, let server = delegate.server else {
-			return nil
-		}
-		return try CredentialsManager.retrieveCredentials(type: type, server: server, username: username)
-	}
-
-	@MainActor public func removeCredentials(type: CredentialsType) throws {
-		guard let username = self.username, let server = delegate.server else {
-			return
-		}
-		try CredentialsManager.removeCredentials(type: type, server: server, username: username)
-	}
-
 
 	public func receiveRemoteNotification(userInfo: [AnyHashable : Any]) async {
 		await delegate.receiveRemoteNotification(for: self, userInfo: userInfo)

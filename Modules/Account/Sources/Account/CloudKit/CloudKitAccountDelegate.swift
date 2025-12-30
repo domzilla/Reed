@@ -16,7 +16,6 @@ import RSParser
 import Articles
 import ArticlesDatabase
 import RSWeb
-import Secrets
 import CloudKitSync
 import FeedFinder
 
@@ -51,7 +50,6 @@ enum CloudKitAccountDelegateError: LocalizedError, Sendable {
 	let isOPMLImportInProgress = false
 
 	let server: String? = nil
-	var credentials: Credentials?
 	var accountMetadata: AccountMetadata?
 
 	/// refreshProgress is combined sync progress and feed download progress.
@@ -381,10 +379,6 @@ enum CloudKitAccountDelegateError: LocalizedError, Sendable {
 	func accountWillBeDeleted(_ account: Account) {
 		accountZone.resetChangeToken()
 		articlesZone.resetChangeToken()
-	}
-
-	static func validateCredentials(transport: Transport, credentials: Credentials, endpoint: URL?) async throws -> Credentials? {
-		nil
 	}
 
 	// MARK: - Suspend and Resume (for iOS)

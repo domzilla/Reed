@@ -13,7 +13,6 @@ import Articles
 import ArticlesDatabase
 import FeedFinder
 import RSWeb
-import Secrets
 
 @MainActor final class LocalAccountDelegate: AccountDelegate {
 
@@ -23,7 +22,6 @@ import Secrets
 	let isOPMLImportInProgress = false
 
 	let server: String? = nil
-	var credentials: Credentials?
 	var accountMetadata: AccountMetadata?
 
 	private lazy var refresher: LocalAccountRefresher = {
@@ -130,10 +128,6 @@ import Secrets
 	}
 
 	func accountWillBeDeleted(_ account: Account) {
-	}
-
-	static func validateCredentials(transport: Transport, credentials: Credentials, endpoint: URL?) async throws -> Credentials? {
-		nil
 	}
 
 	// MARK: Suspend and Resume (for iOS)
