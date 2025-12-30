@@ -7,12 +7,10 @@
 //
 
 import Foundation
-import Articles
-import Account
 import RSCore
 
-protocol SmallIconProvider {
-	@MainActor var smallIcon: IconImage? { get }
+@MainActor protocol SmallIconProvider {
+	var smallIcon: IconImage? { get }
 }
 
 @MainActor extension Account: SmallIconProvider {

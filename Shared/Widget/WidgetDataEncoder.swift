@@ -11,8 +11,6 @@ import WidgetKit
 import os.log
 import UIKit
 import RSCore
-import Articles
-import Account
 
 @MainActor final class WidgetDataEncoder {
 	static let shared = WidgetDataEncoder()

@@ -9,7 +9,6 @@
 import Foundation
 import UIKit
 import RSCore
-import Account
 
 typealias RSColor = UIColor
 

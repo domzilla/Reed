@@ -14,8 +14,6 @@ import WebKit
 import RSCore
 import RSTree
 import RSWeb
-import Account
-import Articles
 
 private let reuseIdentifier = "FeedCell"
 private let folderIdentifier = "Folder"

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Account
 import RSCore
 
 @MainActor protocol ShareFolderPickerControllerDelegate: AnyObject {

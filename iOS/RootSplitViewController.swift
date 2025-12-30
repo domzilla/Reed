@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Account
 
 final class RootSplitViewController: UISplitViewController {
 

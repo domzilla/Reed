@@ -7,12 +7,9 @@
 //
 
 import Foundation
-import RSCore
-import Articles
-import ArticlesDatabase
-import Account
+@preconcurrency import RSCore
 
-struct TodayFeedDelegate: SmartFeedDelegate {
+@MainActor struct TodayFeedDelegate: SmartFeedDelegate {
 	var sidebarItemID: SidebarItemIdentifier? {
 		return SidebarItemIdentifier.smartFeed(String(describing: TodayFeedDelegate.self))
 	}

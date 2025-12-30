@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Articles
 
 final class ContextMenuPreviewViewController: UIViewController {
 	@IBOutlet var blogNameLabel: UILabel!

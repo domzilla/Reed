@@ -9,7 +9,6 @@
 import Foundation
 import Synchronization
 import os.log
-import Account
 
 final class ExtensionFeedAddRequestFile: NSObject, NSFilePresenter, Sendable {
 	static let shared = ExtensionFeedAddRequestFile()

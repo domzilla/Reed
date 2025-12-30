@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Account
 
 struct ExtensionFeedAddRequest: Codable {
 

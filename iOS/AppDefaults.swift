@@ -8,8 +8,6 @@
 
 import UIKit
 import os.log
-import Account
-import Articles
 
 enum UserInterfaceColorPalette: Int, CustomStringConvertible, CaseIterable {
 	case automatic = 0

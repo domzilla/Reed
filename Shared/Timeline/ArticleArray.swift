@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Articles
 
 typealias ArticleArray = [Article]
 

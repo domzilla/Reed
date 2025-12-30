@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Account
 
 @MainActor final class ArticleStatusSyncTimer {
 	static let shared = ArticleStatusSyncTimer()

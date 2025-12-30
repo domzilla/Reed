@@ -8,8 +8,6 @@
 
 import UIKit
 import WebKit
-import Account
-import Articles
 import RSCore
 import RSTree
 import RSWeb
@@ -25,8 +23,10 @@ extension MainFeedCollectionViewController: UICollectionViewDragDelegate {
 		let data = feed.url.data(using: .utf8)
 		let itemProvider = NSItemProvider()
 
-		itemProvider.registerDataRepresentation(forTypeIdentifier: UTType.url.identifier, visibility: .ownProcess) { completion in
-			completion(data, nil)
+		itemProvider.registerDataRepresentation(forTypeIdentifier: UTType.url.identifier, visibility: .ownProcess) { @Sendable completion in
+			Task { @MainActor in
+				completion(data, nil)
+			}
 			return nil
 		}
 

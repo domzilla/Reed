@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Account
 
 final class RefreshProgressView: UIView {
 	@IBOutlet var progressView: UIProgressView!

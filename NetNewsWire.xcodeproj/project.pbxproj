@@ -9,27 +9,16 @@
 /* Begin PBXBuildFile section */
 		179D280B26F6F93D003B2E0A /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = 179D280A26F6F93D003B2E0A /* Zip */; };
 		513C5CF0232571C2003D4054 /* NetNewsWire iOS Share Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 513C5CE6232571C2003D4054 /* NetNewsWire iOS Share Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		513F32712593EE6F0003048F /* Articles in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32702593EE6F0003048F /* Articles */; };
-		513F32722593EE6F0003048F /* Articles in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32702593EE6F0003048F /* Articles */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		513F32742593EE6F0003048F /* ArticlesDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32732593EE6F0003048F /* ArticlesDatabase */; };
-		513F32752593EE6F0003048F /* ArticlesDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32732593EE6F0003048F /* ArticlesDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		513F327A2593EE6F0003048F /* SyncDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 513F32792593EE6F0003048F /* SyncDatabase */; };
-		513F327B2593EE6F0003048F /* SyncDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 513F32792593EE6F0003048F /* SyncDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		513F32812593EF180003048F /* Account in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 516B695E24D2F33B00B5702F /* Account */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		516B695F24D2F33B00B5702F /* Account in Frameworks */ = {isa = PBXBuildFile; productRef = 516B695E24D2F33B00B5702F /* Account */; };
-		51BC2F3824D3439A00E90810 /* Account in Frameworks */ = {isa = PBXBuildFile; productRef = 51BC2F3724D3439A00E90810 /* Account */; };
 		8424B31B2DB73D530053AA11 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = 8424B31A2DB73D530053AA11 /* RSParser */; };
-		8424B31C2DB73D530053AA11 /* RSParser in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 8424B31A2DB73D530053AA11 /* RSParser */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		843E2F1A2CF2B8C500ED170F /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = 843E2F192CF2B8C500ED170F /* RSWeb */; };
-		843E2F1B2CF2B8C500ED170F /* RSWeb in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 843E2F192CF2B8C500ED170F /* RSWeb */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		848E84D52DB749670023F3BA /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = 848E84D42DB749670023F3BA /* RSCore */; };
-		848E84D62DB749670023F3BA /* RSCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 848E84D42DB749670023F3BA /* RSCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		848E84D82DB749720023F3BA /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = 848E84D72DB749720023F3BA /* RSCore */; };
 		84EE3F152DB8A0A0009D3A8D /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = 84EE3F142DB8A0A0009D3A8D /* RSTree */; };
-		84EE3F162DB8A0A0009D3A8D /* RSTree in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 84EE3F142DB8A0A0009D3A8D /* RSTree */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		84EE3F182DB8A0AC009D3A8D /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = 84EE3F172DB8A0AC009D3A8D /* RSTree */; };
 		84EE434B2DB8A44C009D3A8D /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84EE434A2DB8A44C009D3A8D /* RSDatabase */; };
-		84EE434C2DB8A44C009D3A8D /* RSDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 84EE434A2DB8A44C009D3A8D /* RSDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		84F1A2C12E41401100AABB01 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = 84F1A2C02E41401100AABB01 /* RSParser */; };
+		84F1A2C32E41401100AABB02 /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = 84F1A2C22E41401100AABB02 /* RSWeb */; };
+		84F1A2C52E41401100AABB03 /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84F1A2C42E41401100AABB03 /* RSDatabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,15 +66,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				84EE434C2DB8A44C009D3A8D /* RSDatabase in Embed Frameworks */,
-				848E84D62DB749670023F3BA /* RSCore in Embed Frameworks */,
-				8424B31C2DB73D530053AA11 /* RSParser in Embed Frameworks */,
-				843E2F1B2CF2B8C500ED170F /* RSWeb in Embed Frameworks */,
-				513F327B2593EE6F0003048F /* SyncDatabase in Embed Frameworks */,
-				84EE3F162DB8A0A0009D3A8D /* RSTree in Embed Frameworks */,
-				513F32722593EE6F0003048F /* Articles in Embed Frameworks */,
-				513F32812593EF180003048F /* Account in Embed Frameworks */,
-				513F32752593EE6F0003048F /* ArticlesDatabase in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -150,28 +130,144 @@
 		84D35E0C2DB9F32D004AA60E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Account/Account.swift,
+				Account/AccountBehaviors.swift,
+				Account/AccountDelegate.swift,
+				Account/AccountError.swift,
+				Account/AccountManager.swift,
+				Account/AccountMetadata.swift,
+				Account/AccountMetadataFile.swift,
+				Account/ArticleFetcher.swift,
+				"Account/CloudKit/CKRecord+Extensions.swift",
+				Account/CloudKit/CloudKitAccountDelegate.swift,
+				Account/CloudKit/CloudKitAccountZone.swift,
+				Account/CloudKit/CloudKitAccountZoneDelegate.swift,
+				Account/CloudKit/CloudKitArticleStatusUpdate.swift,
+				Account/CloudKit/CloudKitArticlesZone.swift,
+				Account/CloudKit/CloudKitArticlesZoneDelegate.swift,
+				Account/CloudKit/CloudKitReceiveStatusOperation.swift,
+				Account/CloudKit/CloudKitRemoteNotificationOperation.swift,
+				Account/CloudKit/CloudKitSendStatusOperation.swift,
+				Account/CloudKit/CloudKitWebDocumentation.swift,
+				Account/CombinedRefreshProgress.swift,
+				Account/Container.swift,
+				Account/ContainerIdentifier.swift,
+				Account/ContainerPath.swift,
+				Account/DataExtensions.swift,
+				Account/Feed.swift,
+				Account/FeedMetadata.swift,
+				Account/FeedMetadataFile.swift,
+				Account/Folder.swift,
+				Account/LocalAccount/InitialFeedDownloader.swift,
+				Account/LocalAccount/LocalAccountDelegate.swift,
+				Account/LocalAccount/LocalAccountRefresher.swift,
+				Account/OPMLFile.swift,
+				Account/OPMLNormalizer.swift,
+				Account/SidebarItem.swift,
+				Account/SidebarItemIdentifier.swift,
+				Account/SingleArticleFetcher.swift,
+				Account/UnreadCountProvider.swift,
+				Articles/Article.swift,
+				Articles/ArticleStatus.swift,
+				Articles/Author.swift,
+				Articles/DatabaseID.swift,
+				ArticlesDatabase/ArticlesDatabase.swift,
+				ArticlesDatabase/ArticlesTable.swift,
+				ArticlesDatabase/AuthorsTable.swift,
+				ArticlesDatabase/Constants.swift,
+				"ArticlesDatabase/Extensions/Article+Database.swift",
+				"ArticlesDatabase/Extensions/ArticleStatus+Database.swift",
+				"ArticlesDatabase/Extensions/Author+Database.swift",
+				"ArticlesDatabase/Extensions/DatabaseObject+Database.swift",
+				"ArticlesDatabase/Extensions/ParsedArticle+Database.swift",
+				"ArticlesDatabase/Extensions/RelatedObjectsMap+Database.swift",
+				ArticlesDatabase/Operations/FetchAllUnreadCountsOperation.swift,
+				ArticlesDatabase/SearchTable.swift,
+				ArticlesDatabase/StatusesTable.swift,
 				ArticleSpecifier.swift,
 				Assets.swift,
+				CloudKitSync/CloudKitError.swift,
+				CloudKitSync/CloudKitLogger.swift,
+				CloudKitSync/CloudKitZone.swift,
+				CloudKitSync/CloudKitZoneResult.swift,
 				Extensions/IconImage.swift,
 				"Extensions/Node+Extensions.swift",
+				FeedFinder/FeedFinder.swift,
+				FeedFinder/FeedSpecifier.swift,
+				FeedFinder/HTMLFeedFinder.swift,
 				ShareExtension/ExtensionContainers.swift,
 				ShareExtension/ExtensionContainersFile.swift,
 				ShareExtension/ExtensionFeedAddRequest.swift,
 				ShareExtension/ExtensionFeedAddRequestFile.swift,
 				ShareExtension/SafariExt.js,
 				ShareExtension/ShareDefaultContainer.swift,
+				SyncDatabase/SyncConstants.swift,
+				SyncDatabase/SyncDatabase.swift,
+				SyncDatabase/SyncStatus.swift,
+				SyncDatabase/SyncStatusTable.swift,
 				UserInfoKey.swift,
 			);
 			target = 513C5CE5232571C2003D4054 /* NetNewsWire iOS Share Extension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		F2C8B0042F03EAD2005B39D1 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				RSCore = (
+					CodeSignOnCopy,
+				);
+				RSTree = (
+					CodeSignOnCopy,
+				);
+			};
+			buildPhase = 5102AE7324D17FAA0050839C /* Embed Frameworks */;
+			membershipExceptions = (
+				RSCore,
+				RSTree,
+			);
+		};
+		F2C8B00B2F03EAEC005B39D1 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				RSCore = (
+					CodeSignOnCopy,
+				);
+				RSDatabase = (
+					CodeSignOnCopy,
+				);
+				RSMarkdown = (
+					CodeSignOnCopy,
+				);
+				RSParser = (
+					CodeSignOnCopy,
+				);
+				RSTree = (
+					CodeSignOnCopy,
+				);
+				RSWeb = (
+					CodeSignOnCopy,
+				);
+			};
+			buildPhase = 51C451DF2264C7F200C03939 /* Embed Frameworks */;
+			membershipExceptions = (
+				RSCore,
+				RSDatabase,
+				RSMarkdown,
+				RSParser,
+				RSTree,
+				RSWeb,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		840A1F092E41337800CFCCFC /* Technotes */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Technotes; sourceTree = "<group>"; };
 		84719F0E2DB9C52B00EEF332 /* Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (84719F282DB9C52B00EEF332 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Tests; sourceTree = "<group>"; };
 		84719F372DB9C60400EEF332 /* xcconfig */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (common, ); path = xcconfig; sourceTree = "<group>"; };
 		84A6CFB52D1B4EC500F23315 /* iOS */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (84A6D03F2D1B4EC500F23315 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 84A6D0402D1B4EC500F23315 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = iOS; sourceTree = "<group>"; };
-		84CB35042DB9B5E2002AC251 /* Modules */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Modules; sourceTree = "<group>"; };
+		84CB35042DB9B5E2002AC251 /* Modules */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (F2C8B00B2F03EAEC005B39D1 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, F2C8B0042F03EAD2005B39D1 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Modules; sourceTree = "<group>"; };
 		84D35D422DB9F32D004AA60E /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (84D35E0B2DB9F32D004AA60E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 84D35E0C2DB9F32D004AA60E /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -180,9 +276,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				51BC2F3824D3439A00E90810 /* Account in Frameworks */,
 				848E84D82DB749720023F3BA /* RSCore in Frameworks */,
 				84EE3F182DB8A0AC009D3A8D /* RSTree in Frameworks */,
+				84F1A2C12E41401100AABB01 /* RSParser in Frameworks */,
+				84F1A2C32E41401100AABB02 /* RSWeb in Frameworks */,
+				84F1A2C52E41401100AABB03 /* RSDatabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,12 +299,8 @@
 				848E84D52DB749670023F3BA /* RSCore in Frameworks */,
 				179D280B26F6F93D003B2E0A /* Zip in Frameworks */,
 				8424B31B2DB73D530053AA11 /* RSParser in Frameworks */,
-				516B695F24D2F33B00B5702F /* Account in Frameworks */,
 				843E2F1A2CF2B8C500ED170F /* RSWeb in Frameworks */,
-				513F32712593EE6F0003048F /* Articles in Frameworks */,
 				84EE434B2DB8A44C009D3A8D /* RSDatabase in Frameworks */,
-				513F32742593EE6F0003048F /* ArticlesDatabase in Frameworks */,
-				513F327A2593EE6F0003048F /* SyncDatabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +345,6 @@
 				513C5CE3232571C2003D4054 /* Frameworks */,
 				513C5CE4232571C2003D4054 /* Resources */,
 				5102AE7324D17FAA0050839C /* Embed Frameworks */,
-				513F328B2593F03F0003048F /* Delete Unnecessary Frameworks */,
 			);
 			buildRules = (
 			);
@@ -259,9 +352,11 @@
 			);
 			name = "NetNewsWire iOS Share Extension";
 			packageProductDependencies = (
-				51BC2F3724D3439A00E90810 /* Account */,
 				848E84D72DB749720023F3BA /* RSCore */,
 				84EE3F172DB8A0AC009D3A8D /* RSTree */,
+				84F1A2C02E41401100AABB01 /* RSParser */,
+				84F1A2C22E41401100AABB02 /* RSWeb */,
+				84F1A2C42E41401100AABB03 /* RSDatabase */,
 			);
 			productName = "NetNewsWire iOS Share Extension";
 			productReference = 513C5CE6232571C2003D4054 /* NetNewsWire iOS Share Extension.appex */;
@@ -307,10 +402,6 @@
 			);
 			name = "NetNewsWire-iOS";
 			packageProductDependencies = (
-				516B695E24D2F33B00B5702F /* Account */,
-				513F32702593EE6F0003048F /* Articles */,
-				513F32732593EE6F0003048F /* ArticlesDatabase */,
-				513F32792593EE6F0003048F /* SyncDatabase */,
 				179D280A26F6F93D003B2E0A /* Zip */,
 				843E2F192CF2B8C500ED170F /* RSWeb */,
 				8424B31A2DB73D530053AA11 /* RSParser */,
@@ -404,25 +495,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		513F328B2593F03F0003048F /* Delete Unnecessary Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Delete Unnecessary Frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Delete the framework that Xcode should have never included\n# https://forums.swift.org/t/is-this-an-xcode-bug-or-somehow-related-to-spm/33987\nrm -rf \"${TARGET_BUILD_DIR}/NetNewsWire iOS Share Extension.appex/Frameworks\"\n";
-		};
 		515D50802326D02600EE1167 /* Run Script: Verify No Build Settings */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -615,26 +687,6 @@
 			package = 179D280926F6F93D003B2E0A /* XCRemoteSwiftPackageReference "Zip" */;
 			productName = Zip;
 		};
-		513F32702593EE6F0003048F /* Articles */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Articles;
-		};
-		513F32732593EE6F0003048F /* ArticlesDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ArticlesDatabase;
-		};
-		513F32792593EE6F0003048F /* SyncDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SyncDatabase;
-		};
-		516B695E24D2F33B00B5702F /* Account */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Account;
-		};
-		51BC2F3724D3439A00E90810 /* Account */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Account;
-		};
 		8424B31A2DB73D530053AA11 /* RSParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RSParser;
@@ -660,6 +712,18 @@
 			productName = RSTree;
 		};
 		84EE434A2DB8A44C009D3A8D /* RSDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSDatabase;
+		};
+		84F1A2C02E41401100AABB01 /* RSParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSParser;
+		};
+		84F1A2C22E41401100AABB02 /* RSWeb */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSWeb;
+		};
+		84F1A2C42E41401100AABB03 /* RSDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RSDatabase;
 		};

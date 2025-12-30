@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Articles
 
 class ModernTimelineCustomizerTableViewController: UITableViewController {
 

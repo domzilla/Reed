@@ -8,7 +8,6 @@
 
 import Foundation
 import WebKit
-import Articles
 
 final class ArticleIconSchemeHandler: NSObject, WKURLSchemeHandler {
 

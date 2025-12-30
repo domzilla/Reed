@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Account
 import RSCore
 
 final class AddFolderViewController: UITableViewController {

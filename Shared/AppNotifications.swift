@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Articles
 
 extension Notification.Name {
 	static let InspectableObjectsDidChange = Notification.Name("TimelineSelectionDidChangeNotification")

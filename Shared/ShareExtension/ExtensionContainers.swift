@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Account
 
 protocol ExtensionContainer: Codable {
 	var name: String { get }

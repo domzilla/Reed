@@ -7,10 +7,8 @@
 //
 
 import UIKit
-import Articles
-import Account
-import RSCore
+@preconcurrency import RSCore
 
-protocol PseudoFeed: AnyObject, SidebarItem, SmallIconProvider {
+@MainActor protocol PseudoFeed: AnyObject, SidebarItem, SmallIconProvider {
 
 }

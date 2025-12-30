@@ -8,7 +8,6 @@
 
 import UIKit
 import RSCore
-import Account
 
 @MainActor protocol AddFeedFolderViewControllerDelegate {
 	func didSelect(container: Container)

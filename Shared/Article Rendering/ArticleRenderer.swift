@@ -9,8 +9,6 @@
 import Foundation
 import UIKit
 import RSCore
-import Articles
-import Account
 
 @MainActor struct ArticleRenderer {
 

@@ -12,8 +12,6 @@ import os
 import WidgetKit
 import RSCore
 import RSWeb
-import Account
-import Articles
 
 @MainActor var appDelegate: AppDelegate!
 

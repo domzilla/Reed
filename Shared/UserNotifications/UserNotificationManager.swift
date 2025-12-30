@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import Account
-import Articles
 import UserNotifications
 
 @MainActor final class UserNotificationManager {

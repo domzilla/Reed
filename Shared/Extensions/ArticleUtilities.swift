@@ -8,8 +8,6 @@
 
 import Foundation
 import RSCore
-import Articles
-import Account
 
 // These handle multiple accounts.
 
@@ -41,10 +39,6 @@ private func accountAndArticlesDictionary(_ articles: Set<Article>) -> [String: 
 }
 
 @MainActor extension Article {
-
-	var feed: Feed? {
-		return account?.existingFeed(withFeedID: feedID)
-	}
 
 	var url: URL? {
 		return URL.encodeSpacesIfNeeded(rawLink)

@@ -7,10 +7,7 @@
 //
 
 import Foundation
-import Account
-import Articles
-import ArticlesDatabase
-import RSCore
+@preconcurrency import RSCore
 
 @MainActor protocol SmartFeedDelegate: SidebarItemIdentifiable, DisplayNameProvider, ArticleFetcher, SmallIconProvider {
 	var fetchType: FetchType { get }

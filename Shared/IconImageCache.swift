@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import Account
-import Articles
 
 @MainActor final class IconImageCache {
 

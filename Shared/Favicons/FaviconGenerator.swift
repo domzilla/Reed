@@ -8,7 +8,6 @@
 
 import Foundation
 import RSCore
-import Account
 
 @MainActor final class FaviconGenerator {
 

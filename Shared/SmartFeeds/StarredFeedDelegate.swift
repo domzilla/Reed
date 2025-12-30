@@ -7,10 +7,7 @@
 //
 
 import Foundation
-import RSCore
-import Articles
-import ArticlesDatabase
-import Account
+@preconcurrency import RSCore
 
 @MainActor struct StarredFeedDelegate: SmartFeedDelegate {
 

@@ -6,7 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import Articles
 import Foundation
 import XCTest
 

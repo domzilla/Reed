@@ -12,7 +12,6 @@ import SafariServices
 import SwiftUI
 import UniformTypeIdentifiers
 import RSCore
-import Account
 
 final class SettingsViewController: UITableViewController {
 

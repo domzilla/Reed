@@ -7,8 +7,7 @@
 //
 
 import Foundation
-import RSCore
-import Account
+@preconcurrency import RSCore
 
 @MainActor final class SmartFeedsController: DisplayNameProvider, ContainerIdentifiable {
 	nonisolated let containerID: ContainerIdentifier? = ContainerIdentifier.smartFeedController

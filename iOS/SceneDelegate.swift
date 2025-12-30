@@ -8,7 +8,6 @@
 
 import UIKit
 import UserNotifications
-import Account
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 

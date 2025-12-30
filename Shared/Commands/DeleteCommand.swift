@@ -9,8 +9,6 @@
 import Foundation
 import RSCore
 import RSTree
-import Account
-import Articles
 
 final class DeleteCommand: UndoableCommand {
 

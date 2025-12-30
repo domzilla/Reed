@@ -9,8 +9,6 @@
 import Foundation
 import os.log
 import RSCore
-import RSParser
-import Account
 
 @MainActor final class ExtensionContainersFile {
 	static let shared = ExtensionContainersFile()

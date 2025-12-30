@@ -9,7 +9,6 @@
 import UIKit
 import SafariServices
 import RSCore
-import Account
 
 final class AccountInspectorViewController: UITableViewController {
 	static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 400.0)

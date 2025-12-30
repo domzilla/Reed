@@ -8,7 +8,6 @@
 
 import Foundation
 import RSTree
-import Articles
 import RSCore
 
 @MainActor extension Array where Element == Node {
