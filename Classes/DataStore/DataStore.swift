@@ -227,7 +227,7 @@ public enum FetchType {
 		self.database = ArticlesDatabase(databaseFilePath: databaseFilePath, accountID: dataStoreID, retentionStyle: .feedBased)
 
 		// Single iCloud-synced data store
-		defaultName = NSLocalizedString("iCloud", comment: "iCloud")
+		defaultName = NSLocalizedString("Feeds", comment: "Feeds")
 
 		NotificationCenter.default.addObserver(self, selector: #selector(downloadProgressDidChange(_:)), name: .DownloadProgressDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
