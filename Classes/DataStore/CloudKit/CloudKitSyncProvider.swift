@@ -61,8 +61,6 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 		self.refresher = LocalAccountRefresher()
 		self.refresher.delegate = self
 
-		NotificationCenter.default.addObserver(self, selector: #selector(downloadProgressDidChange(_:)), name: .DownloadProgressDidChange, object: refresher.downloadProgress)
-		NotificationCenter.default.addObserver(self, selector: #selector(syncProgressDidChange(_:)), name: .DownloadProgressDidChange, object: syncProgress)
 	}
 
 	func receiveRemoteNotification(for dataStore: DataStore, userInfo: [AnyHashable : Any]) async {
@@ -388,33 +386,6 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 	func resume() {
 		refresher.resume()
 		syncDatabase.resume()
-	}
-}
-
-// MARK: - Refresh Progress
-
-private extension CloudKitSyncProvider {
-
-	func updateRefreshProgress() {
-
-//		refreshProgress.numberOfTasks = refresher.downloadProgress.numberOfTasks + syncProgress.numberOfTasks
-//		refreshProgress.numberRemaining = refresher.downloadProgress.numberRemaining + syncProgress.numberRemaining
-
-		// Complete?
-		if refreshProgress.isComplete {
-			refresher.downloadProgress.reset()
-			syncProgress.reset()
-		}
-	}
-
-	@objc func downloadProgressDidChange(_ note: Notification) {
-
-		updateRefreshProgress()
-	}
-
-	@objc func syncProgressDidChange(_ note: Notification) {
-
-		updateRefreshProgress()
 	}
 }
 
