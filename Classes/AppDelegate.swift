@@ -49,6 +49,9 @@ import RSWeb
 		super.init()
 		appDelegate = self
 
+		// Start iCloud account monitoring BEFORE AccountManager to ensure status is known
+		iCloudAccountMonitor.shared.start()
+
 		AccountManager.shared.start()
 
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
@@ -57,9 +60,6 @@ import RSWeb
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		AppDefaults.registerDefaults()
-
-		// Start iCloud account monitoring early
-		iCloudAccountMonitor.shared.start()
 
 		registerBackgroundTasks()
 		CacheCleaner.purgeIfNecessary()

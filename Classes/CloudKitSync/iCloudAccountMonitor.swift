@@ -28,7 +28,8 @@ public final class iCloudAccountMonitor {
 	private let container: CKContainer
 
 	private init() {
-		self.container = CKContainer(identifier: "iCloud.com.ranchero.NetNewsWire")
+		let orgID = Bundle.main.object(forInfoDictionaryKey: "OrganizationIdentifier") as! String
+		self.container = CKContainer(identifier: "iCloud.\(orgID).NetNewsWire")
 		setupNotificationObserver()
 	}
 
@@ -45,7 +46,8 @@ public final class iCloudAccountMonitor {
 			let status = try await container.accountStatus()
 			updateStatus(status)
 		} catch {
-			Self.logger.error("iCloud: Failed to check account status: \(error.localizedDescription)")
+			// Don't log error - this is expected when iCloud isn't available
+			Self.logger.debug("iCloud: Account status check returned error (iCloud likely not enabled)")
 			updateStatus(.couldNotDetermine)
 		}
 	}

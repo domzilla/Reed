@@ -494,31 +494,11 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 
 		// Check to see if this is a new dataStore and initialize anything we need
 		if dataStore.externalID == nil {
-			if iCloudAccountMonitor.shared.isAvailable {
-				Task {
-					do {
-						let externalID = try await feedsZone.findOrCreateAccount()
-						dataStore.externalID = externalID
-						try? await self.initialRefreshAll(for: dataStore)
-					} catch {
-						if iCloudAccountMonitor.isRecoverableError(error) {
-							// Assign local ID for now, will sync when iCloud available
-							dataStore.externalID = generateLocalExternalID()
-							Self.logger.info("iCloud: Using local dataStore ID until iCloud becomes available")
-						} else {
-							Self.logger.error("CloudKit: Error adding dataStore container: \(error.localizedDescription)")
-						}
-					}
-				}
-				feedsZone.subscribeToZoneChanges()
-				articlesZone.subscribeToZoneChanges()
-			} else {
-				// iCloud not available - assign local ID for now
-				dataStore.externalID = generateLocalExternalID()
-				Self.logger.info("iCloud: Using local dataStore ID (iCloud not available)")
-			}
+			// Always start with a local ID - CloudKit setup will happen via notification
+			// when iCloud account status is determined
+			dataStore.externalID = generateLocalExternalID()
+			Self.logger.info("iCloud: Using local dataStore ID (will upgrade when iCloud confirmed available)")
 		}
-
 	}
 
 	func dataStoreWillBeDeleted(_ dataStore: DataStore) {
@@ -557,28 +537,53 @@ private extension CloudKitSyncProvider {
 	func performRefreshAll(for dataStore: DataStore, sendArticleStatus: Bool) async throws {
 		syncProgress.addTasks(3)
 
-		do {
-			try await feedsZone.fetchChangesInZone()
-			syncProgress.completeTask()
+		// Try CloudKit sync if iCloud is available
+		if iCloudAccountMonitor.shared.isAvailable {
+			do {
+				try await feedsZone.fetchChangesInZone()
+				syncProgress.completeTask()
 
-			let feeds = dataStore.flattenedFeeds()
+				try await refreshArticleStatus(for: dataStore)
+				syncProgress.completeTask()
+			} catch {
+				// Handle CloudKit errors gracefully
+				syncProgress.completeTask()
+				syncProgress.completeTask()
 
-			try await refreshArticleStatus(for: dataStore)
-			syncProgress.completeTask()
-
-			await refresher.refreshFeeds(feeds)
-
-			if sendArticleStatus {
-				try await self.sendArticleStatus(dataStore: dataStore, showProgress: true)
+				if iCloudAccountMonitor.isRecoverableError(error) {
+					Self.logger.info("iCloud: Sync skipped due to recoverable error, will retry later")
+				} else {
+					processSyncError(dataStore, error)
+					// Only throw for non-recoverable errors that aren't auth-related
+					if let ckError = (error as? CloudKitError)?.error as? CKError,
+					   ckError.code != .notAuthenticated && ckError.code != .permissionFailure {
+						throw error
+					}
+				}
 			}
-
+		} else {
+			// iCloud not available - skip CloudKit sync silently
 			syncProgress.completeTask()
-			dataStore.metadata.lastArticleFetchEndTime = Date()
-		} catch {
-			processSyncError(dataStore, error)
 			syncProgress.completeTask()
-			throw error
+			Self.logger.debug("iCloud: Skipping sync (iCloud not available)")
 		}
+
+		// Always refresh local feeds
+		let feeds = dataStore.flattenedFeeds()
+		await refresher.refreshFeeds(feeds)
+
+		if sendArticleStatus && iCloudAccountMonitor.shared.isAvailable {
+			do {
+				try await self.sendArticleStatus(dataStore: dataStore, showProgress: true)
+			} catch {
+				if !iCloudAccountMonitor.isRecoverableError(error) {
+					Self.logger.error("iCloud: Send article status failed: \(error.localizedDescription)")
+				}
+			}
+		}
+
+		syncProgress.completeTask()
+		dataStore.metadata.lastArticleFetchEndTime = Date()
 	}
 
 	func createRSSFeed(for dataStore: DataStore, url: URL, editedName: String?, container: Container, validateFeed: Bool) async throws -> Feed {
@@ -964,17 +969,27 @@ private extension CloudKitSyncProvider {
 		Self.logger.info("iCloud: Processing pending operations")
 
 		// First, ensure we have a real dataStore external ID
+		var didUpgradeDataStore = false
 		if let externalID = dataStore.externalID, externalID.hasPrefix("local-") {
 			do {
 				let realExternalID = try await feedsZone.findOrCreateAccount()
 				dataStore.externalID = realExternalID
 				feedsZone.subscribeToZoneChanges()
 				articlesZone.subscribeToZoneChanges()
+				didUpgradeDataStore = true
 				Self.logger.info("iCloud: Upgraded dataStore to real iCloud ID")
 			} catch {
-				Self.logger.error("iCloud: Failed to get real dataStore ID: \(error.localizedDescription)")
+				// Don't log verbose error for auth failures - this is expected when iCloud isn't fully set up
+				if !iCloudAccountMonitor.isRecoverableError(error) {
+					Self.logger.debug("iCloud: Could not upgrade dataStore ID (will retry later)")
+				}
 				return
 			}
+		}
+
+		// If we just upgraded the dataStore, do an initial sync
+		if didUpgradeDataStore {
+			try? await initialRefreshAll(for: dataStore)
 		}
 
 		// Process pending operations in batches
