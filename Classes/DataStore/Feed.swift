@@ -12,11 +12,11 @@ import RSWeb
 
 @MainActor public final class Feed: SidebarItem, Renamable, Hashable {
 	nonisolated public let feedID: String
-	nonisolated public let accountID: String
+	nonisolated public let dataStoreID: String
 	nonisolated public let url: String
 	nonisolated public let sidebarItemID: SidebarItemIdentifier?
 
-	public weak var account: Account?
+	public weak var dataStore: DataStore?
 
 	public var defaultReadFilterType: ReadFilterType {
 		.none
@@ -206,12 +206,12 @@ import RSWeb
 	// MARK: - Renamable
 
 	public func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-		guard let account else {
+		guard let dataStore else {
 			return
 		}
 		Task { @MainActor in
 			do {
-				try await account.renameFeed(self, name: newName)
+				try await dataStore.renameFeed(self, name: newName)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -223,13 +223,13 @@ import RSWeb
 
 	public var unreadCount: Int {
 		get {
-			return account?.unreadCount(for: self) ?? 0
+			return dataStore?.unreadCount(for: self) ?? 0
 		}
 		set {
 			if unreadCount == newValue {
 				return
 			}
-			account?.setUnreadCount(newValue, for: self)
+			dataStore?.setUnreadCount(newValue, for: self)
 			postUnreadCountDidChangeNotification()
 		}
 	}
@@ -250,13 +250,13 @@ import RSWeb
 
 	// MARK: - Init
 
-	init(account: Account, url: String, metadata: FeedMetadata) {
-		let accountID = account.accountID
+	init(dataStore: DataStore, url: String, metadata: FeedMetadata) {
+		let dataStoreID = dataStore.dataStoreID
 		let feedID = metadata.feedID
-		self.accountID = accountID
-		self.account = account
+		self.dataStoreID = dataStoreID
+		self.dataStore = dataStore
 		self.feedID = feedID
-		self.sidebarItemID = SidebarItemIdentifier.feed(accountID, feedID)
+		self.sidebarItemID = SidebarItemIdentifier.feed(dataStoreID, feedID)
 
 		self.url = url
 		self.metadata = metadata
@@ -273,13 +273,13 @@ import RSWeb
 
 	public func hash(into hasher: inout Hasher) {
 		hasher.combine(feedID)
-		hasher.combine(accountID)
+		hasher.combine(dataStoreID)
 	}
 
 	// MARK: - Equatable
 
 	public class func ==(lhs: Feed, rhs: Feed) -> Bool {
-		return lhs.feedID == rhs.feedID && lhs.accountID == rhs.accountID
+		return lhs.feedID == rhs.feedID && lhs.dataStoreID == rhs.dataStoreID
 	}
 }
 

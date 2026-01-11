@@ -1,6 +1,6 @@
 //
-//  ArticleFetcherType.swift
-//  Account
+//  SidebarItemIdentifier.swift
+//  DataStore
 //
 //  Created by Maurice Parker on 11/13/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
@@ -15,8 +15,8 @@ import Foundation
 public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable, Sendable {
 	case smartFeed(String) // String is a unique identifier
 	case script(String) // String is a unique identifier
-	case feed(String, String) // accountID, feedID
-	case folder(String, String) // accountID, folderName
+	case feed(String, String) // dataStoreID, feedID
+	case folder(String, String) // dataStoreID, folderName
 
 	private struct TypeName {
 		static let smartFeed = "smartFeed"
@@ -28,7 +28,7 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
 	private struct Key {
 		static let typeName = "type"
 		static let id = "id"
-		static let accountID = "accountID"
+		static let dataStoreID = "accountID" // kept as "accountID" for backward compatibility
 		static let feedID = "feedID"
 		static let oldFeedIDKey = "webFeedID"
 		static let folderName = "folderName"
@@ -53,10 +53,10 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
 			return "(typeName): \(id)"
 		case .script(let id):
 			return "(typeName): \(id)"
-		case .feed(let accountID, let feedID):
-			return "(typeName): \(accountID)_\(feedID)"
-		case .folder(let accountID, let folderName):
-			return "(typeName): \(accountID)_\(folderName)"
+		case .feed(let dataStoreID, let feedID):
+			return "(typeName): \(dataStoreID)_\(feedID)"
+		case .folder(let dataStoreID, let folderName):
+			return "(typeName): \(dataStoreID)_\(folderName)"
 		}
 	}
 
@@ -68,11 +68,11 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
 			d[Key.id] = id
 		case .script(let id):
 			d[Key.id] = id
-		case .feed(let accountID, let feedID):
-			d[Key.accountID] = accountID
+		case .feed(let dataStoreID, let feedID):
+			d[Key.dataStoreID] = dataStoreID
 			d[Key.feedID] = feedID
-		case .folder(let accountID, let folderName):
-			d[Key.accountID] = accountID
+		case .folder(let dataStoreID, let folderName):
+			d[Key.dataStoreID] = dataStoreID
 			d[Key.folderName] = folderName
 		}
 
@@ -96,15 +96,15 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
 			}
 			self = .script(id)
 		case TypeName.feed:
-			guard let accountID = userInfo[Key.accountID], let feedID = userInfo[Key.feedID] ?? userInfo[Key.oldFeedIDKey] else {
+			guard let dataStoreID = userInfo[Key.dataStoreID], let feedID = userInfo[Key.feedID] ?? userInfo[Key.oldFeedIDKey] else {
 				return nil
 			}
-			self = .feed(accountID, feedID)
+			self = .feed(dataStoreID, feedID)
 		case TypeName.folder:
-			guard let accountID = userInfo[Key.accountID], let folderName = userInfo[Key.folderName] else {
+			guard let dataStoreID = userInfo[Key.dataStoreID], let folderName = userInfo[Key.folderName] else {
 				return nil
 			}
-			self = .folder(accountID, folderName)
+			self = .folder(dataStoreID, folderName)
 		default:
 			assertionFailure("Expected valid SidebarItemIdentifier.userInfo but got \(userInfo)")
 			return nil

@@ -10,19 +10,19 @@ import Foundation
 import RSCore
 
 public final class Folder: SidebarItem, Renamable, Container, Hashable {
-	nonisolated public let accountID: String
-	public weak var account: Account?
+	nonisolated public let dataStoreID: String
+	public weak var dataStore: DataStore?
 
 	public var defaultReadFilterType: ReadFilterType {
 		return .read
 	}
 
 	public var containerID: ContainerIdentifier? {
-		ContainerIdentifier.folder(accountID, nameForDisplay)
+		ContainerIdentifier.folder(dataStoreID, nameForDisplay)
 	}
 
 	public var sidebarItemID: SidebarItemIdentifier? {
-		SidebarItemIdentifier.folder(accountID, nameForDisplay)
+		SidebarItemIdentifier.folder(dataStoreID, nameForDisplay)
 	}
 
 	public var topLevelFeeds: Set<Feed> = Set<Feed>()
@@ -58,12 +58,12 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 	// MARK: - Renamable
 
 	public func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
-		guard let account else {
+		guard let dataStore else {
 			return
 		}
 		Task { @MainActor in
 			do {
-				try await account.renameFolder(self, to: name)
+				try await dataStore.renameFolder(self, to: name)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -73,9 +73,9 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 
 	// MARK: - Init
 
-	init(account: Account, name: String?) {
-		self.accountID = account.accountID
-		self.account = account
+	init(dataStore: DataStore, name: String?) {
+		self.dataStoreID = dataStore.dataStoreID
+		self.dataStore = dataStore
 		self.name = name
 
 		let folderID = Folder.incrementingID

@@ -13,7 +13,7 @@ extension Notification.Name {
 	public static let combinedRefreshProgressDidChange = Notification.Name("combinedRefreshProgressDidChange")
 }
 
-/// Combine the refresh progress of multiple accounts into one place,
+/// Combine the refresh progress of data stores into one place,
 /// for use by refresh status view and so on.
 public final class CombinedRefreshProgress {
 
@@ -54,7 +54,7 @@ public final class CombinedRefreshProgress {
 
 		var didMakeChange = false
 
-		let downloadProgresses = AccountManager.shared.activeAccounts.map { $0.refreshProgress }
+		let downloadProgresses = DataStoreManager.shared.activeDataStores.map { $0.refreshProgress }
 		for downloadProgress in downloadProgresses {
 			let progressInfo = downloadProgress.progressInfo
 			updatedNumberOfTasks += progressInfo.numberOfTasks

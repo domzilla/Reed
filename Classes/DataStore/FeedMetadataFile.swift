@@ -1,6 +1,6 @@
 //
 //  FeedMetadataFile.swift
-//  Account
+//  DataStore
 //
 //  Created by Maurice Parker on 9/13/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
@@ -12,7 +12,7 @@ import RSCore
 
 @MainActor final class FeedMetadataFile {
 	private let fileURL: URL
-	private let account: Account
+	private let dataStore: DataStore
 
 	@MainActor private var isDirty = false {
 		didSet {
@@ -23,9 +23,9 @@ import RSCore
 	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
 	static private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedMetadataFile")
 
-	init(filename: String, account: Account) {
+	init(filename: String, dataStore: DataStore) {
 		self.fileURL = URL(fileURLWithPath: filename)
-		self.account = account
+		self.dataStore = dataStore
 	}
 
 	@MainActor func markAsDirty() {
@@ -35,13 +35,13 @@ import RSCore
 	func load() {
 		if let fileData = try? Data(contentsOf: fileURL) {
 			let decoder = PropertyListDecoder()
-			account.feedMetadata = (try? decoder.decode(Account.FeedMetadataDictionary.self, from: fileData)) ?? Account.FeedMetadataDictionary()
+			dataStore.feedMetadata = (try? decoder.decode(DataStore.FeedMetadataDictionary.self, from: fileData)) ?? DataStore.FeedMetadataDictionary()
 		}
-		account.feedMetadata.values.forEach { $0.delegate = account }
+		dataStore.feedMetadata.values.forEach { $0.delegate = dataStore }
 	}
 
 	func save() {
-		guard !account.isDeleted else { return }
+		guard !dataStore.isDeleted else { return }
 
 		let feedMetadata = metadataForOnlySubscribedToFeeds()
 
@@ -70,9 +70,9 @@ private extension FeedMetadataFile {
 		}
 	}
 
-	private func metadataForOnlySubscribedToFeeds() -> Account.FeedMetadataDictionary {
-		let feedIDs = account.idToFeedDictionary.keys
-		return account.feedMetadata.filter { (feedID: String, metadata: FeedMetadata) -> Bool in
+	private func metadataForOnlySubscribedToFeeds() -> DataStore.FeedMetadataDictionary {
+		let feedIDs = dataStore.idToFeedDictionary.keys
+		return dataStore.feedMetadata.filter { (feedID: String, metadata: FeedMetadata) -> Bool in
 			return feedIDs.contains(metadata.feedID)
 		}
 	}

@@ -34,7 +34,7 @@ import RSTree
 		}
 
 		return nil
-	}	
+	}
 }
 
 private extension SidebarTreeControllerDelegate {
@@ -42,12 +42,20 @@ private extension SidebarTreeControllerDelegate {
 	func childNodesForRootNode(_ rootNode: Node) -> [Node]? {
 		var topLevelNodes = [Node]()
 
+		// Smart Feeds section
 		let smartFeedsNode = rootNode.existingOrNewChildNode(with: SmartFeedsController.shared)
 		smartFeedsNode.canHaveChildNodes = true
 		smartFeedsNode.isGroupItem = true
 		topLevelNodes.append(smartFeedsNode)
 
-		topLevelNodes.append(contentsOf: sortedAccountNodes(rootNode))
+		// Feeds section - show feeds directly from the single iCloud account (no account grouping)
+		let account = AccountManager.shared.defaultAccount
+		if account.isActive {
+			let feedsNode = rootNode.existingOrNewChildNode(with: account)
+			feedsNode.canHaveChildNodes = true
+			feedsNode.isGroupItem = true
+			topLevelNodes.append(feedsNode)
+		}
 
 		return topLevelNodes
 	}
@@ -106,10 +114,6 @@ private extension SidebarTreeControllerDelegate {
 			return createNode(folder: folder, parent: parent)
 		}
 
-		if let account = representedObject as? Account {
-			return createNode(account: account, parent: parent)
-		}
-
 		return nil
 	}
 
@@ -121,31 +125,5 @@ private extension SidebarTreeControllerDelegate {
 		let node = parent.createChildNode(folder)
 		node.canHaveChildNodes = true
 		return node
-	}
-
-	func createNode(account: Account, parent: Node) -> Node {
-		let node = parent.createChildNode(account)
-		node.canHaveChildNodes = true
-		node.isGroupItem = true
-		return node
-	}
-
-	func sortedAccountNodes(_ parent: Node) -> [Node] {
-		let nodes = AccountManager.shared.sortedActiveAccounts.compactMap { (account) -> Node? in
-			let accountNode = parent.existingOrNewChildNode(with: account)
-			accountNode.canHaveChildNodes = true
-			accountNode.isGroupItem = true
-			return accountNode
-		}
-		return nodes
-	}
-
-	func nodeInArrayRepresentingObject(_ nodes: [Node], _ representedObject: AnyObject) -> Node? {
-		for oneNode in nodes {
-			if oneNode.representedObject === representedObject {
-				return oneNode
-			}
-		}
-		return nil
 	}
 }

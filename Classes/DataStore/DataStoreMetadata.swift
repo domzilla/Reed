@@ -1,5 +1,5 @@
 //
-//  AccountMetadata.swift
+//  DataStoreMetadata.swift
 //  Account
 //
 //  Created by Brent Simmons on 3/3/19.
@@ -9,11 +9,11 @@
 import Foundation
 import RSWeb
 
-protocol AccountMetadataDelegate: AnyObject {
-	@MainActor func valueDidChange(_ accountMetadata: AccountMetadata, key: AccountMetadata.CodingKeys)
+protocol DataStoreMetadataDelegate: AnyObject {
+	@MainActor func valueDidChange(_ dataStoreMetadata: DataStoreMetadata, key: DataStoreMetadata.CodingKeys)
 }
 
-@MainActor final class AccountMetadata: @MainActor Codable {
+@MainActor final class DataStoreMetadata: @MainActor Codable {
 
 	enum CodingKeys: String, CodingKey {
 		case name
@@ -93,7 +93,7 @@ protocol AccountMetadataDelegate: AnyObject {
 		}
 	}
 
-	@MainActor weak var delegate: AccountMetadataDelegate?
+	@MainActor weak var delegate: DataStoreMetadataDelegate?
 
 	@MainActor func valueDidChange(_ key: CodingKeys) {
 		delegate?.valueDidChange(self, key: key)

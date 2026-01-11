@@ -805,13 +805,11 @@ extension MainFeedCollectionViewController: UIContextMenuInteractionDelegate {
 		return UIContextMenuConfiguration(identifier: sectionIndex as NSCopying, previewProvider: nil) { suggestedActions in
 
 			var menuElements = [UIMenuElement]()
-			menuElements.append(UIMenu(title: "", options: .displayInline, children: [self.getAccountInfoAction(account: account)]))
 
+			// Just show Mark All as Read - no account management needed
 			if let markAllAction = self.markAllAsReadAction(account: account, contentView: interaction.view) {
 				menuElements.append(UIMenu(title: "", options: .displayInline, children: [markAllAction]))
 			}
-
-			menuElements.append(UIMenu(title: "", options: .displayInline, children: [self.deactivateAccountAction(account: account)]))
 
 			return UIMenu(title: "", children: menuElements)
 		}
@@ -1039,22 +1037,6 @@ extension MainFeedCollectionViewController {
 		let title = NSLocalizedString("Get Info", comment: "Get Info")
 		let action = UIAction(title: title, image: Assets.Images.info) { [weak self] action in
 			self?.coordinator.showFeedInspector(for: feed)
-		}
-		return action
-	}
-
-	func getAccountInfoAction(account: Account) -> UIAction {
-		let title = NSLocalizedString("Get Info", comment: "Get Info")
-		let action = UIAction(title: title, image: Assets.Images.info) { [weak self] action in
-			self?.coordinator.showAccountInspector(for: account)
-		}
-		return action
-	}
-
-	func deactivateAccountAction(account: Account) -> UIAction {
-		let title = NSLocalizedString("Deactivate", comment: "Deactivate")
-		let action = UIAction(title: title, image: Assets.Images.deactivate) { action in
-			account.isActive = false
 		}
 		return action
 	}

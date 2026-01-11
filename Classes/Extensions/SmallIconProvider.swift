@@ -13,9 +13,10 @@ import RSCore
 	var smallIcon: IconImage? { get }
 }
 
-@MainActor extension Account: SmallIconProvider {
+@MainActor extension DataStore: SmallIconProvider {
 	var smallIcon: IconImage? {
-		let image = Assets.accountImage(type)
+		// We only support iCloud now
+		let image = Assets.accountImage(.cloudKit)
 		return IconImage(image)
 	}
 }

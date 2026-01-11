@@ -1,6 +1,6 @@
 //
 //  OPMLFile.swift
-//  Account
+//  DataStore
 //
 //  Created by Maurice Parker on 9/12/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
@@ -13,7 +13,7 @@ import RSParser
 
 @MainActor final class OPMLFile {
 	private let fileURL: URL
-	private let account: Account
+	private let dataStore: DataStore
 
 	private var isDirty = false {
 		didSet {
@@ -23,9 +23,9 @@ import RSParser
 	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
 	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "OPMLFile")
 
-	init(filename: String, account: Account) {
+	init(filename: String, dataStore: DataStore) {
 		self.fileURL = URL(fileURLWithPath: filename)
-		self.account = account
+		self.dataStore = dataStore
 	}
 
 	func markAsDirty() {
@@ -38,12 +38,12 @@ import RSParser
 		}
 
 		BatchUpdate.shared.perform {
-			account.loadOPMLItems(opmlItems)
+			dataStore.loadOPMLItems(opmlItems)
 		}
 	}
 
 	func save() {
-		guard !account.isDeleted else { return }
+		guard !dataStore.isDeleted else { return }
 		let opmlDocumentString = opmlDocument()
 
 		do {
@@ -102,7 +102,7 @@ private extension OPMLFile {
 	}
 
 	func opmlDocument() -> String {
-		let escapedTitle = account.nameForDisplay.escapingSpecialXMLCharacters
+		let escapedTitle = dataStore.nameForDisplay.escapingSpecialXMLCharacters
 		let openingText =
 		"""
 		<?xml version="1.0" encoding="UTF-8"?>
@@ -115,7 +115,7 @@ private extension OPMLFile {
 
 		"""
 
-		let middleText = account.OPMLString(indentLevel: 0, allowCustomAttributes: true)
+		let middleText = dataStore.OPMLString(indentLevel: 0, allowCustomAttributes: true)
 
 		let closingText =
 		"""

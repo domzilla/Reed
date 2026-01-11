@@ -8,9 +8,9 @@
 
 import Foundation
 
-// MARK: - AccountType
+// MARK: - DataStoreType (formerly AccountType)
 
-nonisolated public enum AccountType: Int, Codable, Sendable {
+nonisolated public enum DataStoreType: Int, Codable, Sendable {
 	// Raw values should not change since they're stored on disk.
 	case onMyMac = 1
 	case cloudKit = 2
@@ -19,6 +19,9 @@ nonisolated public enum AccountType: Int, Codable, Sendable {
 		return self == .cloudKit
 	}
 }
+
+// Backward compatibility alias
+public typealias AccountType = DataStoreType
 
 // MARK: - ContainerIdentifier
 

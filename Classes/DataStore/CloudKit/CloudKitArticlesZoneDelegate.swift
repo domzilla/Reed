@@ -1,6 +1,6 @@
 //
 //  CloudKitArticlesZoneDelegate.swift
-//  Account
+//  DataStore
 //
 //  Created by Maurice Parker on 4/1/20.
 //  Copyright © 2020 Ranchero Software, LLC. All rights reserved.
@@ -17,12 +17,12 @@ final class CloudKitArticlesZoneDelegate: CloudKitZoneDelegate {
 
 	private static let logger = cloudKitLogger
 
-	weak var account: Account?
+	weak var dataStore: DataStore?
 	var syncDatabase: SyncDatabase
 	weak var articlesZone: CloudKitArticlesZone?
 
-	init(account: Account, database: SyncDatabase, articlesZone: CloudKitArticlesZone) {
-		self.account = account
+	init(dataStore: DataStore, database: SyncDatabase, articlesZone: CloudKitArticlesZone) {
+		self.dataStore = dataStore
 		self.syncDatabase = database
 		self.articlesZone = articlesZone
 	}
@@ -55,7 +55,7 @@ private extension CloudKitArticlesZoneDelegate {
 		}
 
 		try? await syncDatabase.deleteSelectedForProcessing(deletableArticleIDs)
-		try? await account?.delete(articleIDs: deletableArticleIDs)
+		try? await dataStore?.delete(articleIDs: deletableArticleIDs)
 	}
 
 	func update(records: [CKRecord], pendingReadStatusArticleIDs: Set<String>, pendingStarredStatusArticleIDs: Set<String>) async throws {
@@ -79,28 +79,28 @@ private extension CloudKitArticlesZoneDelegate {
 		nonisolated(unsafe) var updateError: Error?
 
 		do {
-			try await self.account?.markAsUnreadAsync(articleIDs: updateableUnreadArticleIDs)
+			try await self.dataStore?.markAsUnreadAsync(articleIDs: updateableUnreadArticleIDs)
 		} catch {
 			updateError = error
 			Self.logger.error("CloudKit: Error while storing unread statuses: \(error.localizedDescription)")
 		}
 
 		do {
-			try await self.account?.markAsReadAsync(articleIDs: updateableReadArticleIDs)
+			try await self.dataStore?.markAsReadAsync(articleIDs: updateableReadArticleIDs)
 		} catch {
 			updateError = error
 			Self.logger.error("CloudKit: Error while storing read statuses: \(error.localizedDescription)")
 		}
 
 		do {
-			try await self.account?.markAsUnstarredAsync(articleIDs: updateableUnstarredArticleIDs)
+			try await self.dataStore?.markAsUnstarredAsync(articleIDs: updateableUnstarredArticleIDs)
 		} catch {
 			updateError = error
 			Self.logger.error("CloudKit: Error while storing unstarred statuses: \(error.localizedDescription)")
 		}
 
 		do {
-			try await self.account?.markAsStarredAsync(articleIDs: updateableStarredArticleIDs)
+			try await self.dataStore?.markAsStarredAsync(articleIDs: updateableStarredArticleIDs)
 		} catch {
 			updateError = error
 			Self.logger.error("CloudKit: Error while storing starred statuses: \(error.localizedDescription)")
@@ -108,7 +108,7 @@ private extension CloudKitArticlesZoneDelegate {
 
 		for (feedID, parsedItems) in feedIDsAndItems {
 			do {
-				guard let articleChanges = try await self.account?.updateAsync(feedID: feedID, parsedItems: parsedItems, deleteOlder: false) else {
+				guard let articleChanges = try await self.dataStore?.updateAsync(feedID: feedID, parsedItems: parsedItems, deleteOlder: false) else {
 					continue
 				}
 				guard let deletes = articleChanges.deleted, !deletes.isEmpty else {

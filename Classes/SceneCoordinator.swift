@@ -324,9 +324,6 @@ struct FeedNode: Hashable, Sendable {
 		NotificationCenter.default.addObserver(self, selector: #selector(containerChildrenDidChange(_:)), name: .ChildrenDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(batchUpdateDidPerform(_:)), name: .BatchUpdateDidPerform, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(displayNameDidChange(_:)), name: .DisplayNameDidChange, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(accountStateDidChange(_:)), name: .AccountStateDidChange, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(userDidAddAccount(_:)), name: .UserDidAddAccount, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(userDidDeleteAccount(_:)), name: .UserDidDeleteAccount, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(userDidAddFeed(_:)), name: .UserDidAddFeed, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(accountDidDownloadArticles(_:)), name: .AccountDidDownloadArticles, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
@@ -471,53 +468,6 @@ struct FeedNode: Hashable, Sendable {
 
 	@objc func displayNameDidChange(_ note: Notification) {
 		rebuildBackingStores()
-	}
-
-	@objc func accountStateDidChange(_ note: Notification) {
-		if timelineFetcherContainsAnyPseudoFeed() {
-			fetchAndMergeArticlesAsync(animated: true) {
-				self.mainTimelineViewController?.reinitializeArticles(resetScroll: false)
-				self.rebuildBackingStores()
-			}
-		} else {
-			self.rebuildBackingStores()
-		}
-	}
-
-	@objc func userDidAddAccount(_ note: Notification) {
-		let expandNewAccount = {
-			if let account = note.userInfo?[Account.UserInfoKey.account] as? Account,
-				let node = self.treeController.rootNode.childNodeRepresentingObject(account) {
-				self.markExpanded(node)
-			}
-		}
-
-		if timelineFetcherContainsAnyPseudoFeed() {
-			fetchAndMergeArticlesAsync(animated: true) {
-				self.mainTimelineViewController?.reinitializeArticles(resetScroll: false)
-				self.rebuildBackingStores(updateExpandedNodes: expandNewAccount)
-			}
-		} else {
-			self.rebuildBackingStores(updateExpandedNodes: expandNewAccount)
-		}
-	}
-
-	@objc func userDidDeleteAccount(_ note: Notification) {
-		let cleanupAccount = {
-			if let account = note.userInfo?[Account.UserInfoKey.account] as? Account,
-				let node = self.treeController.rootNode.childNodeRepresentingObject(account) {
-				self.unmarkExpanded(node)
-			}
-		}
-
-		if timelineFetcherContainsAnyPseudoFeed() {
-			fetchAndMergeArticlesAsync(animated: true) {
-				self.mainTimelineViewController?.reinitializeArticles(resetScroll: false)
-				self.rebuildBackingStores(updateExpandedNodes: cleanupAccount)
-			}
-		} else {
-			self.rebuildBackingStores(updateExpandedNodes: cleanupAccount)
-		}
 	}
 
 	@objc func userDidAddFeed(_ notification: Notification) {
@@ -1247,17 +1197,6 @@ struct FeedNode: Hashable, Sendable {
 		settingsNavController.modalPresentationStyle = .formSheet
 		settingsViewController.presentingParentController = rootSplitViewController
 		rootSplitViewController.present(settingsNavController, animated: true)
-	}
-
-	func showAccountInspector(for account: Account) {
-		let accountInspectorNavController =
-			UIStoryboard.inspector.instantiateViewController(identifier: "AccountInspectorNavigationViewController") as! UINavigationController
-		let accountInspectorController = accountInspectorNavController.topViewController as! AccountInspectorViewController
-		accountInspectorNavController.modalPresentationStyle = .formSheet
-		accountInspectorNavController.preferredContentSize = AccountInspectorViewController.preferredContentSizeForFormSheetDisplay
-		accountInspectorController.isModal = true
-		accountInspectorController.account = account
-		rootSplitViewController.present(accountInspectorNavController, animated: true)
 	}
 
 	func showFeedInspector() {

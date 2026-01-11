@@ -1,5 +1,5 @@
 //
-//  AccountMetadataFile.swift
+//  DataStoreMetadataFile.swift
 //  Account
 //
 //  Created by Maurice Parker on 9/13/19.
@@ -10,9 +10,9 @@ import Foundation
 import os.log
 import RSCore
 
-final class AccountMetadataFile {
+final class DataStoreMetadataFile {
 	private let fileURL: URL
-	private let account: Account
+	private let dataStore: Account
 
 	@MainActor private var isDirty = false {
 		didSet {
@@ -20,11 +20,11 @@ final class AccountMetadataFile {
 		}
 	}
 	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AccountMetadataFile")
+	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DataStoreMetadataFile")
 
-	init(filename: String, account: Account) {
+	init(filename: String, dataStore: Account) {
 		self.fileURL = URL(fileURLWithPath: filename)
-		self.account = account
+		self.dataStore = dataStore
 	}
 
 	@MainActor func markAsDirty() {
@@ -34,28 +34,28 @@ final class AccountMetadataFile {
 	@MainActor func load() {
 		if let fileData = try? Data(contentsOf: fileURL) {
 			let decoder = PropertyListDecoder()
-			account.metadata = (try? decoder.decode(AccountMetadata.self, from: fileData)) ?? AccountMetadata()
+			dataStore.metadata = (try? decoder.decode(DataStoreMetadata.self, from: fileData)) ?? DataStoreMetadata()
 		}
-		account.metadata.delegate = account
+		dataStore.metadata.delegate = dataStore
 	}
 
 	@MainActor func save() {
-		guard !account.isDeleted else { return }
+		guard !dataStore.isDeleted else { return }
 
 		let encoder = PropertyListEncoder()
 		encoder.outputFormat = .binary
 
 		do {
-			let data = try encoder.encode(account.metadata)
+			let data = try encoder.encode(dataStore.metadata)
 			try data.write(to: fileURL)
 		} catch let error as NSError {
-			Self.logger.error("AccountMetadataFile accountID: \(self.account.accountID) save to disk failed: \(error.localizedDescription)")
+			Self.logger.error("DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)")
 		}
 	}
 
 }
 
-private extension AccountMetadataFile {
+private extension DataStoreMetadataFile {
 
 	@MainActor func queueSaveToDiskIfNeeded() {
 		saveQueue.add(self, #selector(saveToDiskIfNeeded))

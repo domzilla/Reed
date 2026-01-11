@@ -1,5 +1,5 @@
 //
-//  CloudKitAccountZoneDelegate.swift
+//  CloudKitFeedsZoneDelegate.swift
 //  Account
 //
 //  Created by Maurice Parker on 3/29/20.
@@ -12,26 +12,26 @@ import RSWeb
 import CloudKit
 import RSCore
 
-final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
+final class CloudKitFeedsZoneDelegate: CloudKitZoneDelegate {
 
 	private typealias UnclaimedFeed = (url: URL, name: String?, editedName: String?, homePageURL: String?, feedExternalID: String)
 	private var newUnclaimedFeeds = [String: [UnclaimedFeed]]()
 	private var existingUnclaimedFeeds = [String: [Feed]]()
 
-	weak var account: Account?
+	weak var dataStore: DataStore?
 	weak var articlesZone: CloudKitArticlesZone?
 
-	init(account: Account, articlesZone: CloudKitArticlesZone) {
-		self.account = account
+	init(dataStore: DataStore, articlesZone: CloudKitArticlesZone) {
+		self.dataStore = dataStore
 		self.articlesZone = articlesZone
 	}
 
 	@MainActor func cloudKitDidModify(changed: [CKRecord], deleted: [CloudKitRecordKey]) async throws {
 		for deletedRecordKey in deleted {
 			switch deletedRecordKey.recordType {
-			case CloudKitAccountZone.CloudKitFeed.recordType:
+			case CloudKitFeedsZone.CloudKitFeed.recordType:
 				removeFeed(deletedRecordKey.recordID.externalID)
-			case CloudKitAccountZone.CloudKitContainer.recordType:
+			case CloudKitFeedsZone.CloudKitContainer.recordType:
 				removeContainer(deletedRecordKey.recordID.externalID)
 			default:
 				assertionFailure("Unknown record type: \(deletedRecordKey.recordType)")
@@ -40,9 +40,9 @@ final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
 
 		for changedRecord in changed {
 			switch changedRecord.recordType {
-			case CloudKitAccountZone.CloudKitFeed.recordType:
+			case CloudKitFeedsZone.CloudKitFeed.recordType:
 				addOrUpdateFeed(changedRecord)
-			case CloudKitAccountZone.CloudKitContainer.recordType:
+			case CloudKitFeedsZone.CloudKitContainer.recordType:
 				addOrUpdateContainer(changedRecord)
 			default:
 				assertionFailure("Unknown record type: \(changedRecord.recordType)")
@@ -51,22 +51,22 @@ final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
 	}
 
 	@MainActor func addOrUpdateFeed(_ record: CKRecord) {
-		guard let account = account,
-			let urlString = record[CloudKitAccountZone.CloudKitFeed.Fields.url] as? String,
-			let containerExternalIDs = record[CloudKitAccountZone.CloudKitFeed.Fields.containerExternalIDs] as? [String],
+		guard let dataStore = dataStore,
+			let urlString = record[CloudKitFeedsZone.CloudKitFeed.Fields.url] as? String,
+			let containerExternalIDs = record[CloudKitFeedsZone.CloudKitFeed.Fields.containerExternalIDs] as? [String],
 			let url = URL(string: urlString) else {
 				return
 		}
 
-		let name = record[CloudKitAccountZone.CloudKitFeed.Fields.name] as? String
-		let editedName = record[CloudKitAccountZone.CloudKitFeed.Fields.editedName] as? String
-		let homePageURL = record[CloudKitAccountZone.CloudKitFeed.Fields.homePageURL] as? String
+		let name = record[CloudKitFeedsZone.CloudKitFeed.Fields.name] as? String
+		let editedName = record[CloudKitFeedsZone.CloudKitFeed.Fields.editedName] as? String
+		let homePageURL = record[CloudKitFeedsZone.CloudKitFeed.Fields.homePageURL] as? String
 
-		if let feed = account.existingFeed(withExternalID: record.externalID) {
+		if let feed = dataStore.existingFeed(withExternalID: record.externalID) {
 			updateFeed(feed, name: name, editedName: editedName, homePageURL: homePageURL, containerExternalIDs: containerExternalIDs)
 		} else {
 			for containerExternalID in containerExternalIDs {
-				if let container = account.existingContainer(withExternalID: containerExternalID) {
+				if let container = dataStore.existingContainer(withExternalID: containerExternalID) {
 					createFeedIfNecessary(url: url, name: name, editedName: editedName, homePageURL: homePageURL, feedExternalID: record.externalID, container: container)
 				} else {
 					addNewUnclaimedFeed(url: url, name: name, editedName: editedName, homePageURL: homePageURL, feedExternalID: record.externalID, containerExternalID: containerExternalID)
@@ -76,7 +76,7 @@ final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
 	}
 
 	@MainActor func removeFeed(_ externalID: String) {
-		if let feed = account?.existingFeed(withExternalID: externalID), let containers = account?.existingContainers(withFeed: feed) {
+		if let feed = dataStore?.existingFeed(withExternalID: externalID), let containers = dataStore?.existingContainers(withFeed: feed) {
 			for container in containers {
 				feed.dropConditionalGetInfo()
 				container.removeFeedFromTreeAtTopLevel(feed)
@@ -85,18 +85,18 @@ final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
 	}
 
 	@MainActor func addOrUpdateContainer(_ record: CKRecord) {
-		guard let account = account,
-			let name = record[CloudKitAccountZone.CloudKitContainer.Fields.name] as? String,
-			let isAccount = record[CloudKitAccountZone.CloudKitContainer.Fields.isAccount] as? String,
+		guard let dataStore = dataStore,
+			let name = record[CloudKitFeedsZone.CloudKitContainer.Fields.name] as? String,
+			let isAccount = record[CloudKitFeedsZone.CloudKitContainer.Fields.isAccount] as? String,
 			isAccount != "1" else {
 				return
 		}
 
-		var folder = account.existingFolder(withExternalID: record.externalID)
+		var folder = dataStore.existingFolder(withExternalID: record.externalID)
 		folder?.name = name
 
 		if folder == nil {
-			folder = account.ensureFolder(with: name)
+			folder = dataStore.ensureFolder(with: name)
 			folder?.externalID = record.externalID
 		}
 
@@ -124,23 +124,23 @@ final class CloudKitAcountZoneDelegate: CloudKitZoneDelegate {
 	}
 
 	@MainActor func removeContainer(_ externalID: String) {
-		if let folder = account?.existingFolder(withExternalID: externalID) {
-			account?.removeFolderFromTree(folder)
+		if let folder = dataStore?.existingFolder(withExternalID: externalID) {
+			dataStore?.removeFolderFromTree(folder)
 		}
 	}
 
 }
 
-private extension CloudKitAcountZoneDelegate {
+private extension CloudKitFeedsZoneDelegate {
 
 	@MainActor func updateFeed(_ feed: Feed, name: String?, editedName: String?, homePageURL: String?, containerExternalIDs: [String]) {
-		guard let account = account else { return }
+		guard let dataStore = dataStore else { return }
 
 		feed.name = name
 		feed.editedName = editedName
 		feed.homePageURL = homePageURL
 
-		let existingContainers = account.existingContainers(withFeed: feed)
+		let existingContainers = dataStore.existingContainers(withFeed: feed)
 		let existingContainerExternalIds = existingContainers.compactMap { $0.externalID }
 
 		let diff = containerExternalIDs.difference(from: existingContainerExternalIds)
@@ -152,7 +152,7 @@ private extension CloudKitAcountZoneDelegate {
 					container.removeFeedFromTreeAtTopLevel(feed)
 				}
 			case .insert(_, let externalID, _):
-				if let container = account.existingContainer(withExternalID: externalID) {
+				if let container = dataStore.existingContainer(withExternalID: externalID) {
 					container.addFeedToTreeAtTopLevel(feed)
 				} else {
 					addExistingUnclaimedFeed(feed, containerExternalID: externalID)
@@ -162,13 +162,13 @@ private extension CloudKitAcountZoneDelegate {
 	}
 
 	@MainActor func createFeedIfNecessary(url: URL, name: String?, editedName: String?, homePageURL: String?, feedExternalID: String, container: Container) {
-		guard let account = account else { return  }
+		guard let dataStore = dataStore else { return  }
 
-		if account.existingFeed(withExternalID: feedExternalID) != nil {
+		if dataStore.existingFeed(withExternalID: feedExternalID) != nil {
 			return
 		}
 
-		let feed = account.createFeed(with: name, url: url.absoluteString, feedID: url.absoluteString, homePageURL: homePageURL)
+		let feed = dataStore.createFeed(with: name, url: url.absoluteString, feedID: url.absoluteString, homePageURL: homePageURL)
 		feed.editedName = editedName
 		feed.externalID = feedExternalID
 		container.addFeedToTreeAtTopLevel(feed)

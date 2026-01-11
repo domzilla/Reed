@@ -29,9 +29,7 @@ import RSCore
 			save()
 		}
 
-		NotificationCenter.default.addObserver(self, selector: #selector(markAsDirty), name: .UserDidAddAccount, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(markAsDirty), name: .UserDidDeleteAccount, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(markAsDirty), name: .AccountStateDidChange, object: nil)
+		// Track when feeds/folders change to sync with extension
 		NotificationCenter.default.addObserver(self, selector: #selector(markAsDirty), name: .ChildrenDidChange, object: nil)
 	}
 
@@ -60,7 +58,7 @@ import RSCore
 
 		fileCoordinator.coordinate(writingItemAt: fileURL, options: [], error: errorPointer, byAccessor: { writeURL in
 			do {
-				let extensionAccounts = AccountManager.shared.sortedActiveAccounts.map { ExtensionAccount(account: $0) }
+				let extensionAccounts = DataStoreManager.shared.sortedActiveDataStores.map { ExtensionAccount(dataStore: $0) }
 				let extensionContainers = ExtensionContainers(accounts: extensionAccounts)
 				let data = try encoder.encode(extensionContainers)
 				try data.write(to: writeURL)

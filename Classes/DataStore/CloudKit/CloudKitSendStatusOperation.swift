@@ -13,7 +13,7 @@ import RSWeb
 
 final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendable {
 	private let blockSize = 150
-	private weak var account: Account?
+	private weak var dataStore: DataStore?
 	private weak var articlesZone: CloudKitArticlesZone?
 	private weak var refreshProgress: DownloadProgress?
 	private let localProgress = DownloadProgress(numberOfTasks: 0)
@@ -21,8 +21,8 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 	private var syncDatabase: SyncDatabase
 	private static let logger = cloudKitLogger
 
-	init(account: Account, articlesZone: CloudKitArticlesZone, refreshProgress: DownloadProgress, showProgress: Bool, database: SyncDatabase) {
-		self.account = account
+	init(dataStore: DataStore, articlesZone: CloudKitArticlesZone, refreshProgress: DownloadProgress, showProgress: Bool, database: SyncDatabase) {
+		self.dataStore = dataStore
 		self.articlesZone = articlesZone
 		self.refreshProgress = refreshProgress
 		self.showProgress = showProgress
@@ -87,7 +87,7 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 
 	/// Returns true if processing should stop.
 	func processStatuses(_ syncStatuses: [SyncStatus]) async -> Bool {
-		guard let account, let articlesZone else {
+		guard let dataStore, let articlesZone else {
 			return true
 		}
 
@@ -95,7 +95,7 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 		let articles: Set<Article>
 
 		do {
-			articles = try await account.fetchArticlesAsync(.articleIDs(Set(articleIDs)))
+			articles = try await dataStore.fetchArticlesAsync(.articleIDs(Set(articleIDs)))
 		} catch {
 			try? await syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map({ $0.articleID })))
 			Self.logger.error("iCloud: Send article status fetch articles error: \(error.localizedDescription)")
@@ -124,18 +124,18 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 				return false
 			} catch {
 				try? await syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map({ $0.articleID })))
-				processAccountError(account, error)
+				processSyncError(dataStore, error)
 				Self.logger.error("iCloud: Send article status modify articles error: \(error.localizedDescription)")
 				return true
 			}
 		}
 	}
 
-	func processAccountError(_ account: Account, _ error: Error) {
+	func processSyncError(_ dataStore: DataStore, _ error: Error) {
 		if case CloudKitZoneError.userDeletedZone = error {
-			account.removeFeedsFromTreeAtTopLevel(account.topLevelFeeds)
-			for folder in account.folders ?? Set<Folder>() {
-				account.removeFolderFromTree(folder)
+			dataStore.removeFeedsFromTreeAtTopLevel(dataStore.topLevelFeeds)
+			for folder in dataStore.folders ?? Set<Folder>() {
+				dataStore.removeFolderFromTree(folder)
 			}
 		}
 	}

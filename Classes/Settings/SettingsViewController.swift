@@ -15,8 +15,6 @@ import RSCore
 
 final class SettingsViewController: UITableViewController {
 
-	private weak var opmlAccount: Account?
-
 	@IBOutlet var timelineSortOrderSwitch: UISwitch!
 	@IBOutlet var groupByFeedSwitch: UISwitch!
 	@IBOutlet var refreshClearsReadArticlesSwitch: UISwitch!
@@ -33,10 +31,6 @@ final class SettingsViewController: UITableViewController {
 		// This hack mostly works around a bug in static tables with dynamic type.  See: https://spin.atomicobject.com/2018/10/15/dynamic-type-static-uitableview/
 		NotificationCenter.default.removeObserver(tableView!, name: UIContentSizeCategory.didChangeNotification, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange), name: UIContentSizeCategory.didChangeNotification, object: nil)
-
-		NotificationCenter.default.addObserver(self, selector: #selector(accountsDidChange), name: .UserDidAddAccount, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(accountsDidChange), name: .UserDidDeleteAccount, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(displayNameDidChange), name: .DisplayNameDidChange, object: nil)
 
 		tableView.register(UINib(nibName: "SettingsComboTableViewCell", bundle: nil), forCellReuseIdentifier: "SettingsComboTableViewCell")
 		tableView.register(UINib(nibName: "SettingsTableViewCell", bundle: nil), forCellReuseIdentifier: "SettingsTableViewCell")
@@ -115,19 +109,23 @@ final class SettingsViewController: UITableViewController {
 	}
 
 	// MARK: UITableView
+	// Note: Section indices after removing Accounts section:
+	// 0: System Settings
+	// 1: Feeds (Import/Export OPML, Add NetNewsWire News)
+	// 2: Timeline settings
+	// 3: Appearance
+	// 4: Help & Support
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
 		switch section {
 		case 1:
-			return AccountManager.shared.accounts.count + 1
-		case 2:
+			// Feeds section - hide "Add NetNewsWire News" if already subscribed
 			let defaultNumberOfRows = super.tableView(tableView, numberOfRowsInSection: section)
-			if AccountManager.shared.activeAccounts.isEmpty || AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() {
+			if AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() {
 				return defaultNumberOfRows - 1
 			}
 			return defaultNumberOfRows
-		case 4:
+		case 3:
 			return traitCollection.userInterfaceIdiom == .phone ? 4 : 3
 		default:
 			return super.tableView(tableView, numberOfRowsInSection: section)
@@ -135,48 +133,16 @@ final class SettingsViewController: UITableViewController {
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-		let cell: UITableViewCell
-		switch indexPath.section {
-		case 1:
-
-			let sortedAccounts = AccountManager.shared.sortedAccounts
-			if indexPath.row == sortedAccounts.count {
-				cell = tableView.dequeueReusableCell(withIdentifier: "SettingsTableViewCell", for: indexPath)
-				cell.textLabel?.text = NSLocalizedString("Add Account", comment: "Accounts")
-			} else {
-				let acctCell = tableView.dequeueReusableCell(withIdentifier: "SettingsComboTableViewCell", for: indexPath) as! SettingsComboTableViewCell
-				acctCell.applyThemeProperties()
-				let account = sortedAccounts[indexPath.row]
-				acctCell.comboImage?.image = Assets.accountImage(account.type)
-				acctCell.comboNameLabel?.text = account.nameForDisplay
-				cell = acctCell
-			}
-		default:
-			cell = super.tableView(tableView, cellForRowAt: indexPath)
-
-		}
-
-		return cell
+		return super.tableView(tableView, cellForRowAt: indexPath)
 	}
 
 	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
 		switch indexPath.section {
 		case 0:
 			UIApplication.shared.open(URL(string: "\(UIApplication.openSettingsURLString)")!)
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 		case 1:
-			let sortedAccounts = AccountManager.shared.sortedAccounts
-			if indexPath.row == sortedAccounts.count {
-				let controller = UIStoryboard.settings.instantiateController(ofType: AddAccountViewController.self)
-				self.navigationController?.pushViewController(controller, animated: true)
-			} else {
-				let controller = UIStoryboard.inspector.instantiateController(ofType: AccountInspectorViewController.self)
-				controller.account = sortedAccounts[indexPath.row]
-				self.navigationController?.pushViewController(controller, animated: true)
-			}
-		case 2:
+			// Feeds section
 			switch indexPath.row {
 			case 0:
 				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
@@ -196,7 +162,8 @@ final class SettingsViewController: UITableViewController {
 			default:
 				break
 			}
-		case 3:
+		case 2:
+			// Timeline settings
 			switch indexPath.row {
 			case 3:
 				let timeline = UIStoryboard.settings.instantiateController(ofType: ModernTimelineCustomizerTableViewController.self)
@@ -204,10 +171,12 @@ final class SettingsViewController: UITableViewController {
 			default:
 				break
 			}
-		case 4:
+		case 3:
+			// Appearance
 			let colorPalette = UIStoryboard.settings.instantiateController(ofType: ColorPaletteTableViewController.self)
 			self.navigationController?.pushViewController(colorPalette, animated: true)
-		case 5:
+		case 4:
+			// Help & Support
 			switch indexPath.row {
 			case 0:
 				openURL(HelpURL.helpHome.rawValue)
@@ -219,8 +188,8 @@ final class SettingsViewController: UITableViewController {
 				openURL(HelpURL.bugTracker.rawValue)
 				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 			case 3:
-				let timeline = UIStoryboard.settings.instantiateController(ofType: AboutViewController.self)
-				self.navigationController?.pushViewController(timeline, animated: true)
+				let about = UIStoryboard.settings.instantiateController(ofType: AboutViewController.self)
+				self.navigationController?.pushViewController(about, animated: true)
 			default:
 				break
 			}
@@ -314,18 +283,6 @@ final class SettingsViewController: UITableViewController {
 		tableView.reloadData()
 	}
 
-	@objc func accountsDidChange() {
-		tableView.reloadData()
-	}
-
-	@objc func displayNameDidChange() {
-		tableView.reloadData()
-	}
-
-	@objc func browserPreferenceDidChange() {
-		tableView.reloadData()
-	}
-
 }
 
 // MARK: OPML Document Picker
@@ -333,8 +290,9 @@ final class SettingsViewController: UITableViewController {
 extension SettingsViewController: UIDocumentPickerDelegate {
 
 	func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+		let account = AccountManager.shared.defaultAccount
 		for url in urls {
-			opmlAccount?.importOPML(url) { result in
+			account.importOPML(url) { result in
 				switch result {
 				case .success:
 					break
@@ -367,38 +325,8 @@ private extension SettingsViewController {
 	}
 
 	func importOPML(sourceView: UIView, sourceRect: CGRect) {
-		switch AccountManager.shared.activeAccounts.count {
-		case 0:
-			presentError(title: "Error", message: NSLocalizedString("You must have at least one active account.", comment: "Missing active account"))
-		case 1:
-			opmlAccount = AccountManager.shared.activeAccounts.first
-			importOPMLDocumentPicker()
-		default:
-			importOPMLAccountPicker(sourceView: sourceView, sourceRect: sourceRect)
-		}
-	}
-
-	func importOPMLAccountPicker(sourceView: UIView, sourceRect: CGRect) {
-		let title = NSLocalizedString("Choose an account to receive the imported feeds and folders", comment: "Import Account")
-		let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
-
-		if let popoverController = alert.popoverPresentationController {
-			popoverController.sourceView = view
-			popoverController.sourceRect = sourceRect
-		}
-
-		for account in AccountManager.shared.sortedActiveAccounts {
-			let action = UIAlertAction(title: account.nameForDisplay, style: .default) { [weak self] action in
-				self?.opmlAccount = account
-				self?.importOPMLDocumentPicker()
-			}
-			alert.addAction(action)
-		}
-
-		let cancelTitle = NSLocalizedString("Cancel", comment: "Cancel")
-		alert.addAction(UIAlertAction(title: cancelTitle, style: .cancel))
-
-		self.present(alert, animated: true)
+		// Single account - import directly
+		importOPMLDocumentPicker()
 	}
 
 	func importOPMLDocumentPicker() {
@@ -426,42 +354,14 @@ private extension SettingsViewController {
 	}
 
 	func exportOPML(sourceView: UIView, sourceRect: CGRect) {
-		if AccountManager.shared.accounts.count == 1 {
-			opmlAccount = AccountManager.shared.accounts.first!
-			exportOPMLDocumentPicker()
-		} else {
-			exportOPMLAccountPicker(sourceView: sourceView, sourceRect: sourceRect)
-		}
-	}
-
-	func exportOPMLAccountPicker(sourceView: UIView, sourceRect: CGRect) {
-		let title = NSLocalizedString("Choose an account with the subscriptions to export", comment: "Export Account")
-		let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
-
-		if let popoverController = alert.popoverPresentationController {
-			popoverController.sourceView = view
-			popoverController.sourceRect = sourceRect
-		}
-
-		for account in AccountManager.shared.sortedAccounts {
-			let action = UIAlertAction(title: account.nameForDisplay, style: .default) { [weak self] action in
-				self?.opmlAccount = account
-				self?.exportOPMLDocumentPicker()
-			}
-			alert.addAction(action)
-		}
-
-		let cancelTitle = NSLocalizedString("Cancel", comment: "Cancel")
-		alert.addAction(UIAlertAction(title: cancelTitle, style: .cancel))
-
-		self.present(alert, animated: true)
+		// Single account - export directly
+		exportOPMLDocumentPicker()
 	}
 
 	func exportOPMLDocumentPicker() {
-		guard let account = opmlAccount else { return }
+		let account = AccountManager.shared.defaultAccount
 
-		let accountName = account.nameForDisplay.replacingOccurrences(of: " ", with: "").trimmingCharacters(in: .whitespaces)
-		let filename = "Subscriptions-\(accountName).opml"
+		let filename = "Subscriptions.opml"
 		let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
 		let opmlString = OPMLExporter.OPMLString(with: account, title: filename)
 		do {

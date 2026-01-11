@@ -17,10 +17,13 @@ extension Notification.Name {
 
 @MainActor public protocol Container: AnyObject, ContainerIdentifiable {
 
-	var account: Account? { get }
+	var dataStore: DataStore? { get }
 	var topLevelFeeds: Set<Feed> { get set }
 	var folders: Set<Folder>? { get set }
 	var externalID: String? { get set }
+
+	// Backward compatibility - can be removed after all callers are updated
+	var account: DataStore? { get }
 
 	func hasAtLeastOneFeed() -> Bool
 	func objectIsChild(_ object: AnyObject) -> Bool
@@ -46,6 +49,9 @@ extension Notification.Name {
 }
 
 @MainActor public extension Container {
+
+	// Default implementation for backward compatibility
+	var account: DataStore? { dataStore }
 
 	func hasAtLeastOneFeed() -> Bool {
 		return topLevelFeeds.count > 0

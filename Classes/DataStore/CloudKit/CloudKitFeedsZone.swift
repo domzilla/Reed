@@ -1,5 +1,5 @@
 //
-//  CloudKitAccountZone.swift
+//  CloudKitFeedsZone.swift
 //  Account
 //
 //  Created by Maurice Parker on 3/21/20.
@@ -13,14 +13,14 @@ import RSWeb
 import RSParser
 import CloudKit
 
-enum CloudKitAccountZoneError: LocalizedError {
+enum CloudKitFeedsZoneError: LocalizedError {
 	case unknown
 	var errorDescription: String? {
 		return NSLocalizedString("An unexpected CloudKit error occurred.", comment: "An unexpected CloudKit error occurred.")
 	}
 }
 
-@MainActor final class CloudKitAccountZone: CloudKitZone {
+@MainActor final class CloudKitFeedsZone: CloudKitZone {
 	var zoneID: CKRecordZone.ID
 
     weak var container: CKContainer?
@@ -185,7 +185,7 @@ enum CloudKitAccountZoneError: LocalizedError {
 
 	func findFeedExternalIDs(for folder: Folder) async throws -> [String] {
 		guard let folderExternalID = folder.externalID else {
-			throw CloudKitAccountZoneError.unknown
+			throw CloudKitFeedsZoneError.unknown
 		}
 
 		let predicate = NSPredicate(format: "containerExternalIDs CONTAINS %@", folderExternalID)
@@ -298,7 +298,7 @@ enum CloudKitAccountZoneError: LocalizedError {
 
 }
 
-private extension CloudKitAccountZone {
+private extension CloudKitFeedsZone {
 
 	func newFeedCKRecord(feedSpecifier: RSOPMLFeedSpecifier, containerExternalID: String) -> CKRecord {
 		let record = CKRecord(recordType: CloudKitFeed.recordType, recordID: generateRecordID())

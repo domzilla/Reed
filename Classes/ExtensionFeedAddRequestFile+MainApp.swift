@@ -81,32 +81,32 @@ extension ExtensionFeedAddRequestFile {
 		requests?.forEach { processRequest($0) }
 	}
 
-	/// Processes a single feed add request by adding it to the appropriate account.
+	/// Processes a single feed add request by adding it to the appropriate data store.
 	@MainActor private func processRequest(_ request: ExtensionFeedAddRequest) {
-		var destinationAccountID: String? = nil
+		var destinationDataStoreID: String? = nil
 		switch request.destinationContainerID {
-		case .account(let accountID):
-			destinationAccountID = accountID
-		case .folder(let accountID, _):
-			destinationAccountID = accountID
+		case .dataStore(let dataStoreID):
+			destinationDataStoreID = dataStoreID
+		case .folder(let dataStoreID, _):
+			destinationDataStoreID = dataStoreID
 		default:
 			break
 		}
 
-		guard let accountID = destinationAccountID,
-			  let account = AccountManager.shared.existingAccount(accountID: accountID) else {
+		guard let dataStoreID = destinationDataStoreID,
+			  let dataStore = DataStoreManager.shared.existingDataStore(dataStoreID: dataStoreID) else {
 			return
 		}
 
 		var destinationContainer: Container? = nil
-		if account.containerID == request.destinationContainerID {
-			destinationContainer = account
+		if dataStore.containerID == request.destinationContainerID {
+			destinationContainer = dataStore
 		} else {
-			destinationContainer = account.folders?.first(where: { $0.containerID == request.destinationContainerID })
+			destinationContainer = dataStore.folders?.first(where: { $0.containerID == request.destinationContainerID })
 		}
 
 		guard let container = destinationContainer else { return }
 
-		account.createFeed(url: request.feedURL.absoluteString, name: request.name, container: container, validateFeed: true) { _ in }
+		dataStore.createFeed(url: request.feedURL.absoluteString, name: request.name, container: container, validateFeed: true) { _ in }
 	}
 }

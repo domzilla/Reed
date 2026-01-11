@@ -1,5 +1,5 @@
 //
-//  Account.swift
+//  DataStore.swift
 //  NetNewsWire
 //
 //  Created by Brent Simmons on 7/1/17.
@@ -16,24 +16,17 @@ import RSWeb
 // Main thread only.
 
 public extension Notification.Name {
-	static let UserDidAddAccount = Notification.Name("UserDidAddAccount")
-	static let UserDidDeleteAccount = Notification.Name("UserDidDeleteAccount")
-	static let AccountRefreshDidBegin = Notification.Name(rawValue: "AccountRefreshDidBegin")
-	static let AccountRefreshDidFinish = Notification.Name(rawValue: "AccountRefreshDidFinish")
-	static let AccountRefreshProgressDidChange = Notification.Name(rawValue: "AccountRefreshProgressDidChange")
-	static let AccountDidDownloadArticles = Notification.Name(rawValue: "AccountDidDownloadArticles")
-	static let AccountStateDidChange = Notification.Name(rawValue: "AccountStateDidChange")
+	static let DataStoreRefreshDidBegin = Notification.Name(rawValue: "DataStoreRefreshDidBegin")
+	static let DataStoreRefreshDidFinish = Notification.Name(rawValue: "DataStoreRefreshDidFinish")
+	static let DataStoreRefreshProgressDidChange = Notification.Name(rawValue: "DataStoreRefreshProgressDidChange")
+	static let DataStoreDidDownloadArticles = Notification.Name(rawValue: "DataStoreDidDownloadArticles")
 	static let StatusesDidChange = Notification.Name(rawValue: "StatusesDidChange")
-}
 
-nonisolated public enum AccountType: Int, Codable, Sendable {
-	// Raw values should not change since they're stored on disk.
-	case onMyMac = 1
-	case cloudKit = 2
-
-	public var isDeveloperRestricted: Bool {
-		return self == .cloudKit
-	}
+	// Backward compatibility aliases
+	static let AccountRefreshDidBegin = DataStoreRefreshDidBegin
+	static let AccountRefreshDidFinish = DataStoreRefreshDidFinish
+	static let AccountRefreshProgressDidChange = DataStoreRefreshProgressDidChange
+	static let AccountDidDownloadArticles = DataStoreDidDownloadArticles
 }
 
 public enum FetchType {
@@ -47,33 +40,32 @@ public enum FetchType {
 	case searchWithArticleIDs(String, Set<String>)
 }
 
-@MainActor public final class Account: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
+/// The single data store for all feeds, folders, and articles.
+/// Syncs automatically via iCloud.
+@MainActor public final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
     public struct UserInfoKey {
-		public static let account = "account" // UserDidAddAccount, UserDidDeleteAccount
-		public static let newArticles = "newArticles" // AccountDidDownloadArticles
-		public static let updatedArticles = "updatedArticles" // AccountDidDownloadArticles
+		public static let dataStore = "dataStore"
+		public static let newArticles = "newArticles" // DataStoreDidDownloadArticles
+		public static let updatedArticles = "updatedArticles" // DataStoreDidDownloadArticles
 		public static let statuses = "statuses" // StatusesDidChange
 		public static let articles = "articles" // StatusesDidChange
 		public static let articleIDs = "articleIDs" // StatusesDidChange
 		public static let statusKey = "statusKey" // StatusesDidChange
 		public static let statusFlag = "statusFlag" // StatusesDidChange
-		public static let feeds = "feeds" // AccountDidDownloadArticles, StatusesDidChange
-		public static let syncErrors = "syncErrors" // AccountsDidFailToSyncWithErrors
+		public static let feeds = "feeds" // DataStoreDidDownloadArticles, StatusesDidChange
+		public static let syncErrors = "syncErrors"
 	}
-
-	public static let defaultLocalAccountName = NSLocalizedString("account.name.on-my-device", tableName: "DefaultAccountNames", comment: "Device specific default account name, e.g: On My iPhone")
 
 	public var isDeleted = false
 
 	public var containerID: ContainerIdentifier? {
-		return ContainerIdentifier.account(accountID)
+		return ContainerIdentifier.dataStore(dataStoreID)
 	}
 
-	public var account: Account? {
+	public var dataStore: DataStore? {
 		return self
 	}
-	nonisolated public let accountID: String
-	public let type: AccountType
+	nonisolated public let dataStoreID: String
 	public var nameForDisplay: String {
 		guard let name = name, !name.isEmpty else {
 			return defaultName
@@ -104,9 +96,6 @@ public enum FetchType {
 		set {
 			if newValue != metadata.isActive {
 				metadata.isActive = newValue
-				var userInfo = [AnyHashable: Any]()
-				userInfo[UserInfoKey.account] = self
-				NotificationCenter.default.post(name: .AccountStateDidChange, object: self, userInfo: userInfo)
 			}
 		}
 	}
@@ -177,8 +166,8 @@ public enum FetchType {
 
 	let dataFolder: String
 	let database: ArticlesDatabase
-	var delegate: AccountDelegate
-	static let saveQueue = CoalescingQueue(name: "Account Save Queue", interval: 1.0)
+	var syncProvider: SyncProvider
+	static let saveQueue = CoalescingQueue(name: "DataStore Save Queue", interval: 1.0)
 
 	private var unreadCounts = [String: Int]() // [feedID: Int]
 
@@ -188,15 +177,15 @@ public enum FetchType {
 		flattenedFeeds().feedIDs()
 	}
 
-	private lazy var opmlFile = OPMLFile(filename: (dataFolder as NSString).appendingPathComponent("Subscriptions.opml"), account: self)
-	private lazy var metadataFile = AccountMetadataFile(filename: (dataFolder as NSString).appendingPathComponent("Settings.plist"), account: self)
-	@MainActor var metadata = AccountMetadata() {
+	private lazy var opmlFile = OPMLFile(filename: (dataFolder as NSString).appendingPathComponent("Subscriptions.opml"), dataStore: self)
+	private lazy var metadataFile = DataStoreMetadataFile(filename: (dataFolder as NSString).appendingPathComponent("Settings.plist"), dataStore: self)
+	@MainActor var metadata = DataStoreMetadata() {
 		didSet {
-			delegate.accountMetadata = metadata
+			syncProvider.dataStoreMetadata = metadata
 		}
 	}
 
-	private lazy var feedMetadataFile = FeedMetadataFile(filename: (dataFolder as NSString).appendingPathComponent("FeedMetadata.plist"), account: self)
+	private lazy var feedMetadataFile = FeedMetadataFile(filename: (dataFolder as NSString).appendingPathComponent("FeedMetadata.plist"), dataStore: self)
 	typealias FeedMetadataDictionary = [String: FeedMetadata]
 	var feedMetadata = FeedMetadataDictionary()
 
@@ -208,18 +197,14 @@ public enum FetchType {
         }
     }
 
-	public var behaviors: AccountBehaviors {
-		return delegate.behaviors
-	}
-
 	var refreshInProgress = false {
 		didSet {
 			if refreshInProgress != oldValue {
 				if refreshInProgress {
-					NotificationCenter.default.post(name: .AccountRefreshDidBegin, object: self)
+					NotificationCenter.default.post(name: .DataStoreRefreshDidBegin, object: self)
 				}
 				else {
-					NotificationCenter.default.post(name: .AccountRefreshDidFinish, object: self)
+					NotificationCenter.default.post(name: .DataStoreRefreshDidFinish, object: self)
 					opmlFile.markAsDirty()
 				}
 			}
@@ -227,33 +212,22 @@ public enum FetchType {
 	}
 
 	var refreshProgress: DownloadProgress {
-		return delegate.refreshProgress
+		return syncProvider.refreshProgress
 	}
 
-	init(dataFolder: String, type: AccountType, accountID: String, transport: Transport? = nil) {
-		switch type {
-		case .onMyMac:
-			self.delegate = LocalAccountDelegate()
-		case .cloudKit:
-			self.delegate = CloudKitAccountDelegate(dataFolder: dataFolder)
-		}
+	init(dataFolder: String, dataStoreID: String) {
+		self.syncProvider = CloudKitSyncProvider(dataFolder: dataFolder)
 
-		self.delegate.accountMetadata = metadata
+		self.syncProvider.dataStoreMetadata = metadata
 
-		self.accountID = accountID
-		self.type = type
+		self.dataStoreID = dataStoreID
 		self.dataFolder = dataFolder
 
 		let databaseFilePath = (dataFolder as NSString).appendingPathComponent("DB.sqlite3")
-		let retentionStyle: ArticlesDatabase.RetentionStyle = (type == .onMyMac || type == .cloudKit) ? .feedBased : .syncSystem
-		self.database = ArticlesDatabase(databaseFilePath: databaseFilePath, accountID: accountID, retentionStyle: retentionStyle)
+		self.database = ArticlesDatabase(databaseFilePath: databaseFilePath, accountID: dataStoreID, retentionStyle: .feedBased)
 
-		switch type {
-		case .onMyMac:
-			defaultName = Account.defaultLocalAccountName
-		case .cloudKit:
-			defaultName = NSLocalizedString("iCloud", comment: "iCloud")
-		}
+		// Single iCloud-synced data store
+		defaultName = NSLocalizedString("iCloud", comment: "iCloud")
 
 		NotificationCenter.default.addObserver(self, selector: #selector(downloadProgressDidChange(_:)), name: .DownloadProgressDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
@@ -273,44 +247,44 @@ public enum FetchType {
 		}
 
 		MainActor.assumeIsolated {
-			self.delegate.accountDidInitialize(self)
+			self.syncProvider.dataStoreDidInitialize(self)
 		}
 	}
 
 	public func receiveRemoteNotification(userInfo: [AnyHashable : Any]) async {
-		await delegate.receiveRemoteNotification(for: self, userInfo: userInfo)
+		await syncProvider.receiveRemoteNotification(for: self, userInfo: userInfo)
 	}
 
 	// MARK: - Refreshing
 
 	@MainActor public func refreshAll() async throws {
-		try await delegate.refreshAll(for: self)
+		try await syncProvider.refreshAll(for: self)
 	}
 
 	// MARK: - Syncing Article Status
 
 	@MainActor public func sendArticleStatus() async throws {
-		try await delegate.sendArticleStatus(for: self)
+		try await syncProvider.sendArticleStatus(for: self)
 	}
 
 	@MainActor public func syncArticleStatus() async throws {
-		try await delegate.syncArticleStatus(for: self)
+		try await syncProvider.syncArticleStatus(for: self)
 	}
 
 	// MARK: - OPML
 
 	public func importOPML(_ opmlFile: URL, completion: @escaping (Result<Void, Error>) -> Void) {
-		guard !delegate.isOPMLImportInProgress else {
-			completion(.failure(AccountError.opmlImportInProgress))
+		guard !syncProvider.isOPMLImportInProgress else {
+			completion(.failure(DataStoreError.opmlImportInProgress))
 			return
 		}
 
 		Task { @MainActor in
 			do {
-				try await delegate.importOPML(for: self, opmlFile: opmlFile)
+				try await syncProvider.importOPML(for: self, opmlFile: opmlFile)
 				// Reset the last fetch date to get the article history for the added feeds.
 				metadata.lastArticleFetchStartTime = nil
-				try? await delegate.refreshAll(for: self)
+				try? await syncProvider.refreshAll(for: self)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -321,7 +295,7 @@ public enum FetchType {
 	// MARK: - Suspend/Resume
 
 	@MainActor public func suspendNetwork() {
-		delegate.suspendNetwork()
+		syncProvider.suspendNetwork()
 	}
 
 	@MainActor public func suspendDatabase() {
@@ -333,7 +307,7 @@ public enum FetchType {
 	/// Call this *before* calling resume.
 	@MainActor public func resumeDatabaseAndDelegate() {
 		database.resume()
-		delegate.resume()
+		syncProvider.resume()
 	}
 
 	/// Reload OPML, etc.
@@ -352,7 +326,7 @@ public enum FetchType {
 	}
 
 	@MainActor public func prepareForDeletion() {
-		delegate.accountWillBeDeleted(self)
+		syncProvider.dataStoreWillBeDeleted(self)
 	}
 
 	@MainActor func addOPMLItems(_ items: [RSOPMLItem]) {
@@ -373,13 +347,13 @@ public enum FetchType {
 	}
 
 	@MainActor func loadOPMLItems(_ items: [RSOPMLItem]) {
-		addOPMLItems(OPMLNormalizer.normalize(items))		
+		addOPMLItems(OPMLNormalizer.normalize(items))
 	}
 
 	public func markArticles(_ articles: Set<Article>, statusKey: ArticleStatus.Key, flag: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.markArticles(for: self, articles: articles, statusKey: statusKey, flag: flag)
+				try await syncProvider.markArticles(for: self, articles: articles, statusKey: statusKey, flag: flag)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -419,7 +393,7 @@ public enum FetchType {
 			return folder
 		}
 
-		let folder = Folder(account: self, name: name)
+		let folder = Folder(dataStore: self, name: name)
 		folders!.insert(folder)
 		structureDidChange()
 
@@ -429,7 +403,7 @@ public enum FetchType {
 
 	@MainActor public func ensureFolder(withFolderNames folderNames: [String]) -> Folder? {
 		// TODO: support subfolders, maybe, some day.
-		// Since we don’t, just take the last name and make sure there’s a Folder.
+		// Since we don't, just take the last name and make sure there's a Folder.
 
 		guard let folderName = folderNames.last else {
 			return nil
@@ -448,7 +422,7 @@ public enum FetchType {
 	@MainActor func newFeed(with opmlFeedSpecifier: RSOPMLFeedSpecifier) -> Feed {
 		let feedURL = opmlFeedSpecifier.feedURL
 		let metadata = feedMetadata(feedURL: feedURL, feedID: feedURL)
-		let feed = Feed(account: self, url: opmlFeedSpecifier.feedURL, metadata: metadata)
+		let feed = Feed(dataStore: self, url: opmlFeedSpecifier.feedURL, metadata: metadata)
 		if let feedTitle = opmlFeedSpecifier.title {
 			if feed.name == nil {
 				feed.name = feedTitle
@@ -458,13 +432,13 @@ public enum FetchType {
 	}
 
 	@MainActor func addFeed(_ feed: Feed, container: Container) async throws {
-		try await delegate.addFeed(account: self, feed: feed, container: container)
+		try await syncProvider.addFeed(dataStore: self, feed: feed, container: container)
 	}
 
 	public func addFeed(_ feed: Feed, to container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.addFeed(account: self, feed: feed, container: container)
+				try await syncProvider.addFeed(dataStore: self, feed: feed, container: container)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -475,7 +449,7 @@ public enum FetchType {
 	public func createFeed(url: String, name: String?, container: Container, validateFeed: Bool, completion: @escaping (Result<Feed, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				let feed = try await delegate.createFeed(for: self, url: url, name: name, container: container, validateFeed: validateFeed)
+				let feed = try await syncProvider.createFeed(for: self, url: url, name: name, container: container, validateFeed: validateFeed)
 				completion(.success(feed))
 			} catch {
 				completion(.failure(error))
@@ -485,7 +459,7 @@ public enum FetchType {
 
 	@MainActor func createFeed(with name: String?, url: String, feedID: String, homePageURL: String?) -> Feed {
 		let metadata = feedMetadata(feedURL: url, feedID: feedID)
-		let feed = Feed(account: self, url: url, metadata: metadata)
+		let feed = Feed(dataStore: self, url: url, metadata: metadata)
 		feed.name = name
 		feed.homePageURL = homePageURL
 		return feed
@@ -494,7 +468,7 @@ public enum FetchType {
 	public func removeFeed(_ feed: Feed, from container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.removeFeed(account: self, feed: feed, container: container)
+				try await syncProvider.removeFeed(dataStore: self, feed: feed, container: container)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -505,7 +479,7 @@ public enum FetchType {
 	public func moveFeed(_ feed: Feed, from: Container, to: Container, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.moveFeed(account: self, feed: feed, sourceContainer: from, destinationContainer: to)
+				try await syncProvider.moveFeed(dataStore: self, feed: feed, sourceContainer: from, destinationContainer: to)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -514,13 +488,13 @@ public enum FetchType {
 	}
 
 	@MainActor public func renameFeed(_ feed: Feed, name: String) async throws {
-		try await delegate.renameFeed(for: self, with: feed, to: name)
+		try await syncProvider.renameFeed(for: self, with: feed, to: name)
 	}
 
 	public func restoreFeed(_ feed: Feed, container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.restoreFeed(for: self, feed: feed, container: container)
+				try await syncProvider.restoreFeed(for: self, feed: feed, container: container)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -530,13 +504,13 @@ public enum FetchType {
 
 	@discardableResult
 	@MainActor public func addFolder(_ name: String) async throws -> Folder {
-		try await delegate.createFolder(for: self, name: name)
+		try await syncProvider.createFolder(for: self, name: name)
 	}
 
 	public func removeFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.removeFolder(for: self, with: folder)
+				try await syncProvider.removeFolder(for: self, with: folder)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -545,13 +519,13 @@ public enum FetchType {
 	}
 
 	public func renameFolder(_ folder: Folder, to name: String) async throws {
-		try await delegate.renameFolder(for: self, with: folder, to: name)
+		try await syncProvider.renameFolder(for: self, with: folder, to: name)
 	}
 
 	public func restoreFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
 		Task { @MainActor in
 			do {
-				try await delegate.restoreFolder(for: self, folder: folder)
+				try await syncProvider.restoreFolder(for: self, folder: folder)
 				completion(.success(()))
 			} catch {
 				completion(.failure(error))
@@ -644,8 +618,8 @@ public enum FetchType {
 	public func fetchStarredArticleIDsAsync() async throws -> Set<String> {
 		try await database.fetchStarredArticleIDsAsync()
 	}
-	
-	/// Fetch articleIDs for articles that we should have, but don’t. These articles are either (starred) or (newer than the article cutoff date).
+
+	/// Fetch articleIDs for articles that we should have, but don't. These articles are either (starred) or (newer than the article cutoff date).
 	@MainActor public func fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync() async throws -> Set<String> {
 		try await database.fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync()
 	}
@@ -672,7 +646,6 @@ public enum FetchType {
 	@discardableResult
 	@MainActor func updateAsync(feed: Feed, parsedFeed: ParsedFeed) async throws -> ArticleChanges {
 		precondition(Thread.isMainThread)
-		precondition(type == .onMyMac || type == .cloudKit)
 
 		feed.takeSettings(from: parsedFeed)
 		let parsedItems = parsedFeed.items
@@ -684,25 +657,11 @@ public enum FetchType {
 	}
 
 	@MainActor func updateAsync(feedID: String, parsedItems: Set<ParsedItem>, deleteOlder: Bool = true) async throws -> ArticleChanges {
-		// Used only by an On My Mac or iCloud account.
 		precondition(Thread.isMainThread)
-		precondition(type == .onMyMac || type == .cloudKit)
 
 		let articleChanges = try await database.updateAsync(parsedItems: parsedItems, feedID: feedID, deleteOlder: deleteOlder)
 		sendNotificationAbout(articleChanges)
 		return articleChanges
-	}
-
-	@MainActor func updateAsync(feedIDsAndItems: [String: Set<ParsedItem>], defaultRead: Bool) async throws {
-		// Used only by syncing systems.
-		precondition(Thread.isMainThread)
-		precondition(type != .onMyMac && type != .cloudKit)
-		guard !feedIDsAndItems.isEmpty else {
-			return
-		}
-
-		let newAndUpdatedArticles = try await database.updateAsync(feedIDsAndItems: feedIDsAndItems, defaultRead: defaultRead)
-		sendNotificationAbout(newAndUpdatedArticles)
 	}
 
 	/// Returns set of Article whose statuses did change.
@@ -722,7 +681,7 @@ public enum FetchType {
 
 	// MARK: - Article Statuses
 
-	/// Make sure statuses exist. Any existing statuses won’t be touched.
+	/// Make sure statuses exist. Any existing statuses won't be touched.
 	/// All created statuses will be marked as read and not starred.
 	/// Sends a .StatusesDidChange notification.
 	func createStatusesIfNeededAsync(articleIDs: Set<String>) async throws {
@@ -843,7 +802,7 @@ public enum FetchType {
 		}
 	}
 
-	/// Remove the folder from this account. Does not call delegate.
+	/// Remove the folder from this data store. Does not call sync provider.
 	func removeFolderFromTree(_ folder: Folder) {
 		folders?.remove(folder)
 		structureDidChange()
@@ -878,11 +837,11 @@ public enum FetchType {
 		}
 
 		refreshInProgress = !refreshProgress.isComplete
-		NotificationCenter.default.post(name: .AccountRefreshProgressDidChange, object: self)
+		NotificationCenter.default.post(name: .DataStoreRefreshProgressDidChange, object: self)
 	}
 
 	@objc func unreadCountDidChange(_ note: Notification) {
-		if let feed = note.object as? Feed, feed.account === self {
+		if let feed = note.object as? Feed, feed.dataStore === self {
 			updateUnreadCount()
 		}
 	}
@@ -897,17 +856,17 @@ public enum FetchType {
 		guard let object = note.object else {
 			return
 		}
-		if let account = object as? Account, account === self {
+		if let dataStore = object as? DataStore, dataStore === self {
 			structureDidChange()
 			updateUnreadCount()
 		}
-		if let folder = object as? Folder, folder.account === self {
+		if let folder = object as? Folder, folder.dataStore === self {
 			structureDidChange()
 		}
 	}
 
 	@objc func displayNameDidChange(_ note: Notification) {
-		if let folder = note.object as? Folder, folder.account === self {
+		if let folder = note.object as? Folder, folder.dataStore === self {
 			structureDidChange()
 		}
 	}
@@ -915,28 +874,28 @@ public enum FetchType {
 	// MARK: - Hashable
 
 	public func hash(into hasher: inout Hasher) {
-		hasher.combine(accountID)
+		hasher.combine(dataStoreID)
 	}
 
 	// MARK: - Equatable
 
-	public class func ==(lhs: Account, rhs: Account) -> Bool {
+	public class func ==(lhs: DataStore, rhs: DataStore) -> Bool {
 		return lhs === rhs
 	}
 }
 
-// MARK: - AccountMetadataDelegate
+// MARK: - DataStoreMetadataDelegate
 
-@MainActor extension Account: AccountMetadataDelegate {
+@MainActor extension DataStore: DataStoreMetadataDelegate {
 
-	func valueDidChange(_ accountMetadata: AccountMetadata, key: AccountMetadata.CodingKeys) {
+	func valueDidChange(_ dataStoreMetadata: DataStoreMetadata, key: DataStoreMetadata.CodingKeys) {
 		metadataFile.markAsDirty()
 	}
 }
 
 // MARK: - FeedMetadataDelegate
 
-@MainActor extension Account: FeedMetadataDelegate {
+@MainActor extension DataStore: FeedMetadataDelegate {
 
 	func valueDidChange(_ feedMetadata: FeedMetadata, key: FeedMetadata.CodingKeys) {
 		feedMetadataFile.markAsDirty()
@@ -949,7 +908,7 @@ public enum FetchType {
 
 // MARK: - Fetching Articles (Private)
 
-@MainActor private extension Account {
+@MainActor private extension DataStore {
 
 	// MARK: - Starred Articles
 
@@ -961,7 +920,7 @@ public enum FetchType {
 		try await database.fetchedStarredArticlesAsync(feedIDs: flattenedFeedsIDs, limit: limit)
 	}
 
-	// MARK: - Account Unread Articles
+	// MARK: - Unread Articles
 
 	func _fetchUnreadArticles(limit: Int? = nil) throws -> Set<Article> {
 		try _fetchUnreadArticles(container: self, limit: limit)
@@ -1092,7 +1051,7 @@ public enum FetchType {
 
 	private func validateUnreadCount(feed: Feed, articles: Set<Article>) {
 		// articles must contain all the unread articles for the feed.
-		// The unread number should match the feed’s unread count.
+		// The unread number should match the feed's unread count.
 		var feedUnreadCount = 0
 		for article in articles {
 			if article.feed == feed && !article.status.read {
@@ -1105,7 +1064,7 @@ public enum FetchType {
 
 // MARK: - Fetching Unread Counts (Private)
 
-@MainActor private extension Account {
+@MainActor private extension DataStore {
 
 	/// Fetch unread counts for zero or more feeds.
 	///
@@ -1164,7 +1123,7 @@ public enum FetchType {
 
 	private func processUnreadCounts(unreadCountDictionary: UnreadCountDictionary, feeds: Set<Feed>) {
 		for feed in feeds {
-			// When the unread count is zero, it won’t appear in unreadCountDictionary.
+			// When the unread count is zero, it won't appear in unreadCountDictionary.
 			let unreadCount = unreadCountDictionary[feed.feedID] ?? 0
 			feed.unreadCount = unreadCount
 		}
@@ -1173,7 +1132,7 @@ public enum FetchType {
 
 // MARK: - Private
 
-@MainActor private extension Account {
+@MainActor private extension DataStore {
 
 	func feedMetadata(feedURL: String, feedID: String) -> FeedMetadata {
 		if let d = feedMetadata[feedURL] {
@@ -1231,7 +1190,7 @@ public enum FetchType {
 		let statuses = Set(articles.map { $0.status })
 		let articleIDs = Set(articles.map { $0.articleID })
 
-        // .UnreadCountDidChange notification will get sent to Folder and Account objects,
+        // .UnreadCountDidChange notification will get sent to Folder and DataStore objects,
         // which will update their own unread counts.
         updateUnreadCounts(feeds: feeds)
 
@@ -1283,14 +1242,14 @@ public enum FetchType {
 
 		if shouldSendNotification {
 			userInfo[UserInfoKey.feeds] = feeds
-			NotificationCenter.default.postOnMainThread(name: .AccountDidDownloadArticles, object: self, userInfo: userInfo)
+			NotificationCenter.default.postOnMainThread(name: .DataStoreDidDownloadArticles, object: self, userInfo: userInfo)
 		}
 	}
 }
 
 // MARK: - Container Overrides
 
-extension Account {
+extension DataStore {
 
 	public func existingFeed(withFeedID feedID: String) -> Feed? {
 		return idToFeedDictionary[feedID]
@@ -1303,7 +1262,7 @@ extension Account {
 
 // MARK: - OPMLRepresentable
 
-extension Account: OPMLRepresentable {
+extension DataStore: OPMLRepresentable {
 
 	public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
 		var s = ""
@@ -1315,4 +1274,45 @@ extension Account: OPMLRepresentable {
 		}
 		return s
 	}
+}
+
+// MARK: - DataStoreType
+
+nonisolated public enum DataStoreType: Int, Codable, Sendable {
+	// Raw values should not change since they're stored on disk.
+	case onMyMac = 1
+	case cloudKit = 2
+}
+
+// MARK: - Type Aliases for Backward Compatibility
+
+public typealias Account = DataStore
+public typealias AccountType = DataStoreType
+public typealias AccountError = DataStoreError
+
+// Backward compatibility - AccountBehaviors stub (iCloud supports all features)
+public typealias AccountBehaviors = [AccountBehavior]
+public enum AccountBehavior: Equatable {
+	case disallowFeedCopyInRootFolder
+	case disallowFeedInRootFolder
+	case disallowFeedInMultipleFolders
+	case disallowFolderManagement
+	case disallowOPMLImports
+	case disallowMarkAsUnreadAfterPeriod(Int)
+}
+
+// Backward compatibility extensions
+public extension DataStore {
+	var accountID: String { dataStoreID }
+	var behaviors: AccountBehaviors { [] } // iCloud supports all features
+}
+
+public extension Feed {
+	var accountID: String { dataStoreID }
+	var account: DataStore? { dataStore }
+}
+
+public extension Folder {
+	var accountID: String { dataStoreID }
+	var account: DataStore? { dataStore }
 }

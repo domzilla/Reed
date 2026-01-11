@@ -48,12 +48,15 @@ extension Feed {
 
 public extension Article {
 
-	@MainActor var account: Account? {
-		return AccountManager.shared.existingAccount(accountID: accountID)
+	@MainActor var dataStore: DataStore? {
+		return DataStoreManager.shared.existingDataStore(dataStoreID: accountID)
 	}
 
+	// Backward compatibility alias
+	@MainActor var account: DataStore? { dataStore }
+
 	@MainActor var feed: Feed? {
-		return account?.existingFeed(withFeedID: feedID)
+		return dataStore?.existingFeed(withFeedID: feedID)
 	}
 }
 
