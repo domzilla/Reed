@@ -300,18 +300,21 @@ struct FeedNode: Hashable, Sendable {
 
 		super.init()
 
-		self.mainFeedCollectionViewController = rootSplitViewController.viewController(for: .primary) as? MainFeedCollectionViewController
-		self.mainFeedCollectionViewController.coordinator = self
-		self.mainFeedCollectionViewController?.navigationController?.delegate = self
+		let feedNavController = rootSplitViewController.viewController(for: .primary) as? UINavigationController
+		self.mainFeedCollectionViewController = feedNavController?.viewControllers.first as? MainFeedCollectionViewController
+		self.mainFeedCollectionViewController?.coordinator = self
+		feedNavController?.delegate = self
 		updateNavigationBarSubtitles(nil)
 
-		self.mainTimelineViewController = rootSplitViewController.viewController(for: .supplementary) as? MainTimelineViewController
+		let timelineNavController = rootSplitViewController.viewController(for: .supplementary) as? UINavigationController
+		self.mainTimelineViewController = timelineNavController?.viewControllers.first as? MainTimelineViewController
 		self.mainTimelineViewController?.coordinator = self
-		self.mainTimelineViewController?.navigationController?.delegate = self
+		timelineNavController?.delegate = self
 
-		self.articleViewController = rootSplitViewController.viewController(for: .secondary) as? ArticleViewController
+		let articleNavController = rootSplitViewController.viewController(for: .secondary) as? UINavigationController
+		self.articleViewController = articleNavController?.viewControllers.first as? ArticleViewController
 		self.articleViewController?.coordinator = self
-		self.articleViewController?.navigationController?.delegate = self
+		articleNavController?.delegate = self
 
 		for sectionNode in treeController.rootNode.childNodes {
 			markExpanded(sectionNode)
@@ -1191,11 +1194,12 @@ struct FeedNode: Hashable, Sendable {
 	}
 
 	func showSettings(scrollToArticlesSection: Bool = false) {
-		let settingsNavController = UIStoryboard.settings.instantiateInitialViewController() as! UINavigationController
-		let settingsViewController = settingsNavController.topViewController as! SettingsViewController
+		let settingsViewController = SettingsViewController()
 		settingsViewController.scrollToArticlesSection = scrollToArticlesSection
-		settingsNavController.modalPresentationStyle = .formSheet
 		settingsViewController.presentingParentController = rootSplitViewController
+
+		let settingsNavController = UINavigationController(rootViewController: settingsViewController)
+		settingsNavController.modalPresentationStyle = .formSheet
 		rootSplitViewController.present(settingsNavController, animated: true)
 	}
 
@@ -1207,12 +1211,12 @@ struct FeedNode: Hashable, Sendable {
 	}
 
 	func showFeedInspector(for feed: Feed) {
-		let feedInspectorNavController =
-			UIStoryboard.inspector.instantiateViewController(identifier: "FeedInspectorNavigationViewController") as! UINavigationController
-		let feedInspectorController = feedInspectorNavController.topViewController as! FeedInspectorViewController
+		let feedInspectorController = FeedInspectorViewController()
+		feedInspectorController.feed = feed
+
+		let feedInspectorNavController = UINavigationController(rootViewController: feedInspectorController)
 		feedInspectorNavController.modalPresentationStyle = .formSheet
 		feedInspectorNavController.preferredContentSize = FeedInspectorViewController.preferredContentSizeForFormSheetDisplay
-		feedInspectorController.feed = feed
 		rootSplitViewController.present(feedInspectorNavController, animated: true)
 	}
 
@@ -1221,26 +1225,26 @@ struct FeedNode: Hashable, Sendable {
 		// Since Add Feed can be opened from anywhere with a keyboard shortcut, we have to deselect any currently selected feeds
 		selectFeed(nil)
 
-		let addNavViewController = UIStoryboard.add.instantiateViewController(withIdentifier: "AddFeedViewControllerNav") as! UINavigationController
-
-		let addViewController = addNavViewController.topViewController as! AddFeedViewController
+		let addViewController = AddFeedViewController()
 		addViewController.initialFeed = initialFeed
 		addViewController.initialFeedName = initialFeedName
 
+		let addNavViewController = UINavigationController(rootViewController: addViewController)
 		addNavViewController.modalPresentationStyle = .formSheet
 		addNavViewController.preferredContentSize = AddFeedViewController.preferredContentSizeForFormSheetDisplay
 		mainFeedCollectionViewController.present(addNavViewController, animated: true)
 	}
 
 	func showAddFolder() {
-		let addNavViewController = UIStoryboard.add.instantiateViewController(withIdentifier: "AddFolderViewControllerNav") as! UINavigationController
+		let addViewController = AddFolderViewController()
+		let addNavViewController = UINavigationController(rootViewController: addViewController)
 		addNavViewController.modalPresentationStyle = .formSheet
 		addNavViewController.preferredContentSize = AddFolderViewController.preferredContentSizeForFormSheetDisplay
 		mainFeedCollectionViewController.present(addNavViewController, animated: true)
 	}
 
 	func showFullScreenImage(image: UIImage, imageTitle: String?, transitioningDelegate: UIViewControllerTransitioningDelegate) {
-		let imageVC = UIStoryboard.main.instantiateController(ofType: ImageViewController.self)
+		let imageVC = ImageViewController()
 		imageVC.image = image
 		imageVC.imageTitle = imageTitle
 		imageVC.modalPresentationStyle = .currentContext

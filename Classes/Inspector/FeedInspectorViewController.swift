@@ -17,18 +17,10 @@ final class FeedInspectorViewController: UITableViewController {
 
 	var feed: Feed!
 
-	@IBOutlet var nameTextField: UITextField!
-	@IBOutlet var notifyAboutNewArticlesSwitch: UISwitch!
-	@IBOutlet var alwaysShowReaderViewSwitch: UISwitch!
-	@IBOutlet var homePageLabel: InteractiveLabel!
-	@IBOutlet var feedURLLabel: InteractiveLabel!
-
 	private var headerView: InspectorIconHeaderView?
 	private var iconImage: IconImage? {
 		return IconImageCache.shared.imageForFeed(feed)
 	}
-
-	private let homePageIndexPath = IndexPath(row: 0, section: 1)
 
 	private var shouldHideHomePageSection: Bool {
 		return feed.homePageURL == nil
@@ -36,8 +28,76 @@ final class FeedInspectorViewController: UITableViewController {
 
 	private var authorizationStatus: UNAuthorizationStatus?
 
+	// MARK: - UI Elements
+
+	private lazy var nameTextField: UITextField = {
+		let textField = UITextField()
+		textField.placeholder = NSLocalizedString("Name", comment: "Name")
+		textField.autocorrectionType = .no
+		textField.autocapitalizationType = .words
+		textField.returnKeyType = .done
+		textField.clearButtonMode = .whileEditing
+		textField.font = .preferredFont(forTextStyle: .body)
+		textField.adjustsFontForContentSizeCategory = true
+		textField.translatesAutoresizingMaskIntoConstraints = false
+		textField.delegate = self
+		return textField
+	}()
+
+	private lazy var notifyAboutNewArticlesSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(notifyAboutNewArticlesChanged(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var alwaysShowReaderViewSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(alwaysShowReaderViewChanged(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var homePageLabel: InteractiveLabel = {
+		let label = InteractiveLabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.adjustsFontForContentSizeCategory = true
+		label.textColor = .secondaryLabel
+		label.numberOfLines = 0
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	private lazy var feedURLLabel: InteractiveLabel = {
+		let label = InteractiveLabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.adjustsFontForContentSizeCategory = true
+		label.textColor = .secondaryLabel
+		label.numberOfLines = 0
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
+
 	override func viewDidLoad() {
+		super.viewDidLoad()
+
+		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done(_:)))
+
 		tableView.register(InspectorIconHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeader")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SwitchCell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "LabelCell")
 
 		navigationItem.title = feed.nameForDisplay
 		nameTextField.text = feed.nameForDisplay
@@ -56,10 +116,12 @@ final class FeedInspectorViewController: UITableViewController {
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
 		updateNotificationSettings()
 	}
 
 	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
 		if nameTextField.text != feed.nameForDisplay {
 			let nameText = nameTextField.text ?? ""
 			let newName = nameText.isEmpty ? (feed.name ?? NSLocalizedString("Untitled", comment: "Feed name")) : nameText
@@ -67,12 +129,13 @@ final class FeedInspectorViewController: UITableViewController {
 		}
 	}
 
-	// MARK: Notifications
+	// MARK: - Actions
+
 	@objc func feedIconDidBecomeAvailable(_ notification: Notification) {
 		headerView?.iconView.iconImage = iconImage
 	}
 
-	@IBAction func notifyAboutNewArticlesChanged(_ sender: Any) {
+	@objc func notifyAboutNewArticlesChanged(_ sender: Any) {
 		guard let authorizationStatus else {
 			notifyAboutNewArticlesSwitch.isOn = !notifyAboutNewArticlesSwitch.isOn
 			return
@@ -97,79 +160,136 @@ final class FeedInspectorViewController: UITableViewController {
 		}
 	}
 
-	@IBAction func alwaysShowReaderViewChanged(_ sender: Any) {
+	@objc func alwaysShowReaderViewChanged(_ sender: Any) {
 		feed.isArticleExtractorAlwaysOn = alwaysShowReaderViewSwitch.isOn
 	}
 
-	@IBAction func done(_ sender: Any) {
+	@objc func done(_ sender: Any) {
 		dismiss(animated: true)
 	}
 
-	/// Returns a new indexPath, taking into consideration any
-	/// conditions that may require the tableView to be
-	/// displayed differently than what is setup in the storyboard.
-	private func shift(_ indexPath: IndexPath) -> IndexPath {
-		return IndexPath(row: indexPath.row, section: shift(indexPath.section))
-	}
-
-	/// Returns a new section, taking into consideration any
-	/// conditions that may require the tableView to be
-	/// displayed differently than what is setup in the storyboard.
-	private func shift(_ section: Int) -> Int {
-		if section >= homePageIndexPath.section && shouldHideHomePageSection {
-			return section + 1
-		}
-		return section
-	}
-
-
-}
-
-// MARK: Table View
-
-extension FeedInspectorViewController {
+	// MARK: - Table view data source
 
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		let numberOfSections = super.numberOfSections(in: tableView)
-		return shouldHideHomePageSection ? numberOfSections - 1 : numberOfSections
+		return shouldHideHomePageSection ? 2 : 3
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return super.tableView(tableView, numberOfRowsInSection: shift(section))
+		let actualSection = actualSectionIndex(for: section)
+		switch actualSection {
+		case 0:
+			return 3 // Name, Notify, Reader View
+		case 1:
+			return 1 // Home Page
+		case 2:
+			return 1 // Feed URL
+		default:
+			return 0
+		}
 	}
 
 	override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-		return section == 0 ? ImageHeaderView.rowHeight : super.tableView(tableView, heightForHeaderInSection: shift(section))
+		return section == 0 ? ImageHeaderView.rowHeight : UITableView.automaticDimension
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = super.tableView(tableView, cellForRowAt: shift(indexPath))
-		if indexPath.section == 0 && indexPath.row == 1 {
-			guard let label = cell.contentView.subviews.filter({ $0.isKind(of: UILabel.self) })[0] as? UILabel else {
-				return cell
-			}
-			label.numberOfLines = 2
-			label.text = feed.notificationDisplayName.capitalized
+		let actualSection = actualSectionIndex(for: indexPath.section)
+
+		switch (actualSection, indexPath.row) {
+		case (0, 0):
+			// Name text field
+			let cell = tableView.dequeueReusableCell(withIdentifier: "TextFieldCell", for: indexPath)
+			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+			cell.selectionStyle = .none
+			cell.contentView.addSubview(nameTextField)
+			NSLayoutConstraint.activate([
+				nameTextField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+				nameTextField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+				nameTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+				nameTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
+			])
+			return cell
+
+		case (0, 1):
+			// Notify about new articles switch
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Notify About New Articles", comment: "Notify About New Articles")
+			cell.textLabel?.font = .preferredFont(forTextStyle: .body)
+			cell.textLabel?.adjustsFontForContentSizeCategory = true
+			cell.textLabel?.numberOfLines = 2
+			cell.detailTextLabel?.text = feed.notificationDisplayName.capitalized
+			cell.accessoryView = notifyAboutNewArticlesSwitch
+			cell.selectionStyle = .none
+			return cell
+
+		case (0, 2):
+			// Always show reader view switch
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Always Show Reader View", comment: "Always Show Reader View")
+			cell.textLabel?.font = .preferredFont(forTextStyle: .body)
+			cell.textLabel?.adjustsFontForContentSizeCategory = true
+			cell.accessoryView = alwaysShowReaderViewSwitch
+			cell.selectionStyle = .none
+			return cell
+
+		case (1, 0):
+			// Home Page URL
+			let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
+			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+			cell.selectionStyle = .default
+			cell.accessoryType = .disclosureIndicator
+			cell.contentView.addSubview(homePageLabel)
+			NSLayoutConstraint.activate([
+				homePageLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+				homePageLabel.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+				homePageLabel.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+				homePageLabel.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
+			])
+			return cell
+
+		case (2, 0):
+			// Feed URL
+			let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
+			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+			cell.selectionStyle = .none
+			cell.contentView.addSubview(feedURLLabel)
+			NSLayoutConstraint.activate([
+				feedURLLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+				feedURLLabel.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+				feedURLLabel.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+				feedURLLabel.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
+			])
+			return cell
+
+		default:
+			fatalError("Unexpected index path")
 		}
-		return cell
 	}
 
 	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		super.tableView(tableView, titleForHeaderInSection: shift(section))
-	}
-
-	override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		if shift(section) == 0 {
-			headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "SectionHeader") as? InspectorIconHeaderView
-			headerView?.iconView.iconImage = iconImage
-			return headerView
-		} else {
-			return super.tableView(tableView, viewForHeaderInSection: shift(section))
+		let actualSection = actualSectionIndex(for: section)
+		switch actualSection {
+		case 1:
+			return NSLocalizedString("Home Page", comment: "Home Page")
+		case 2:
+			return NSLocalizedString("Feed URL", comment: "Feed URL")
+		default:
+			return nil
 		}
 	}
 
+	override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+		if section == 0 {
+			headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "SectionHeader") as? InspectorIconHeaderView
+			headerView?.iconView.iconImage = iconImage
+			return headerView
+		}
+		return nil
+	}
+
 	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		if shift(indexPath) == homePageIndexPath,
+		let actualSection = actualSectionIndex(for: indexPath.section)
+		if actualSection == 1,
 			let homePageUrlString = feed.homePageURL,
 			let homePageUrl = URL(string: homePageUrlString) {
 
@@ -181,6 +301,14 @@ extension FeedInspectorViewController {
 		}
 	}
 
+	// MARK: - Private
+
+	private func actualSectionIndex(for displaySection: Int) -> Int {
+		if shouldHideHomePageSection && displaySection >= 1 {
+			return displaySection + 1
+		}
+		return displaySection
+	}
 }
 
 // MARK: UITextFieldDelegate

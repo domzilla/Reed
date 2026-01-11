@@ -9,20 +9,54 @@
 import UIKit
 
 final class RefreshProgressView: UIView {
-	@IBOutlet var progressView: UIProgressView!
-	@IBOutlet var label: UILabel!
 
-	override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			
-			NotificationCenter.default.addObserver(self, selector: #selector(progressDidChange(_:)), name: .combinedRefreshProgressDidChange, object: nil)
-			NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange(_:)), name: UIContentSizeCategory.didChangeNotification, object: nil)
-			update()
-			scheduleUpdateRefreshLabel()
-			
-			isAccessibilityElement = true
-			accessibilityTraits = [.updatesFrequently, .notEnabled]
-		}
+	let progressView: UIProgressView = {
+		let view = UIProgressView(progressViewStyle: .default)
+		view.translatesAutoresizingMaskIntoConstraints = false
+		return view
+	}()
+
+	let label: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .footnote)
+		label.textColor = .secondaryLabel
+		label.textAlignment = .center
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupViews()
+	}
+
+	required init?(coder: NSCoder) {
+		super.init(coder: coder)
+		setupViews()
+	}
+
+	private func setupViews() {
+		addSubview(progressView)
+		addSubview(label)
+
+		NSLayoutConstraint.activate([
+			progressView.leadingAnchor.constraint(equalTo: leadingAnchor),
+			progressView.trailingAnchor.constraint(equalTo: trailingAnchor),
+			progressView.centerYAnchor.constraint(equalTo: centerYAnchor),
+
+			label.leadingAnchor.constraint(equalTo: leadingAnchor),
+			label.trailingAnchor.constraint(equalTo: trailingAnchor),
+			label.centerYAnchor.constraint(equalTo: centerYAnchor),
+		])
+
+		NotificationCenter.default.addObserver(self, selector: #selector(progressDidChange(_:)), name: .combinedRefreshProgressDidChange, object: nil)
+		NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange(_:)), name: UIContentSizeCategory.didChangeNotification, object: nil)
+		update()
+		scheduleUpdateRefreshLabel()
+
+		isAccessibilityElement = true
+		accessibilityTraits = [.updatesFrequently, .notEnabled]
 	}
 
 	func update() {

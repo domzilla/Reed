@@ -20,16 +20,20 @@ private let folderIdentifier = "Folder"
 private let containerReuseIdentifier = "Container"
 
 final class MainFeedCollectionViewController: UICollectionViewController, UndoableCommandRunner {
-	@IBOutlet var filterButton: UIBarButtonItem!
-	@IBOutlet var addNewItemButton: UIBarButtonItem! {
-		didSet {
-			if #available(iOS 14, *) {
-				addNewItemButton.primaryAction = nil
-			} else {
-				addNewItemButton.action = #selector(MainFeedCollectionViewController.add(_:))
-			}
-		}
-	}
+
+	// MARK: - UI Elements
+
+	private lazy var filterButton: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: Assets.Images.filter, style: .plain, target: self, action: #selector(toggleFilter(_:)))
+		item.accessibilityLabel = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
+		return item
+	}()
+
+	private lazy var addNewItemButton: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: nil, action: nil)
+		item.accessibilityLabel = NSLocalizedString("Add", comment: "Add")
+		return item
+	}()
 
 	private let keyboardManager = KeyboardManager(type: .sidebar)
 	override var keyCommands: [UIKeyCommand]? {
@@ -58,6 +62,14 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
+
+		// Set up navigation bar
+		navigationItem.rightBarButtonItem = addNewItemButton
+
+		// Set up toolbar
+		let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		toolbarItems = [flexSpace, filterButton]
+
 		registerForNotifications()
 		configureCollectionView()
 		collectionView.dragDelegate = self
@@ -209,13 +221,18 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 		collectionView.refreshControl = UIRefreshControl()
 		collectionView.refreshControl!.addTarget(self, action: #selector(refreshAccounts(_:)), for: .valueChanged)
 
+		// Register cells and supplementary views
+		collectionView.register(MainFeedCollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+		collectionView.register(MainFeedCollectionViewFolderCell.self, forCellWithReuseIdentifier: folderIdentifier)
+		collectionView.register(MainFeedCollectionHeaderReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: containerReuseIdentifier)
+
 		if config.appearance == .sidebar {
 			// This defrosts the glass.
 			collectionView.backgroundColor = .clear
 		}
 	}
 
-	@IBAction func settings(_ sender: UIBarButtonItem) {
+	@objc func settings(_ sender: UIBarButtonItem) {
 		coordinator.showSettings()
 	}
 
@@ -416,7 +433,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 		} else {
 			setFilterButtonToInactive()
 		}
-		addNewItemButton?.isEnabled = !AccountManager.shared.activeAccounts.isEmpty
+		addNewItemButton.isEnabled = !AccountManager.shared.activeAccounts.isEmpty
 
 
 		configureContextMenu()
@@ -602,12 +619,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
 	func setFilterButtonToActive() {
 		filterButton.tintColor = Assets.Colors.primaryAccent
-		filterButton?.accLabelText = NSLocalizedString("Selected - Filter Read Feeds", comment: "Selected - Filter Read Feeds")
+		filterButton.accLabelText = NSLocalizedString("Selected - Filter Read Feeds", comment: "Selected - Filter Read Feeds")
 	}
 
 	func setFilterButtonToInactive() {
 		filterButton.tintColor = nil
-		filterButton?.accLabelText = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
+		filterButton.accLabelText = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
 	}
 
 
@@ -706,7 +723,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 		}
 	}
 
-	@IBAction func add(_ sender: UIBarButtonItem) {
+	@objc func add(_ sender: UIBarButtonItem) {
 		let title = NSLocalizedString("Add Item", comment: "Add Item")
 		let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
 
@@ -734,7 +751,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 	}
 
 
-	@IBAction func toggleFilter(_ sender: Any) {
+	@objc func toggleFilter(_ sender: Any) {
 		coordinator.toggleReadFeedsFilter()
 	}
 

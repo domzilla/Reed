@@ -10,6 +10,25 @@ import UIKit
 
 final class ColorPaletteTableViewController: UITableViewController {
 
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
+
+	override func viewDidLoad() {
+		super.viewDidLoad()
+		title = NSLocalizedString("Appearance", comment: "Appearance")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+	}
+
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {

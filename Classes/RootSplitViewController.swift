@@ -12,6 +12,26 @@ final class RootSplitViewController: UISplitViewController {
 
 	var coordinator: SceneCoordinator!
 
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .tripleColumn)
+		configureDefaults()
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init() instead")
+	}
+
+	private func configureDefaults() {
+		preferredDisplayMode = .oneBesideSecondary
+		preferredSplitBehavior = .tile
+		primaryBackgroundStyle = .sidebar
+		presentsWithGesture = true
+		showsSecondaryOnlyButton = true
+	}
+
 	override var prefersStatusBarHidden: Bool {
 		return coordinator.prefersStatusBarHidden
 	}

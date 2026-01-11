@@ -13,10 +13,37 @@ import UIKit
 }
 
 class MainFeedCollectionViewFolderCell: UICollectionViewCell {
-	@IBOutlet var folderTitle: UILabel!
-	@IBOutlet var faviconView: IconView!
-	@IBOutlet var unreadCountLabel: UILabel!
-	@IBOutlet var disclosureButton: UIButton!
+
+	let folderTitle: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let faviconView: IconView = {
+		let view = IconView()
+		view.translatesAutoresizingMaskIntoConstraints = false
+		return view
+	}()
+
+	let unreadCountLabel: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.textColor = .secondaryLabel
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let disclosureButton: UIButton = {
+		let button = UIButton(type: .system)
+		button.setImage(UIImage(systemName: "chevron.down"), for: .normal)
+		button.tintColor = .secondaryLabel
+		button.translatesAutoresizingMaskIntoConstraints = false
+		return button
+	}()
 
 	var delegate: MainFeedCollectionViewFolderCellDelegate?
 
@@ -55,11 +82,43 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
 		}
 	}
 
-	override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			super.awakeFromNib()
-			disclosureButton.addInteraction(UIPointerInteraction())
-		}
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupViews()
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(frame:)")
+	}
+
+	private func setupViews() {
+		contentView.addSubview(faviconView)
+		contentView.addSubview(folderTitle)
+		contentView.addSubview(unreadCountLabel)
+		contentView.addSubview(disclosureButton)
+
+		disclosureButton.addTarget(self, action: #selector(toggleDisclosure), for: .touchUpInside)
+		disclosureButton.addInteraction(UIPointerInteraction())
+
+		NSLayoutConstraint.activate([
+			faviconView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+			faviconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			faviconView.widthAnchor.constraint(equalToConstant: 24),
+			faviconView.heightAnchor.constraint(equalToConstant: 24),
+
+			folderTitle.leadingAnchor.constraint(equalTo: faviconView.trailingAnchor, constant: 8),
+			folderTitle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			folderTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
+
+			unreadCountLabel.trailingAnchor.constraint(equalTo: disclosureButton.leadingAnchor, constant: -8),
+			unreadCountLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+			disclosureButton.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+			disclosureButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			disclosureButton.widthAnchor.constraint(equalToConstant: 24),
+			disclosureButton.heightAnchor.constraint(equalToConstant: 24),
+		])
 	}
 
 	func updateExpandedState(animate: Bool) {
@@ -87,8 +146,7 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
 		}
 	}
 
-	@IBAction
-	func toggleDisclosure() {
+	@objc func toggleDisclosure() {
 		setDisclosure(isExpanded: !disclosureExpanded, animated: true)
 		delegate?.mainFeedCollectionFolderViewCellDisclosureDidToggle(self, expanding: disclosureExpanded)
 	}

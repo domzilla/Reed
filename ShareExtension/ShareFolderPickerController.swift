@@ -20,8 +20,8 @@ final class ShareFolderPickerController: UITableViewController {
 	weak var delegate: ShareFolderPickerControllerDelegate?
 
 	override func viewDidLoad() {
-		tableView.register(UINib(nibName: "ShareFolderPickerAccountCell", bundle: Bundle.main), forCellReuseIdentifier: "AccountCell")
-		tableView.register(UINib(nibName: "ShareFolderPickerFolderCell", bundle: Bundle.main), forCellReuseIdentifier: "FolderCell")
+		tableView.register(ShareFolderPickerCell.self, forCellReuseIdentifier: "AccountCell")
+		tableView.register(ShareFolderPickerCell.self, forCellReuseIdentifier: "FolderCell")
 
 	}
 
@@ -44,12 +44,12 @@ final class ShareFolderPickerController: UITableViewController {
 		}()
 
 		if let account = container as? ExtensionAccount {
-			cell.icon.image = ShareAssets.accountImage(account.type)
+			cell.iconImageView.image = ShareAssets.accountImage(account.type)
 		} else {
-			cell.icon.image = ShareAssets.Images.mainFolder.image
+			cell.iconImageView.image = ShareAssets.Images.mainFolder.image
 		}
 
-		cell.label?.text = container?.name ?? ""
+		cell.nameLabel.text = container?.name ?? ""
 
 		if let containerID = container?.containerID, containerID == selectedContainerID {
 			cell.accessoryType = .checkmark

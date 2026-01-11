@@ -10,7 +10,6 @@ import UIKit
 
 class ModernTimelineCustomizerTableViewController: UITableViewController {
 
-
 	private var previewArticle: Article {
 		var components = DateComponents()
 		components.year = 1925
@@ -26,7 +25,7 @@ class ModernTimelineCustomizerTableViewController: UITableViewController {
 				uniqueID: UUID().uuidString,
 				title: "Chapter 1",
 				contentHTML: nil,
-				contentText: "In my younger and more vulnerable years my father gave me some advice that I’ve been turning over in my mind ever since. “Whenever you feel like criticizing any one,” he told me, “just remember that all the people in this world haven’t had the advantages that you’ve had.”",
+				contentText: "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since. \"Whenever you feel like criticizing any one,\" he told me, \"just remember that all the people in this world haven't had the advantages that you've had.\"",
 				markdown: nil,
 				url: nil,
 				externalURL: nil,
@@ -38,10 +37,27 @@ class ModernTimelineCustomizerTableViewController: UITableViewController {
 				status: ArticleStatus(articleID: "_testArticleID", read: false, starred: false, dateArrived: .now))
 	}
 
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
 		title = NSLocalizedString("Timeline Customizer", comment: "Timeline Customizer")
+
+		tableView.register(ModernTimelineSliderCell.self, forCellReuseIdentifier: "IconSizeCell")
+		tableView.register(ModernTimelineSliderCell.self, forCellReuseIdentifier: "NumberOfLinesCell")
+		tableView.register(MainTimelineIconFeedCell.self, forCellReuseIdentifier: "MainTimelineIconFeedCell")
+		tableView.register(MainTimelineFeedCell.self, forCellReuseIdentifier: "MainTimelineFeedCell")
 
 		NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
 			Task { @MainActor in
@@ -76,20 +92,20 @@ class ModernTimelineCustomizerTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		if indexPath.section == 0 {
-			let cell = tableView.dequeueReusableCell(withIdentifier: "IconSizeCell") as! ModernTimelineSliderCell
+			let cell = tableView.dequeueReusableCell(withIdentifier: "IconSizeCell", for: indexPath) as! ModernTimelineSliderCell
 			cell.sliderConfiguration = .iconSize
 			return cell
 		}
 
 		if indexPath.section == 1 {
-			let cell = tableView.dequeueReusableCell(withIdentifier: "NumberOfLinesCell") as! ModernTimelineSliderCell
+			let cell = tableView.dequeueReusableCell(withIdentifier: "NumberOfLinesCell", for: indexPath) as! ModernTimelineSliderCell
 			cell.sliderConfiguration = .numberOfLines
 			return cell
 		}
 
 
 		if indexPath.section == 2 {
-			let cell = tableView.dequeueReusableCell(withIdentifier: "MainTimelineIconFeedCell") as? MainTimelineIconFeedCell ?? MainTimelineIconFeedCell()
+			let cell = tableView.dequeueReusableCell(withIdentifier: "MainTimelineIconFeedCell", for: indexPath) as! MainTimelineIconFeedCell
 			cell.cellData = MainTimelineCellData(article: previewArticle,
 												 showFeedName: .byline,
 												 feedName: "The Great Gatsby",
@@ -103,7 +119,7 @@ class ModernTimelineCustomizerTableViewController: UITableViewController {
 		}
 
 		if indexPath.section == 3 {
-			let cell = tableView.dequeueReusableCell(withIdentifier: "MainTimelineFeedCell") as? MainTimelineFeedCell ?? MainTimelineFeedCell()
+			let cell = tableView.dequeueReusableCell(withIdentifier: "MainTimelineFeedCell", for: indexPath) as! MainTimelineFeedCell
 			cell.cellData = MainTimelineCellData(article: previewArticle,
 												 showFeedName: .byline,
 												 feedName: "The Great Gatsby",
@@ -135,4 +151,3 @@ class ModernTimelineCustomizerTableViewController: UITableViewController {
 	}
 
 }
-

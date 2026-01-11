@@ -15,9 +15,31 @@ import UIKit
 final class MainFeedCollectionHeaderReusableView: UICollectionReusableView {
 	var delegate: MainFeedCollectionHeaderReusableViewDelegate?
 
-	@IBOutlet var headerTitle: UILabel!
-	@IBOutlet var disclosureIndicator: UIImageView!
-	@IBOutlet var unreadCountLabel: UILabel!
+	let headerTitle: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .headline)
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let disclosureIndicator: UIImageView = {
+		let imageView = UIImageView(image: UIImage(systemName: "chevron.down"))
+		imageView.tintColor = .secondaryLabel
+		imageView.contentMode = .scaleAspectFit
+		imageView.translatesAutoresizingMaskIntoConstraints = false
+		return imageView
+	}()
+
+	let unreadCountLabel: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.textColor = .secondaryLabel
+		label.adjustsFontForContentSizeCategory = true
+		label.alpha = 0
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
 
 	private var unreadLabelWidthConstraint: NSLayoutConstraint?
 
@@ -64,14 +86,40 @@ final class MainFeedCollectionHeaderReusableView: UICollectionReusableView {
 		}
 	}
 
-	override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			super.awakeFromNib()
-			unreadLabelWidthConstraint = unreadCountLabel.widthAnchor.constraint(lessThanOrEqualToConstant: 80)
-			unreadLabelWidthConstraint?.isActive = true
-			configureUI()
-			addTapGesture()
-		}
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupViews()
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(frame:)")
+	}
+
+	private func setupViews() {
+		addSubview(headerTitle)
+		addSubview(disclosureIndicator)
+		addSubview(unreadCountLabel)
+
+		unreadLabelWidthConstraint = unreadCountLabel.widthAnchor.constraint(lessThanOrEqualToConstant: 80)
+		unreadLabelWidthConstraint?.isActive = true
+
+		NSLayoutConstraint.activate([
+			headerTitle.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16),
+			headerTitle.centerYAnchor.constraint(equalTo: centerYAnchor),
+			headerTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
+
+			unreadCountLabel.trailingAnchor.constraint(equalTo: disclosureIndicator.leadingAnchor, constant: -8),
+			unreadCountLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+
+			disclosureIndicator.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16),
+			disclosureIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+			disclosureIndicator.widthAnchor.constraint(equalToConstant: 16),
+			disclosureIndicator.heightAnchor.constraint(equalToConstant: 16),
+		])
+
+		configureUI()
+		addTapGesture()
 	}
 
 	func configureUI() {

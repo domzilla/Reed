@@ -20,8 +20,27 @@ final class AddFeedFolderViewController: UITableViewController {
 
 	var containers = [Container]()
 
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+		title = NSLocalizedString("Folder", comment: "Folder")
+		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)))
+
+		tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")
+		tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "FolderCell")
 
 		let sortedActiveAccounts = AccountManager.shared.sortedActiveAccounts
 
@@ -54,11 +73,11 @@ final class AddFeedFolderViewController: UITableViewController {
 		}()
 
 		if let smallIconProvider = container as? SmallIconProvider {
-			cell.icon?.image = smallIconProvider.smallIcon?.image
+			cell.iconImageView.image = smallIconProvider.smallIcon?.image
 		}
 
 		if let displayNameProvider = container as? DisplayNameProvider {
-			cell.label?.text = displayNameProvider.nameForDisplay
+			cell.nameLabel.text = displayNameProvider.nameForDisplay
 		}
 
 		if let compContainer = initialContainer, container === compContainer {
@@ -79,22 +98,20 @@ final class AddFeedFolderViewController: UITableViewController {
 			let cell = tableView.cellForRow(at: indexPath)
 			cell?.accessoryType = .checkmark
 			delegate?.didSelect(container: container)
-			dismiss()
+			dismissViewController()
 		}
 	}
 
 	// MARK: Actions
 
-	@IBAction func cancel(_ sender: Any) {
-		dismiss()
+	@objc func cancel(_ sender: Any) {
+		dismissViewController()
 	}
-
 }
 
 private extension AddFeedFolderViewController {
 
-	func dismiss() {
+	func dismissViewController() {
 		dismiss(animated: true)
 	}
-
 }

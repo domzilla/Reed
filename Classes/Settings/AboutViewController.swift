@@ -11,15 +11,37 @@ import RSCore
 
 final class AboutViewController: UITableViewController {
 
-	@IBOutlet var aboutTextView: UITextView!
-	@IBOutlet var creditsTextView: UITextView!
-	@IBOutlet var acknowledgmentsTextView: UITextView!
-	@IBOutlet var thanksTextView: UITextView!
-	@IBOutlet var dedicationTextView: UITextView!
+	private lazy var aboutTextView: UITextView = createTextView()
+	private lazy var creditsTextView: UITextView = createTextView()
+	private lazy var thanksTextView: UITextView = createTextView()
+	private lazy var dedicationTextView: UITextView = createTextView()
+
+	private let sectionTitles = [
+		NSLocalizedString("About", comment: "About"),
+		NSLocalizedString("Credits", comment: "Credits"),
+		NSLocalizedString("Thanks", comment: "Thanks"),
+		NSLocalizedString("Dedication", comment: "Dedication")
+	]
+
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
 
 	override func viewDidLoad() {
-
 		super.viewDidLoad()
+
+		title = NSLocalizedString("About", comment: "About")
+
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextViewCell")
 
 		configureCell(file: "About", textView: aboutTextView)
 		configureCell(file: "Credits", textView: creditsTextView)
@@ -40,6 +62,50 @@ final class AboutViewController: UITableViewController {
 		tableView.tableFooterView = wrapperView
 	}
 
+	// MARK: - Table view data source
+
+	override func numberOfSections(in tableView: UITableView) -> Int {
+		return 4
+	}
+
+	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		return 1
+	}
+
+	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+		return sectionTitles[section]
+	}
+
+	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+		let cell = tableView.dequeueReusableCell(withIdentifier: "TextViewCell", for: indexPath)
+		cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+		cell.selectionStyle = .none
+
+		let textView: UITextView
+		switch indexPath.section {
+		case 0:
+			textView = aboutTextView
+		case 1:
+			textView = creditsTextView
+		case 2:
+			textView = thanksTextView
+		case 3:
+			textView = dedicationTextView
+		default:
+			fatalError("Unexpected section")
+		}
+
+		cell.contentView.addSubview(textView)
+		NSLayoutConstraint.activate([
+			textView.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+			textView.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+			textView.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 8),
+			textView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -8)
+		])
+
+		return cell
+	}
+
 	override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
 		return UITableView.automaticDimension
 	}
@@ -47,6 +113,17 @@ final class AboutViewController: UITableViewController {
 }
 
 private extension AboutViewController {
+
+	func createTextView() -> UITextView {
+		let textView = UITextView()
+		textView.isEditable = false
+		textView.isScrollEnabled = false
+		textView.backgroundColor = .clear
+		textView.textContainerInset = .zero
+		textView.textContainer.lineFragmentPadding = 0
+		textView.translatesAutoresizingMaskIntoConstraints = false
+		return textView
+	}
 
 	func configureCell(file: String, textView: UITextView) {
 		let url = Bundle.main.url(forResource: file, withExtension: "rtf")!

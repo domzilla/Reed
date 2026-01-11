@@ -17,24 +17,48 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	// UIWindowScene delegate
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+		guard let windowScene = scene as? UIWindowScene else { return }
 
+		// Create window programmatically
+		window = UIWindow(windowScene: windowScene)
 		window!.tintColor = Assets.Colors.primaryAccent
 
-		let rootViewController = window!.rootViewController as! RootSplitViewController
-		rootViewController.presentsWithGesture = true
-		rootViewController.showsSecondaryOnlyButton = true
-		rootViewController.preferredDisplayMode = .oneBesideSecondary
+		// Create the root split view controller
+		let rootViewController = RootSplitViewController()
+
+		// Create and configure child view controllers
+		let feedViewController = MainFeedCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
+		feedViewController.title = NSLocalizedString("Feeds", comment: "Feeds")
+		let feedNavController = UINavigationController(rootViewController: feedViewController)
+
+		let timelineViewController = MainTimelineViewController(style: .plain)
+		let timelineNavController = UINavigationController(rootViewController: timelineViewController)
+		timelineNavController.isToolbarHidden = false
+
+		let articleViewController = ArticleViewController()
+		let articleNavController = UINavigationController(rootViewController: articleViewController)
+		articleNavController.isToolbarHidden = false
+
+		// Set the view controllers on the split view controller
+		rootViewController.setViewController(feedNavController, for: .primary)
+		rootViewController.setViewController(timelineNavController, for: .supplementary)
+		rootViewController.setViewController(articleNavController, for: .secondary)
+
+		// Set up coordinator before making window visible (required for prefersStatusBarHidden)
+		coordinator = SceneCoordinator(rootSplitViewController: rootViewController)
+		rootViewController.coordinator = coordinator
+		rootViewController.delegate = coordinator
+
+		// Set up window
+		window!.rootViewController = rootViewController
+		window!.makeKeyAndVisible()
 
 		Task { @MainActor in
-			// Ensure Feeds view shows on iPad — otherwise the UI may be empty.
+			// Ensure Feeds view shows on iPad — otherwise the UI may be empty.
 			if UIDevice.current.userInterfaceIdiom == .pad {
 				rootViewController.show(.primary)
 			}
 		}
-
-		coordinator = SceneCoordinator(rootSplitViewController: rootViewController)
-		rootViewController.coordinator = coordinator
-		rootViewController.delegate = coordinator
 
 		coordinator.restoreWindowState(activity: session.stateRestorationActivity)
 

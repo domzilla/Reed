@@ -15,25 +15,86 @@ import RSCore
 
 final class SettingsViewController: UITableViewController {
 
-	@IBOutlet var timelineSortOrderSwitch: UISwitch!
-	@IBOutlet var groupByFeedSwitch: UISwitch!
-	@IBOutlet var refreshClearsReadArticlesSwitch: UISwitch!
-	@IBOutlet var confirmMarkAllAsReadSwitch: UISwitch!
-	@IBOutlet var showFullscreenArticlesSwitch: UISwitch!
-	@IBOutlet var colorPaletteDetailLabel: UILabel!
-	@IBOutlet var openLinksInNetNewsWire: UISwitch!
-	@IBOutlet var enableJavaScriptSwitch: UISwitch!
-
 	var scrollToArticlesSection = false
 	weak var presentingParentController: UIViewController?
 
+	// MARK: - UI Elements
+
+	private lazy var timelineSortOrderSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchTimelineOrder(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var groupByFeedSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchGroupByFeed(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var refreshClearsReadArticlesSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchClearsReadArticles(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var confirmMarkAllAsReadSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchConfirmMarkAllAsRead(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var showFullscreenArticlesSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchFullscreenArticles(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var openLinksInNetNewsWireSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchBrowserPreference(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	private lazy var enableJavaScriptSwitch: UISwitch = {
+		let toggle = UISwitch()
+		toggle.addTarget(self, action: #selector(switchJavaScriptPreference(_:)), for: .valueChanged)
+		return toggle
+	}()
+
+	// Section titles
+	private let sectionTitles = [
+		"",
+		NSLocalizedString("Feeds", comment: "Feeds"),
+		NSLocalizedString("Timeline", comment: "Timeline"),
+		NSLocalizedString("Articles", comment: "Articles"),
+		NSLocalizedString("Help", comment: "Help")
+	]
+
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
+
 	override func viewDidLoad() {
-		// This hack mostly works around a bug in static tables with dynamic type.  See: https://spin.atomicobject.com/2018/10/15/dynamic-type-static-uitableview/
-		NotificationCenter.default.removeObserver(tableView!, name: UIContentSizeCategory.didChangeNotification, object: nil)
+		super.viewDidLoad()
+
+		title = NSLocalizedString("Settings", comment: "Settings")
+		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done(_:)))
+
 		NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange), name: UIContentSizeCategory.didChangeNotification, object: nil)
 
-		tableView.register(UINib(nibName: "SettingsComboTableViewCell", bundle: nil), forCellReuseIdentifier: "SettingsComboTableViewCell")
-		tableView.register(UINib(nibName: "SettingsTableViewCell", bundle: nil), forCellReuseIdentifier: "SettingsTableViewCell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SwitchCell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DetailCell")
 
 		tableView.rowHeight = UITableView.automaticDimension
 		tableView.estimatedRowHeight = 44
@@ -42,46 +103,13 @@ final class SettingsViewController: UITableViewController {
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
 
-		if AppDefaults.shared.timelineSortDirection == .orderedAscending {
-			timelineSortOrderSwitch.isOn = true
-		} else {
-			timelineSortOrderSwitch.isOn = false
-		}
-
-		if AppDefaults.shared.timelineGroupByFeed {
-			groupByFeedSwitch.isOn = true
-		} else {
-			groupByFeedSwitch.isOn = false
-		}
-
-		if AppDefaults.shared.refreshClearsReadArticles {
-			refreshClearsReadArticlesSwitch.isOn = true
-		} else {
-			refreshClearsReadArticlesSwitch.isOn = false
-		}
-
-		if AppDefaults.shared.confirmMarkAllAsRead {
-			confirmMarkAllAsReadSwitch.isOn = true
-		} else {
-			confirmMarkAllAsReadSwitch.isOn = false
-		}
-
-		if AppDefaults.shared.articleFullscreenAvailable {
-			showFullscreenArticlesSwitch.isOn = true
-		} else {
-			showFullscreenArticlesSwitch.isOn = false
-		}
-
-		if AppDefaults.shared.isArticleContentJavascriptEnabled {
-			enableJavaScriptSwitch.isOn = true
-		} else {
-			enableJavaScriptSwitch.isOn = false
-		}
-
-		colorPaletteDetailLabel.text = String(describing: AppDefaults.userInterfaceColorPalette)
-
-		openLinksInNetNewsWire.isOn = !AppDefaults.shared.useSystemBrowser
-
+		timelineSortOrderSwitch.isOn = AppDefaults.shared.timelineSortDirection == .orderedAscending
+		groupByFeedSwitch.isOn = AppDefaults.shared.timelineGroupByFeed
+		refreshClearsReadArticlesSwitch.isOn = AppDefaults.shared.refreshClearsReadArticles
+		confirmMarkAllAsReadSwitch.isOn = AppDefaults.shared.confirmMarkAllAsRead
+		showFullscreenArticlesSwitch.isOn = AppDefaults.shared.articleFullscreenAvailable
+		enableJavaScriptSwitch.isOn = AppDefaults.shared.isArticleContentJavascriptEnabled
+		openLinksInNetNewsWireSwitch.isOn = !AppDefaults.shared.useSystemBrowser
 
 		let buildLabel = NonIntrinsicLabel(frame: CGRect(x: 32.0, y: 0.0, width: 0.0, height: 0.0))
 		buildLabel.font = UIFont.systemFont(ofSize: 11.0)
@@ -95,6 +123,7 @@ final class SettingsViewController: UITableViewController {
 		wrapperView.addSubview(buildLabel)
 		tableView.tableFooterView = wrapperView
 
+		tableView.reloadData()
 	}
 
 	override func viewDidAppear(_ animated: Bool) {
@@ -102,182 +131,221 @@ final class SettingsViewController: UITableViewController {
 		self.tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
 		if scrollToArticlesSection {
-			tableView.scrollToRow(at: IndexPath(row: 0, section: 4), at: .top, animated: true)
+			tableView.scrollToRow(at: IndexPath(row: 0, section: 3), at: .top, animated: true)
 			scrollToArticlesSection = false
 		}
-
 	}
 
-	// MARK: UITableView
-	// Note: Section indices after removing Accounts section:
-	// 0: System Settings
-	// 1: Feeds (Import/Export OPML, Add NetNewsWire News)
-	// 2: Timeline settings
-	// 3: Appearance
-	// 4: Help & Support
+	// MARK: - Table view data source
+
+	override func numberOfSections(in tableView: UITableView) -> Int {
+		return 5
+	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		switch section {
-		case 1:
-			// Feeds section - hide "Add NetNewsWire News" if already subscribed
-			let defaultNumberOfRows = super.tableView(tableView, numberOfRowsInSection: section)
-			if AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() {
-				return defaultNumberOfRows - 1
-			}
-			return defaultNumberOfRows
-		case 3:
+		case 0: return 1 // System Settings
+		case 1: // Feeds
+			return AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() ? 2 : 3
+		case 2: return 4 // Timeline
+		case 3: // Articles
 			return traitCollection.userInterfaceIdiom == .phone ? 4 : 3
-		default:
-			return super.tableView(tableView, numberOfRowsInSection: section)
+		case 4: return 4 // Help
+		default: return 0
 		}
+	}
+
+	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+		return sectionTitles[section].isEmpty ? nil : sectionTitles[section]
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		return super.tableView(tableView, cellForRowAt: indexPath)
-	}
+		switch (indexPath.section, indexPath.row) {
+		// Section 0: System Settings
+		case (0, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("System Settings", comment: "System Settings")
+			cell.accessoryType = .disclosureIndicator
+			return cell
 
-	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		switch indexPath.section {
-		case 0:
-			UIApplication.shared.open(URL(string: "\(UIApplication.openSettingsURLString)")!)
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case 1:
-			// Feeds section
-			switch indexPath.row {
-			case 0:
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-				if let sourceView = tableView.cellForRow(at: indexPath) {
-					let sourceRect = tableView.rectForRow(at: indexPath)
-					importOPML(sourceView: sourceView, sourceRect: sourceRect)
-				}
-			case 1:
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-				if let sourceView = tableView.cellForRow(at: indexPath) {
-					let sourceRect = tableView.rectForRow(at: indexPath)
-					exportOPML(sourceView: sourceView, sourceRect: sourceRect)
-				}
-			case 2:
-				addFeed()
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-			default:
-				break
-			}
-		case 2:
-			// Timeline settings
-			switch indexPath.row {
-			case 3:
-				let timeline = UIStoryboard.settings.instantiateController(ofType: ModernTimelineCustomizerTableViewController.self)
-				self.navigationController?.pushViewController(timeline, animated: true)
-			default:
-				break
-			}
-		case 3:
-			// Appearance
-			let colorPalette = UIStoryboard.settings.instantiateController(ofType: ColorPaletteTableViewController.self)
-			self.navigationController?.pushViewController(colorPalette, animated: true)
-		case 4:
-			// Help & Support
-			switch indexPath.row {
-			case 0:
-				openURL(HelpURL.helpHome.rawValue)
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-			case 1:
-				openURL(HelpURL.releaseNotes.rawValue)
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-			case 2:
-				openURL(HelpURL.bugTracker.rawValue)
-				tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-			case 3:
-				let about = UIStoryboard.settings.instantiateController(ofType: AboutViewController.self)
-				self.navigationController?.pushViewController(about, animated: true)
-			default:
-				break
-			}
+		// Section 1: Feeds
+		case (1, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Import Subscriptions...", comment: "Import Subscriptions")
+			cell.accessoryType = .none
+			return cell
+		case (1, 1):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Export Subscriptions...", comment: "Export Subscriptions")
+			cell.accessoryType = .none
+			return cell
+		case (1, 2):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Add NetNewsWire News", comment: "Add NetNewsWire News")
+			cell.accessoryType = .none
+			return cell
+
+		// Section 2: Timeline
+		case (2, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Sort Oldest to Newest", comment: "Sort Oldest to Newest")
+			cell.accessoryView = timelineSortOrderSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (2, 1):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Group by Feed", comment: "Group by Feed")
+			cell.accessoryView = groupByFeedSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (2, 2):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Refresh Clears Read Articles", comment: "Refresh Clears Read Articles")
+			cell.accessoryView = refreshClearsReadArticlesSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (2, 3):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Timeline Layout", comment: "Timeline Layout")
+			cell.accessoryType = .disclosureIndicator
+			return cell
+
+		// Section 3: Articles
+		case (3, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Confirm Mark All as Read", comment: "Confirm Mark All as Read")
+			cell.accessoryView = confirmMarkAllAsReadSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (3, 1):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Enable Full Screen Articles", comment: "Enable Full Screen Articles")
+			cell.accessoryView = showFullscreenArticlesSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (3, 2):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Open Links in App", comment: "Open Links in App")
+			cell.accessoryView = openLinksInNetNewsWireSwitch
+			cell.selectionStyle = .none
+			return cell
+		case (3, 3):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Enable JavaScript", comment: "Enable JavaScript")
+			cell.accessoryView = enableJavaScriptSwitch
+			cell.selectionStyle = .none
+			return cell
+
+		// Section 4: Help
+		case (4, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Help", comment: "Help")
+			cell.accessoryType = .disclosureIndicator
+			return cell
+		case (4, 1):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Release Notes", comment: "Release Notes")
+			cell.accessoryType = .disclosureIndicator
+			return cell
+		case (4, 2):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Report an Issue", comment: "Report an Issue")
+			cell.accessoryType = .disclosureIndicator
+			return cell
+		case (4, 3):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("About", comment: "About")
+			cell.accessoryType = .disclosureIndicator
+			return cell
+
 		default:
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+			return UITableViewCell()
 		}
 	}
 
-	override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-		return false
-	}
+	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		switch (indexPath.section, indexPath.row) {
+		case (0, 0):
+			UIApplication.shared.open(URL(string: "\(UIApplication.openSettingsURLString)")!)
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
-	override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-		return false
-	}
+		case (1, 0):
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+			if let sourceView = tableView.cellForRow(at: indexPath) {
+				let sourceRect = tableView.rectForRow(at: indexPath)
+				importOPML(sourceView: sourceView, sourceRect: sourceRect)
+			}
+		case (1, 1):
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+			if let sourceView = tableView.cellForRow(at: indexPath) {
+				let sourceRect = tableView.rectForRow(at: indexPath)
+				exportOPML(sourceView: sourceView, sourceRect: sourceRect)
+			}
+		case (1, 2):
+			addFeed()
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
-	override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-		return .none
+		case (2, 3):
+			let timeline = ModernTimelineCustomizerTableViewController()
+			navigationController?.pushViewController(timeline, animated: true)
+
+		case (4, 0):
+			openURL(HelpURL.helpHome.rawValue)
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+		case (4, 1):
+			openURL(HelpURL.releaseNotes.rawValue)
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+		case (4, 2):
+			openURL(HelpURL.bugTracker.rawValue)
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+		case (4, 3):
+			let about = AboutViewController()
+			navigationController?.pushViewController(about, animated: true)
+
+		default:
+			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+		}
 	}
 
 	override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
 		return UITableView.automaticDimension
 	}
 
-	override func tableView(_ tableView: UITableView, indentationLevelForRowAt indexPath: IndexPath) -> Int {
-		return super.tableView(tableView, indentationLevelForRowAt: IndexPath(row: 0, section: 1))
-	}
+	// MARK: - Actions
 
-	// MARK: Actions
-
-	@IBAction func done(_ sender: Any) {
+	@objc func done(_ sender: Any) {
 		dismiss(animated: true)
 	}
 
-	@IBAction func switchTimelineOrder(_ sender: Any) {
-		if timelineSortOrderSwitch.isOn {
-			AppDefaults.shared.timelineSortDirection = .orderedAscending
-		} else {
-			AppDefaults.shared.timelineSortDirection = .orderedDescending
-		}
+	@objc func switchTimelineOrder(_ sender: Any) {
+		AppDefaults.shared.timelineSortDirection = timelineSortOrderSwitch.isOn ? .orderedAscending : .orderedDescending
 	}
 
-	@IBAction func switchGroupByFeed(_ sender: Any) {
-		if groupByFeedSwitch.isOn {
-			AppDefaults.shared.timelineGroupByFeed = true
-		} else {
-			AppDefaults.shared.timelineGroupByFeed = false
-		}
+	@objc func switchGroupByFeed(_ sender: Any) {
+		AppDefaults.shared.timelineGroupByFeed = groupByFeedSwitch.isOn
 	}
 
-	@IBAction func switchClearsReadArticles(_ sender: Any) {
-		if refreshClearsReadArticlesSwitch.isOn {
-			AppDefaults.shared.refreshClearsReadArticles = true
-		} else {
-			AppDefaults.shared.refreshClearsReadArticles = false
-		}
+	@objc func switchClearsReadArticles(_ sender: Any) {
+		AppDefaults.shared.refreshClearsReadArticles = refreshClearsReadArticlesSwitch.isOn
 	}
 
-	@IBAction func switchConfirmMarkAllAsRead(_ sender: Any) {
-		if confirmMarkAllAsReadSwitch.isOn {
-			AppDefaults.shared.confirmMarkAllAsRead = true
-		} else {
-			AppDefaults.shared.confirmMarkAllAsRead = false
-		}
+	@objc func switchConfirmMarkAllAsRead(_ sender: Any) {
+		AppDefaults.shared.confirmMarkAllAsRead = confirmMarkAllAsReadSwitch.isOn
 	}
 
-	@IBAction func switchFullscreenArticles(_ sender: Any) {
-		if showFullscreenArticlesSwitch.isOn {
-			AppDefaults.shared.articleFullscreenAvailable = true
-		} else {
-			AppDefaults.shared.articleFullscreenAvailable = false
-		}
+	@objc func switchFullscreenArticles(_ sender: Any) {
+		AppDefaults.shared.articleFullscreenAvailable = showFullscreenArticlesSwitch.isOn
 	}
 
-	@IBAction func switchBrowserPreference(_ sender: Any) {
-		if openLinksInNetNewsWire.isOn {
-			AppDefaults.shared.useSystemBrowser = false
-		} else {
-			AppDefaults.shared.useSystemBrowser = true
-		}
+	@objc func switchBrowserPreference(_ sender: Any) {
+		AppDefaults.shared.useSystemBrowser = !openLinksInNetNewsWireSwitch.isOn
 	}
 
-	@IBAction func switchJavaScriptPreference(_ sender: Any) {
+	@objc func switchJavaScriptPreference(_ sender: Any) {
 		AppDefaults.shared.isArticleContentJavascriptEnabled = enableJavaScriptSwitch.isOn
  	}
 
-
-	// MARK: Notifications
+	// MARK: - Notifications
 
 	@objc func contentSizeCategoryDidChange() {
 		tableView.reloadData()
@@ -314,10 +382,11 @@ private extension SettingsViewController {
 	func addFeed() {
 		self.dismiss(animated: true)
 
-		let addNavViewController = UIStoryboard.add.instantiateViewController(withIdentifier: "AddFeedViewControllerNav") as! UINavigationController
-		let addViewController = addNavViewController.topViewController as! AddFeedViewController
+		let addViewController = AddFeedViewController()
 		addViewController.initialFeed = AccountManager.netNewsWireNewsURL
 		addViewController.initialFeedName = NSLocalizedString("NetNewsWire News", comment: "NetNewsWire News")
+
+		let addNavViewController = UINavigationController(rootViewController: addViewController)
 		addNavViewController.modalPresentationStyle = .formSheet
 		addNavViewController.preferredContentSize = AddFeedViewController.preferredContentSizeForFormSheetDisplay
 

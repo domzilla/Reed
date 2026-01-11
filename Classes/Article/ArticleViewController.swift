@@ -15,15 +15,50 @@ final class ArticleViewController: UIViewController {
 
 	typealias State = (windowScrollY: Int, placeholder: Bool)
 
-	@IBOutlet private weak var nextUnreadBarButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var prevArticleBarButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var nextArticleBarButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var readBarButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var starBarButtonItem: UIBarButtonItem!
-	@IBOutlet private weak var actionBarButtonItem: UIBarButtonItem!
+	// MARK: - UI Elements
 
-	@IBOutlet private var searchBar: ArticleSearchBar!
-	@IBOutlet private var searchBarBottomConstraint: NSLayoutConstraint!
+	private lazy var nextUnreadBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: Assets.Images.nextUnread, style: .plain, target: self, action: #selector(nextUnread(_:)))
+		item.accessibilityLabel = NSLocalizedString("Next Unread", comment: "Next Unread")
+		return item
+	}()
+
+	private lazy var prevArticleBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "chevron.up"), style: .plain, target: self, action: #selector(prevArticle(_:)))
+		item.accessibilityLabel = NSLocalizedString("Previous Article", comment: "Previous Article")
+		return item
+	}()
+
+	private lazy var nextArticleBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "chevron.down"), style: .plain, target: self, action: #selector(nextArticle(_:)))
+		item.accessibilityLabel = NSLocalizedString("Next Article", comment: "Next Article")
+		return item
+	}()
+
+	private lazy var readBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: Assets.Images.circleOpen, style: .plain, target: self, action: #selector(toggleRead(_:)))
+		return item
+	}()
+
+	private lazy var starBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: Assets.Images.starOpen, style: .plain, target: self, action: #selector(toggleStar(_:)))
+		return item
+	}()
+
+	private lazy var actionBarButtonItem: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(showActivityDialog(_:)))
+		item.accessibilityLabel = NSLocalizedString("Share", comment: "Share")
+		return item
+	}()
+
+	private lazy var searchBar: ArticleSearchBar = {
+		let bar = ArticleSearchBar(frame: .zero)
+		bar.translatesAutoresizingMaskIntoConstraints = false
+		bar.isHidden = true
+		return bar
+	}()
+
+	private var searchBarBottomConstraint: NSLayoutConstraint!
 	private var defaultControls: [UIBarButtonItem]?
 
 	private var pageViewController: UIPageViewController!
@@ -72,6 +107,23 @@ final class ArticleViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
+
+		view.backgroundColor = .systemBackground
+
+		// Set up toolbar items
+		let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		toolbarItems = [
+			nextUnreadBarButtonItem,
+			flexSpace,
+			prevArticleBarButtonItem,
+			nextArticleBarButtonItem,
+			flexSpace,
+			readBarButtonItem,
+			flexSpace,
+			starBarButtonItem,
+			flexSpace,
+			actionBarButtonItem
+		]
 
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(statusesDidChange(_:)), name: .StatusesDidChange, object: nil)
@@ -130,7 +182,14 @@ final class ArticleViewController: UIViewController {
 		}
 
 		// Search bar
-		searchBar.translatesAutoresizingMaskIntoConstraints = false
+		view.addSubview(searchBar)
+		searchBarBottomConstraint = searchBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+		NSLayoutConstraint.activate([
+			searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+			searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+			searchBarBottomConstraint,
+			searchBar.heightAnchor.constraint(equalToConstant: 44)
+		])
 		NotificationCenter.default.addObserver(self, selector: #selector(beginFind(_:)), name: .FindInArticle, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(endFind(_:)), name: .EndFindInArticle, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIWindow.keyboardWillChangeFrameNotification, object: nil)
@@ -159,7 +218,7 @@ final class ArticleViewController: UIViewController {
 
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
-		if searchBar != nil && !searchBar.isHidden {
+		if !searchBar.isHidden {
 			endFind()
 			searchBar.shouldBeginEditing = false
 		}
@@ -257,27 +316,27 @@ final class ArticleViewController: UIViewController {
 		currentWebViewController?.showBars()
 	}
 
-	@IBAction func nextUnread(_ sender: Any) {
+	@objc func nextUnread(_ sender: Any) {
 		coordinator.selectNextUnread()
 	}
 
-	@IBAction func prevArticle(_ sender: Any) {
+	@objc func prevArticle(_ sender: Any) {
 		coordinator.selectPrevArticle()
 	}
 
-	@IBAction func nextArticle(_ sender: Any) {
+	@objc func nextArticle(_ sender: Any) {
 		coordinator.selectNextArticle()
 	}
 
-	@IBAction func toggleRead(_ sender: Any) {
+	@objc func toggleRead(_ sender: Any) {
 		coordinator.toggleReadForCurrentArticle()
 	}
 
-	@IBAction func toggleStar(_ sender: Any) {
+	@objc func toggleStar(_ sender: Any) {
 		coordinator.toggleStarredForCurrentArticle()
 	}
 
-	@IBAction func showActivityDialog(_ sender: Any) {
+	@objc func showActivityDialog(_ sender: Any) {
 		currentWebViewController?.showActivityDialog(popOverBarButtonItem: actionBarButtonItem)
 	}
 

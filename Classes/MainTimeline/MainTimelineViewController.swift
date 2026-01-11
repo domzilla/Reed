@@ -19,7 +19,11 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
 	private var refreshProgressView: RefreshProgressView?
 
-	@IBOutlet var markAllAsReadButton: UIBarButtonItem?
+	private lazy var markAllAsReadButton: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "checkmark"), style: .plain, target: self, action: #selector(markAllAsReadAction(_:)))
+		item.accessibilityLabel = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
+		return item
+	}()
 
 	private lazy var filterButton = UIBarButtonItem(image: Assets.Images.filter, style: .plain, target: self, action: #selector(toggleFilter(_:)))
 	private lazy var firstUnreadButton = UIBarButtonItem(image: Assets.Images.nextUnread, style: .plain, target: self, action: #selector(firstUnread(_:)))
@@ -138,6 +142,14 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
 		super.viewDidLoad()
 
+		// Register cells
+		tableView.register(MainTimelineIconFeedCell.self, forCellReuseIdentifier: "MainTimelineIconFeedCell")
+		tableView.register(MainTimelineFeedCell.self, forCellReuseIdentifier: "MainTimelineFeedCell")
+
+		// Set up toolbar items
+		let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		toolbarItems = [markAllAsReadButton, flexSpace]
+
 		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(statusesDidChange(_:)), name: .StatusesDidChange, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(feedIconDidBecomeAvailable(_:)), name: .feedIconDidBecomeAvailable, object: nil)
@@ -250,7 +262,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 		coordinator?.showInAppBrowser()
 	}
 
-	@IBAction func toggleFilter(_ sender: Any) {
+	@objc func toggleFilter(_ sender: Any) {
 		assert(coordinator != nil)
 		coordinator?.toggleReadArticlesFilter()
 	}
@@ -260,7 +272,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 		coordinator?.markAllAsReadInTimeline()
 	}
 
-	@IBAction func markAllAsRead(_ sender: Any) {
+	@objc func markAllAsReadAction(_ sender: Any) {
 		let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
 
 		if let source = sender as? UIBarButtonItem {
@@ -280,7 +292,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 		}
 	}
 
-	@IBAction func firstUnread(_ sender: Any) {
+	@objc func firstUnread(_ sender: Any) {
 		assert(coordinator != nil)
 		coordinator?.selectFirstUnread()
 	}
@@ -776,7 +788,7 @@ private extension MainTimelineViewController {
 	}
 
 	func updateToolbar() {
-		markAllAsReadButton?.isEnabled = isTimelineUnreadAvailable
+		markAllAsReadButton.isEnabled = isTimelineUnreadAvailable
 		firstUnreadButton.isEnabled = isTimelineUnreadAvailable
 
 		if isRootSplitCollapsed {

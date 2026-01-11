@@ -12,9 +12,30 @@ import RSTree
 
 
 class MainFeedCollectionViewCell: UICollectionViewCell {
-	@IBOutlet var feedTitle: UILabel!
-	@IBOutlet var faviconView: IconView!
-	@IBOutlet var unreadCountLabel: UILabel!
+
+	let feedTitle: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let faviconView: IconView = {
+		let view = IconView()
+		view.translatesAutoresizingMaskIntoConstraints = false
+		return view
+	}()
+
+	let unreadCountLabel: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .body)
+		label.textColor = .secondaryLabel
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
 	private var faviconLeadingConstraint: NSLayoutConstraint?
 
 	var iconImage: IconImage? {
@@ -48,8 +69,6 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
 	/// If the feed is contained in a folder, the indentation level is 1
 	/// and the cell's favicon leading constrain is increased. Otherwise,
 	/// it has the standard leading constraint.
-	///
-	/// On the storyboard, no leading constraint is set.
 	var indentationLevel: Int = 0 {
 		didSet {
 			if indentationLevel == 1 {
@@ -72,13 +91,37 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
 		}
 	}
 
-    override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			super.awakeFromNib()
-			faviconLeadingConstraint = faviconView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor)
-			faviconLeadingConstraint?.isActive = true
-		}
-    }
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupViews()
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(frame:)")
+	}
+
+	private func setupViews() {
+		contentView.addSubview(faviconView)
+		contentView.addSubview(feedTitle)
+		contentView.addSubview(unreadCountLabel)
+
+		faviconLeadingConstraint = faviconView.leadingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.leadingAnchor, constant: 16)
+
+		NSLayoutConstraint.activate([
+			faviconLeadingConstraint!,
+			faviconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			faviconView.widthAnchor.constraint(equalToConstant: 24),
+			faviconView.heightAnchor.constraint(equalToConstant: 24),
+
+			feedTitle.leadingAnchor.constraint(equalTo: faviconView.trailingAnchor, constant: 8),
+			feedTitle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			feedTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
+
+			unreadCountLabel.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+			unreadCountLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+		])
+	}
 
 	override func updateConfiguration(using state: UICellConfigurationState) {
 		var backgroundConfig = UIBackgroundConfiguration.listCell().updated(for: state)

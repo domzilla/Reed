@@ -9,11 +9,50 @@
 import UIKit
 
 class MainTimelineFeedCell: UITableViewCell {
-	@IBOutlet var articleTitle: UILabel!
-	@IBOutlet var authorByLine: UILabel!
-	@IBOutlet var indicatorView: IconView!
-	@IBOutlet var articleDate: UILabel!
-	@IBOutlet var metaDataStackView: UIStackView!
+
+	let articleTitle: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .headline)
+		label.adjustsFontForContentSizeCategory = true
+		label.numberOfLines = 0
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let authorByLine: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .subheadline)
+		label.textColor = .secondaryLabel
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let indicatorView: IconView = {
+		let view = IconView()
+		view.alpha = 0.0
+		view.translatesAutoresizingMaskIntoConstraints = false
+		return view
+	}()
+
+	let articleDate: UILabel = {
+		let label = UILabel()
+		label.font = .preferredFont(forTextStyle: .footnote)
+		label.textColor = .secondaryLabel
+		label.adjustsFontForContentSizeCategory = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
+	let metaDataStackView: UIStackView = {
+		let stack = UIStackView()
+		stack.axis = .horizontal
+		stack.alignment = .center
+		stack.distribution = .fill
+		stack.spacing = 8
+		stack.translatesAutoresizingMaskIntoConstraints = false
+		return stack
+	}()
 
 	var cellData: MainTimelineCellData! {
 		didSet {
@@ -23,12 +62,41 @@ class MainTimelineFeedCell: UITableViewCell {
 
 	var isPreview: Bool = false
 
-	override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			super.awakeFromNib()
-			indicatorView.alpha = 0.0
-			configureStackView()
-		}
+	override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+		super.init(style: style, reuseIdentifier: reuseIdentifier)
+		setupViews()
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(style:reuseIdentifier:)")
+	}
+
+	private func setupViews() {
+		metaDataStackView.addArrangedSubview(authorByLine)
+		metaDataStackView.addArrangedSubview(articleDate)
+
+		contentView.addSubview(indicatorView)
+		contentView.addSubview(articleTitle)
+		contentView.addSubview(metaDataStackView)
+
+		NSLayoutConstraint.activate([
+			indicatorView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+			indicatorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			indicatorView.widthAnchor.constraint(equalToConstant: 10),
+			indicatorView.heightAnchor.constraint(equalToConstant: 10),
+
+			articleTitle.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
+			articleTitle.leadingAnchor.constraint(equalTo: indicatorView.trailingAnchor, constant: 8),
+			articleTitle.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+
+			metaDataStackView.topAnchor.constraint(equalTo: articleTitle.bottomAnchor, constant: 4),
+			metaDataStackView.leadingAnchor.constraint(equalTo: articleTitle.leadingAnchor),
+			metaDataStackView.trailingAnchor.constraint(lessThanOrEqualTo: contentView.layoutMarginsGuide.trailingAnchor),
+			metaDataStackView.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor),
+		])
+
+		configureStackView()
 	}
 
 	private func configureStackView() {
@@ -101,7 +169,7 @@ class MainTimelineFeedCell: UITableViewCell {
 				.paragraphStyle: paragraphStyle,
 				.foregroundColor: isSelected ? UIColor.white : UIColor.label
  			]
-			let titleWithNewline = cellData.title + (cellData.summary != "" ? "\n" : "" ) 
+			let titleWithNewline = cellData.title + (cellData.summary != "" ? "\n" : "" )
 			let titleAttributed = NSAttributedString(string: titleWithNewline, attributes: titleAttributes)
 			attributedCellText.append(titleAttributed)
 		}

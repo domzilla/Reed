@@ -12,10 +12,6 @@ import RSTree
 import RSParser
 
 final class AddFeedViewController: UITableViewController {
-	@IBOutlet var addButton: UIBarButtonItem!
-	@IBOutlet var urlTextField: UITextField!
-	@IBOutlet var urlTextFieldToSuperViewConstraint: NSLayoutConstraint!
-	@IBOutlet var nameTextField: UITextField!
 
 	static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 400.0)
 
@@ -29,8 +25,60 @@ final class AddFeedViewController: UITableViewController {
 
 	var container: Container?
 
+	// MARK: - UI Elements
+
+	private lazy var addButton: UIBarButtonItem = {
+		let button = UIBarButtonItem(title: NSLocalizedString("Add", comment: "Add"), style: .prominent, target: self, action: #selector(add(_:)))
+		button.isEnabled = false
+		return button
+	}()
+
+	private lazy var urlTextField: UITextField = {
+		let textField = UITextField()
+		textField.placeholder = NSLocalizedString("URL", comment: "URL")
+		textField.autocorrectionType = .no
+		textField.autocapitalizationType = .none
+		textField.keyboardType = .URL
+		textField.returnKeyType = .done
+		textField.clearButtonMode = .whileEditing
+		textField.font = .preferredFont(forTextStyle: .body)
+		textField.adjustsFontForContentSizeCategory = true
+		textField.translatesAutoresizingMaskIntoConstraints = false
+		return textField
+	}()
+
+	private lazy var nameTextField: UITextField = {
+		let textField = UITextField()
+		textField.placeholder = NSLocalizedString("Title (Optional)", comment: "Title (Optional)")
+		textField.autocorrectionType = .no
+		textField.autocapitalizationType = .words
+		textField.returnKeyType = .done
+		textField.clearButtonMode = .whileEditing
+		textField.font = .preferredFont(forTextStyle: .body)
+		textField.adjustsFontForContentSizeCategory = true
+		textField.translatesAutoresizingMaskIntoConstraints = false
+		return textField
+	}()
+
+	// MARK: - Initialization
+
+	init() {
+		super.init(style: .insetGrouped)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init()")
+	}
+
+	// MARK: - Lifecycle
+
 	override func viewDidLoad() {
         super.viewDidLoad()
+
+		title = NSLocalizedString("Add Feed", comment: "Add Feed")
+		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)))
+		navigationItem.rightBarButtonItem = addButton
 
 		if initialFeed == nil, let urlString = UIPasteboard.general.string {
 			if urlString.mayBeURL {
@@ -38,8 +86,6 @@ final class AddFeedViewController: UITableViewController {
 			}
 		}
 
-		urlTextField.autocorrectionType = .no
-		urlTextField.autocapitalizationType = .none
 		urlTextField.text = initialFeed
 		urlTextField.delegate = self
 
@@ -58,7 +104,8 @@ final class AddFeedViewController: UITableViewController {
 
 		updateFolderLabel()
 
-		tableView.register(UINib(nibName: "AddFeedSelectFolderTableViewCell", bundle: nil), forCellReuseIdentifier: "AddFeedSelectFolderTableViewCell")
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
+		tableView.register(AddFeedSelectFolderTableViewCell.self, forCellReuseIdentifier: "AddFeedSelectFolderTableViewCell")
 
 		NotificationCenter.default.addObserver(self, selector: #selector(textDidChange(_:)), name: UITextField.textDidChangeNotification, object: urlTextField)
 
@@ -67,12 +114,14 @@ final class AddFeedViewController: UITableViewController {
 		}
 	}
 
-	@IBAction func cancel(_ sender: Any) {
+	// MARK: - Actions
+
+	@objc func cancel(_ sender: Any) {
 		userCancelled = true
 		dismiss(animated: true)
 	}
 
-	@IBAction func add(_ sender: Any) {
+	@objc func add(_ sender: Any) {
 
 		let urlString = urlTextField.text ?? ""
 		let normalizedURLString = urlString.normalizedURL
@@ -96,8 +145,8 @@ final class AddFeedViewController: UITableViewController {
 		}
 
 		addButton.isEnabled = false
-		addButton.customView = activityIndicator
-		addButton.customView?.isHidden = false
+		navigationItem.rightBarButtonItem?.customView = activityIndicator
+		navigationItem.rightBarButtonItem?.customView?.isHidden = false
 		activityIndicator.startAnimating()
 
 		let feedName = (nameTextField.text?.isEmpty ?? true) ? nil : nameTextField.text
@@ -115,7 +164,7 @@ final class AddFeedViewController: UITableViewController {
 			case .failure(let error):
 				self.addButton.isEnabled = true
 				self.activityIndicator.stopAnimating()
-				self.addButton.customView = nil
+				self.navigationItem.rightBarButtonItem?.customView = nil
 				self.presentError(error)
 			}
 
@@ -127,21 +176,57 @@ final class AddFeedViewController: UITableViewController {
 		updateUI()
 	}
 
+	// MARK: - Table view data source
+
+	override func numberOfSections(in tableView: UITableView) -> Int {
+		return 1
+	}
+
+	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+		return 3
+	}
+
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		if indexPath.row == 2 {
-			let cell = tableView.dequeueReusableCell(withIdentifier: "AddFeedSelectFolderTableViewCell", for: indexPath) as? AddFeedSelectFolderTableViewCell
-			cell!.detailLabel.text = folderLabel
-			return cell!
-		} else {
-			return super.tableView(tableView, cellForRowAt: indexPath)
+		switch indexPath.row {
+		case 0:
+			let cell = tableView.dequeueReusableCell(withIdentifier: "TextFieldCell", for: indexPath)
+			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+			cell.selectionStyle = .none
+			cell.contentView.addSubview(urlTextField)
+			NSLayoutConstraint.activate([
+				urlTextField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+				urlTextField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+				urlTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+				urlTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
+			])
+			return cell
+		case 1:
+			let cell = tableView.dequeueReusableCell(withIdentifier: "TextFieldCell", for: indexPath)
+			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+			cell.selectionStyle = .none
+			cell.contentView.addSubview(nameTextField)
+			NSLayoutConstraint.activate([
+				nameTextField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+				nameTextField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+				nameTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+				nameTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
+			])
+			return cell
+		case 2:
+			let cell = tableView.dequeueReusableCell(withIdentifier: "AddFeedSelectFolderTableViewCell", for: indexPath) as! AddFeedSelectFolderTableViewCell
+			cell.detailLabel.text = folderLabel
+			cell.accessoryType = .disclosureIndicator
+			return cell
+		default:
+			fatalError("Unexpected row")
 		}
 	}
 
 	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		if indexPath.row == 2 {
-			let navController = UIStoryboard.add.instantiateViewController(withIdentifier: "AddFeedFolderNavViewController") as! UINavigationController
+			let folderViewController = AddFeedFolderViewController()
+			let navController = UINavigationController(rootViewController: folderViewController)
 			navController.modalPresentationStyle = .currentContext
-			let folderViewController = navController.topViewController as! AddFeedFolderViewController
 			folderViewController.delegate = self
 			folderViewController.initialContainer = container
 			present(navController, animated: true)

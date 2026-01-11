@@ -14,39 +14,44 @@ enum SliderConfiguration {
 }
 
 final class ModernTimelineSliderCell: UITableViewCell {
-	@IBOutlet var slider: UISlider!
+
+	let slider: UISlider = {
+		let slider = UISlider()
+		slider.translatesAutoresizingMaskIntoConstraints = false
+		return slider
+	}()
 
 	private let container = UIView()
-
-	override func awakeFromNib() {
-		MainActor.assumeIsolated {
-			super.awakeFromNib()
-			setup()
-		}
-	}
 
 	override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 		setup()
 	}
 
+	@available(*, unavailable)
 	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		setup()
+		fatalError("Use init(style:reuseIdentifier:)")
 	}
 
 	private func setup() {
-		container.layer.cornerRadius = contentView.frame.height/2
+		container.layer.cornerRadius = 22
 		container.backgroundColor = .systemBackground
 		container.translatesAutoresizingMaskIntoConstraints = false
 		contentView.addSubview(container)
 		contentView.sendSubviewToBack(container)
+
+		contentView.addSubview(slider)
+		slider.addTarget(self, action: #selector(sliderValueChanges(_:)), for: .valueChanged)
 
 		NSLayoutConstraint.activate([
 			container.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 0),
 			container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 0),
 			container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
 			container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+
+			slider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+			slider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+			slider.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 		])
 		contentView.backgroundColor = .systemGroupedBackground
 	}
@@ -77,7 +82,7 @@ final class ModernTimelineSliderCell: UITableViewCell {
 		// Configure the view for the selected state
 	}
 
-	@IBAction func sliderValueChanges(_ sender: Any) {
+	@objc func sliderValueChanges(_ sender: Any) {
 		switch sliderConfiguration {
 		case .numberOfLines:
 			AppDefaults.shared.timelineNumberOfLines = Int(slider.value.rounded())

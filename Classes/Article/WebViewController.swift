@@ -603,7 +603,7 @@ private extension WebViewController {
 	}
 
 	func contextMenuPreviewProvider() -> UIViewController {
-		let previewProvider = UIStoryboard.main.instantiateController(ofType: ContextMenuPreviewViewController.self)
+		let previewProvider = ContextMenuPreviewViewController()
 		previewProvider.article = article
 		return previewProvider
 	}
