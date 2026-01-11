@@ -58,6 +58,9 @@ import RSWeb
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		AppDefaults.registerDefaults()
 
+		// Start iCloud account monitoring early
+		iCloudAccountMonitor.shared.start()
+
 		registerBackgroundTasks()
 		CacheCleaner.purgeIfNecessary()
 		initializeDownloaders()

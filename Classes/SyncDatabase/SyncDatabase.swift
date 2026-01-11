@@ -80,6 +80,63 @@ public actor SyncDatabase {
 		SyncStatusTable.deleteSelectedForProcessing(articleIDs, database: database)
 	}
 
+	// MARK: - Pending CloudKit Operations
+
+	public func insertPendingOperation(_ operation: PendingCloudKitOperation) throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.insertOperation(operation, database: database)
+	}
+
+	public func insertPendingOperations(_ operations: [PendingCloudKitOperation]) throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.insertOperations(operations, database: database)
+	}
+
+	public func selectPendingOperationsForProcessing(limit: Int? = nil) throws -> [PendingCloudKitOperation]? {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		return PendingCloudKitOperationTable.selectForProcessing(limit: limit, database: database)
+	}
+
+	public func selectPendingOperationsCount() throws -> Int? {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		return PendingCloudKitOperationTable.selectPendingCount(database: database)
+	}
+
+	public func resetPendingOperationsSelectedForProcessing(_ ids: Set<String>) throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.resetSelectedForProcessing(ids, database: database)
+	}
+
+	public func deletePendingOperationsSelectedForProcessing(_ ids: Set<String>) throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.deleteSelectedForProcessing(ids, database: database)
+	}
+
+	public func deletePendingOperation(_ id: String) throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.deleteOperation(id, database: database)
+	}
+
+	nonisolated public func resetAllPendingOperationsSelectedForProcessing() {
+		Task {
+			try? await _resetAllPendingOperationsSelectedForProcessing()
+		}
+	}
+
 	// MARK: - Suspend and Resume
 
 	nonisolated public func suspend() {
@@ -101,6 +158,7 @@ private extension SyncDatabase {
 
 	static let tableCreationStatements = """
 	CREATE TABLE if not EXISTS syncStatus (articleID TEXT NOT NULL, key TEXT NOT NULL, flag BOOL NOT NULL DEFAULT 0, selected BOOL NOT NULL DEFAULT 0, PRIMARY KEY (articleID, key));
+	CREATE TABLE if not EXISTS pendingCloudKitOperations (id TEXT PRIMARY KEY NOT NULL, operationType TEXT NOT NULL, payload BLOB NOT NULL, createdAt REAL NOT NULL, selected BOOL NOT NULL DEFAULT 0);
 	"""
 
 	func _resetAllSelectedForProcessing() throws {
@@ -108,6 +166,13 @@ private extension SyncDatabase {
 			throw DatabaseError.isSuspended
 		}
 		SyncStatusTable.resetAllSelectedForProcessing(database: database)
+	}
+
+	func _resetAllPendingOperationsSelectedForProcessing() throws {
+		guard let database else {
+			throw DatabaseError.isSuspended
+		}
+		PendingCloudKitOperationTable.resetAllSelectedForProcessing(database: database)
 	}
 
 	func _suspend() {
