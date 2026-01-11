@@ -74,11 +74,9 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 	}
 
 	func refreshAll(for dataStore: DataStore) async throws {
-		guard refreshProgress.isComplete else {
+		guard syncProgress.isComplete else {
 			return
 		}
-
-		syncProgress.reset()
 
 		guard NetworkMonitor.shared.isConnected else {
 			return
@@ -111,7 +109,7 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 	}
 
 	func importOPML(for dataStore: DataStore, opmlFile: URL) async throws {
-		guard refreshProgress.isComplete else {
+		guard syncProgress.isComplete else {
 			return
 		}
 
@@ -419,52 +417,47 @@ private extension CloudKitSyncProvider {
 				try await self.sendArticleStatus(dataStore: dataStore, showProgress: true)
 			}
 
-			syncProgress.reset()
+			syncProgress.completeTask()
 			dataStore.metadata.lastArticleFetchEndTime = Date()
 		} catch {
 			processSyncError(dataStore, error)
-			syncProgress.reset()
+			syncProgress.completeTask()
 			throw error
 		}
 	}
 
 	func createRSSFeed(for dataStore: DataStore, url: URL, editedName: String?, container: Container, validateFeed: Bool) async throws -> Feed {
-		syncProgress.addTasks(5)
-
+		// Find the feed URL - this may fail if the URL doesn't contain a valid feed
+		let feedSpecifiers: Set<FeedSpecifier>
 		do {
-			let feedSpecifiers = try await FeedFinder.find(url: url)
-			syncProgress.completeTask()
-
-			guard let bestFeedSpecifier = FeedSpecifier.bestFeed(in: feedSpecifiers),
-				  let feedURL = URL(string: bestFeedSpecifier.urlString) else {
-				syncProgress.completeTasks(3)
-				if validateFeed {
-					syncProgress.completeTask()
-					throw DataStoreError.createErrorNotFound
-				} else {
-					return try await addDeadFeed(dataStore: dataStore, url: url, editedName: editedName, container: container)
-				}
-			}
-
-			if dataStore.hasFeed(withURL: bestFeedSpecifier.urlString) {
-				syncProgress.completeTasks(4)
-				throw DataStoreError.createErrorAlreadySubscribed
-			}
-
-			return try await createAndSyncFeed(dataStore: dataStore,
-											   feedURL: feedURL,
-											   bestFeedSpecifier: bestFeedSpecifier,
-											   editedName: editedName,
-											   container: container)
+			feedSpecifiers = try await FeedFinder.find(url: url)
 		} catch {
-			syncProgress.completeTasks(3)
 			if validateFeed {
-				syncProgress.completeTask()
 				throw DataStoreError.createErrorNotFound
 			} else {
 				return try await addDeadFeed(dataStore: dataStore, url: url, editedName: editedName, container: container)
 			}
 		}
+
+		guard let bestFeedSpecifier = FeedSpecifier.bestFeed(in: feedSpecifiers),
+			  let feedURL = URL(string: bestFeedSpecifier.urlString) else {
+			if validateFeed {
+				throw DataStoreError.createErrorNotFound
+			} else {
+				return try await addDeadFeed(dataStore: dataStore, url: url, editedName: editedName, container: container)
+			}
+		}
+
+		if dataStore.hasFeed(withURL: bestFeedSpecifier.urlString) {
+			throw DataStoreError.createErrorAlreadySubscribed
+		}
+
+		// Create and sync the feed - errors here (e.g., CloudKit errors) should propagate
+		return try await createAndSyncFeed(dataStore: dataStore,
+										   feedURL: feedURL,
+										   bestFeedSpecifier: bestFeedSpecifier,
+										   editedName: editedName,
+										   container: container)
 	}
 
 	func createAndSyncFeed(dataStore: DataStore, feedURL: URL, bestFeedSpecifier: FeedSpecifier, editedName: String?, container: Container) async throws -> Feed {
@@ -483,14 +476,12 @@ private extension CloudKitSyncProvider {
 			return feed
 		} catch {
 			container.removeFeedFromTreeAtTopLevel(feed)
-			syncProgress.completeTasks(3)
 			throw error
 		}
 	}
 
 	func downloadAndParseFeed(feedURL: URL, feed: Feed) async throws -> ParsedFeed {
 		let (parsedFeed, response) = try await InitialFeedDownloader.download(feedURL)
-		syncProgress.completeTask()
 		feed.lastCheckDate = Date()
 
 		guard let parsedFeed else {
@@ -514,7 +505,6 @@ private extension CloudKitSyncProvider {
 														  editedName: editedName,
 														  homePageURL: parsedFeed.homePageURL,
 														  container: container)
-		syncProgress.completeTask()
 		feed.externalID = externalID
 		sendNewArticlesToTheCloud(dataStore, feed)
 	}
@@ -522,8 +512,6 @@ private extension CloudKitSyncProvider {
 	func addDeadFeed(dataStore: DataStore, url: URL, editedName: String?, container: Container) async throws -> Feed {
 		let feed = dataStore.createFeed(with: editedName, url: url.absoluteString, feedID: url.absoluteString, homePageURL: nil)
 		container.addFeedToTreeAtTopLevel(feed)
-
-		defer { syncProgress.completeTask() }
 
 		do {
 			let externalID = try await feedsZone.createFeed(url: url.absoluteString,
@@ -545,7 +533,6 @@ private extension CloudKitSyncProvider {
 				let articles = try await dataStore.fetchArticlesAsync(.feed(feed))
 
 				await storeArticleChanges(new: articles, updated: Set<Article>(), deleted: Set<Article>())
-				syncProgress.completeTask()
 
 				try await sendArticleStatus(dataStore: dataStore, showProgress: true)
 				try? await articlesZone.fetchChangesInZone()
