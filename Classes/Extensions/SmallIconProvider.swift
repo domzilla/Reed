@@ -15,7 +15,7 @@ import RSCore
 
 @MainActor extension DataStore: SmallIconProvider {
 	var smallIcon: IconImage? {
-		// We only support iCloud now
+		// CloudKit icon represents sync capability
 		let image = Assets.accountImage(.cloudKit)
 		return IconImage(image)
 	}

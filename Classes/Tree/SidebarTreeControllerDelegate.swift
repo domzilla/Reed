@@ -48,7 +48,7 @@ private extension SidebarTreeControllerDelegate {
 		smartFeedsNode.isGroupItem = true
 		topLevelNodes.append(smartFeedsNode)
 
-		// Feeds section - show feeds directly from the single iCloud account (no account grouping)
+		// Feeds section - show feeds directly from the data store (no account grouping)
 		let account = AccountManager.shared.defaultAccount
 		if account.isActive {
 			let feedsNode = rootNode.existingOrNewChildNode(with: account)

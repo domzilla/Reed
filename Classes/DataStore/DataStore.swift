@@ -41,7 +41,7 @@ public enum FetchType {
 }
 
 /// The single data store for all feeds, folders, and articles.
-/// Syncs automatically via iCloud.
+/// Syncs automatically via CloudKit when available.
 @MainActor public final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
     public struct UserInfoKey {
 		public static let dataStore = "dataStore"
@@ -226,7 +226,7 @@ public enum FetchType {
 		let databaseFilePath = (dataFolder as NSString).appendingPathComponent("DB.sqlite3")
 		self.database = ArticlesDatabase(databaseFilePath: databaseFilePath, accountID: dataStoreID, retentionStyle: .feedBased)
 
-		// Single iCloud-synced data store
+		// Default name shown in UI for the feeds section
 		defaultName = NSLocalizedString("Feeds", comment: "Feeds")
 
 		NotificationCenter.default.addObserver(self, selector: #selector(downloadProgressDidChange(_:)), name: .DownloadProgressDidChange, object: nil)
@@ -1290,7 +1290,7 @@ public typealias Account = DataStore
 public typealias AccountType = DataStoreType
 public typealias AccountError = DataStoreError
 
-// Backward compatibility - AccountBehaviors stub (iCloud supports all features)
+// Backward compatibility - AccountBehaviors stub (all features supported)
 public typealias AccountBehaviors = [AccountBehavior]
 public enum AccountBehavior: Equatable {
 	case disallowFeedCopyInRootFolder
@@ -1304,7 +1304,7 @@ public enum AccountBehavior: Equatable {
 // Backward compatibility extensions
 public extension DataStore {
 	var accountID: String { dataStoreID }
-	var behaviors: AccountBehaviors { [] } // iCloud supports all features
+	var behaviors: AccountBehaviors { [] } // All features supported
 }
 
 public extension Feed {

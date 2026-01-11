@@ -87,7 +87,7 @@ enum CloudKitFeedsZoneError: LocalizedError {
 		try await save(records)
 	}
 
-	///  Persist a web feed record to iCloud and return the external key
+	///  Persist a web feed record to CloudKit and return the external key
 	func createFeed(url: String, name: String?, editedName: String?, homePageURL: String?, container: Container) async throws -> String {
 		let recordID = CKRecord.ID(recordName: url.md5String, zoneID: zoneID)
 		let record = CKRecord(recordType: CloudKitFeed.recordType, recordID: recordID)

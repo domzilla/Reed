@@ -11,8 +11,8 @@ extension ExtensionAccount {
 	@MainActor init(dataStore: DataStore) {
 		self.name = dataStore.nameForDisplay
 		self.accountID = dataStore.dataStoreID
-		self.type = .cloudKit // We only support iCloud now
-		self.disallowFeedInRootFolder = false // iCloud supports feeds in root folder
+		self.type = .cloudKit // CloudKit sync support
+		self.disallowFeedInRootFolder = false // Feeds allowed in root folder
 		self.containerID = dataStore.containerID
 		self.folders = dataStore.sortedFolders?.map { ExtensionFolder(folder: $0) } ?? [ExtensionFolder]()
 	}

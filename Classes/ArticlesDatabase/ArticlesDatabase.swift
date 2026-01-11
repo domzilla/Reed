@@ -37,7 +37,7 @@ public struct ArticleChanges: Sendable {
 
 @MainActor public final class ArticlesDatabase: Sendable {
 	public enum RetentionStyle: Sendable {
-		case feedBased // Local and iCloud: article retention is defined by contents of feed
+		case feedBased // Local storage: article retention is defined by contents of feed
 		case syncSystem // Feedbin, Feedly, etc.: article retention is defined by external system
 	}
 
@@ -248,7 +248,7 @@ public struct ArticleChanges: Sendable {
 
 	// MARK: - Saving, Updating, and Deleting Articles
 
-	/// Update articles and save new ones — for feed-based systems (local and iCloud).
+	/// Update articles and save new ones — for feed-based systems (local storage).
 	public func updateAsync(parsedItems: Set<ParsedItem>, feedID: String, deleteOlder: Bool) async throws -> ArticleChanges {
 		try await withCheckedThrowingContinuation { continuation in
 			_update(parsedItems: parsedItems, feedID: feedID, deleteOlder: deleteOlder) { result in

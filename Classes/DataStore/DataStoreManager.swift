@@ -14,15 +14,15 @@ import RSDatabase
 
 // Main thread only.
 
-/// Manages the single iCloud-synced data store.
-/// All user data lives on the device and syncs via iCloud automatically.
+/// Manages the data store with optional CloudKit sync.
+/// All user data lives on the device and syncs via CloudKit when available.
 @MainActor public final class DataStoreManager: UnreadCountProvider {
 	public static var shared = DataStoreManager()
 
 	public static let netNewsWireNewsURL = "https://netnewswire.blog/feed.xml"
 	private static let jsonNetNewsWireNewsURL = "https://netnewswire.blog/feed.json"
 
-	/// The single iCloud data store used for all data
+	/// The primary data store used for all feeds and articles
 	public let defaultDataStore: DataStore
 
 	private let dataStoresFolder: String
@@ -44,7 +44,7 @@ import RSDatabase
 		}
 	}
 
-	/// Returns the single iCloud data store
+	/// Returns the data store as an array for API compatibility
 	public var dataStores: [DataStore] {
 		[defaultDataStore]
 	}
@@ -53,7 +53,7 @@ import RSDatabase
 		dataStores
 	}
 
-	/// Always true since we only use iCloud
+	/// Always true since we have a single data store with CloudKit sync support
 	public var hasiCloudDataStore: Bool {
 		true
 	}
@@ -85,14 +85,14 @@ import RSDatabase
 	@MainActor public init() {
 		self.dataStoresFolder = AppConfig.dataSubfolder(named: "DataStores").path
 
-		// Create the iCloud data store folder
+		// Create the data store folder
 		// Format: "2_iCloud" where 2 is the CloudKit type raw value for backward compatibility
 		let iCloudDataStoreFolder = (dataStoresFolder as NSString).appendingPathComponent("2_\(iCloudDataStoreIdentifier)")
 		do {
 			try FileManager.default.createDirectory(atPath: iCloudDataStoreFolder, withIntermediateDirectories: true, attributes: nil)
 		}
 		catch {
-			assertionFailure("Could not create folder for iCloud data store.")
+			assertionFailure("Could not create folder for data store.")
 			abort()
 		}
 
@@ -299,7 +299,7 @@ private extension DataStoreManager {
 		unreadCount = defaultDataStore.isActive ? defaultDataStore.unreadCount : 0
 	}
 
-	/// Migrates data from old multi-data-store structure to single iCloud data store
+	/// Migrates data from old multi-data-store structure to the unified data store
 	static func migrateFromLegacyDataStores(dataStoresFolder: String, iCloudDataStoreFolder: String) {
 		let fileManager = FileManager.default
 
@@ -402,13 +402,13 @@ public typealias AccountManager = DataStoreManager
 // MARK: - Backward Compatibility Extensions
 
 public extension DataStoreManager {
-	/// Backward compatible alias - returns the single iCloud data store
+	/// Backward compatible alias - returns active data stores
 	var activeAccounts: [DataStore] { activeDataStores }
 
-	/// Backward compatible alias - returns the single iCloud data store
+	/// Backward compatible alias - returns sorted active data stores
 	var sortedActiveAccounts: [DataStore] { sortedActiveDataStores }
 
-	/// Backward compatible alias - returns the single iCloud data store
+	/// Backward compatible alias - returns the default data store
 	var defaultAccount: DataStore { defaultDataStore }
 
 	/// Backward compatible method alias
