@@ -22,7 +22,7 @@ import UIKit
 	/// The image for the command.
 	///
 	/// Often the icon of the target application.
-	var image: RSImage? { get }
+	var image: UIImage? { get }
 
 	/// Determine whether an object can be sent to the target application.
 	///
