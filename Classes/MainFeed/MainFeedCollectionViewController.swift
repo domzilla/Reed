@@ -714,8 +714,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
 		menuItems.append(addFolderAction)
 
-		// Use .singleSelection to anchor menu properly, children in order (Add Feed first)
-		let contextMenu = UIMenu(title: NSLocalizedString("Add Item", comment: "Add Item"), image: nil, identifier: nil, options: [], children: menuItems)
+		// Reverse to show Add Feed first (menus render bottom-to-top)
+		let contextMenu = UIMenu(title: NSLocalizedString("Add Item", comment: "Add Item"), image: nil, identifier: nil, options: [], children: menuItems.reversed())
 
 		self.addNewItemButton.menu = contextMenu
 	}

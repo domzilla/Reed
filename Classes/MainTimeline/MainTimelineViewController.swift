@@ -356,9 +356,9 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 	}
 
 	func updateNavigationBarSubtitle(_ text: String) {
+		// Don't show subtitle to match storyboard behavior
 		if let label = navigationItem.subtitleView as? UILabel {
-			label.text = text
-			label.isUserInteractionEnabled = ((coordinator?.timelineFeed as? PseudoFeed) == nil)
+			label.text = ""
 			label.sizeToFit()
 		}
 	}

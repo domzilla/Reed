@@ -107,8 +107,10 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
 			faviconView.widthAnchor.constraint(equalToConstant: 24),
 			faviconView.heightAnchor.constraint(equalToConstant: 24),
 
+			// Folder title with top/bottom padding to drive cell height (matching storyboard)
 			folderTitle.leadingAnchor.constraint(equalTo: faviconView.trailingAnchor, constant: 8),
-			folderTitle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			folderTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
+			folderTitle.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -14),
 			folderTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
 
 			unreadCountLabel.trailingAnchor.constraint(equalTo: disclosureButton.leadingAnchor, constant: -8),

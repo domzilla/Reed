@@ -112,17 +112,20 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
 
 		NSLayoutConstraint.activate([
 			faviconLeadingConstraint!,
-			faviconView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+			// Icon vertically centered in cell (matching storyboard)
+			faviconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 			faviconView.widthAnchor.constraint(equalToConstant: 24),
 			faviconView.heightAnchor.constraint(equalToConstant: 24),
 
+			// Text with padding to drive cell height (14pt matches storyboard)
 			feedTitle.leadingAnchor.constraint(equalTo: faviconView.trailingAnchor, constant: 8),
-			feedTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-			feedTitle.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+			feedTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
+			feedTitle.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -14),
 			feedTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
 
+			// Unread count vertically centered (matching storyboard)
 			unreadCountLabel.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-			unreadCountLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+			unreadCountLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 		])
 	}
 

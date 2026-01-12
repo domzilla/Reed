@@ -105,15 +105,17 @@ final class MainFeedCollectionHeaderReusableView: UICollectionReusableView {
 		unreadLabelWidthConstraint?.isActive = true
 
 		NSLayoutConstraint.activate([
+			// Header title with top/bottom padding to drive header height (matching storyboard)
 			headerTitle.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16),
-			headerTitle.centerYAnchor.constraint(equalTo: centerYAnchor),
+			headerTitle.topAnchor.constraint(equalTo: topAnchor, constant: 24),
+			headerTitle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
 			headerTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
 
 			unreadCountLabel.trailingAnchor.constraint(equalTo: disclosureIndicator.leadingAnchor, constant: -8),
-			unreadCountLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+			unreadCountLabel.centerYAnchor.constraint(equalTo: headerTitle.centerYAnchor),
 
 			disclosureIndicator.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16),
-			disclosureIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+			disclosureIndicator.centerYAnchor.constraint(equalTo: headerTitle.centerYAnchor),
 			disclosureIndicator.widthAnchor.constraint(equalToConstant: 16),
 			disclosureIndicator.heightAnchor.constraint(equalToConstant: 16),
 		])
