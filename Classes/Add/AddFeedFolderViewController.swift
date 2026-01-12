@@ -23,7 +23,8 @@ final class AddFeedFolderViewController: UITableViewController {
 	// MARK: - Initialization
 
 	init() {
-		super.init(style: .insetGrouped)
+		// Use .grouped to match storyboard (plain list style, not insetGrouped card style)
+		super.init(style: .grouped)
 	}
 
 	@available(*, unavailable)
@@ -36,7 +37,7 @@ final class AddFeedFolderViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-		title = NSLocalizedString("Folder", comment: "Folder")
+		title = NSLocalizedString("Select Folder", comment: "Select Folder")
 		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)))
 
 		tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")

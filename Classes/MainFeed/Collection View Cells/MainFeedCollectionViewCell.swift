@@ -17,6 +17,8 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
 		let label = UILabel()
 		label.font = .preferredFont(forTextStyle: .body)
 		label.adjustsFontForContentSizeCategory = true
+		label.numberOfLines = 2
+		label.lineBreakMode = .byWordWrapping
 		label.translatesAutoresizingMaskIntoConstraints = false
 		return label
 	}()
@@ -110,16 +112,17 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
 
 		NSLayoutConstraint.activate([
 			faviconLeadingConstraint!,
-			faviconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			faviconView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
 			faviconView.widthAnchor.constraint(equalToConstant: 24),
 			faviconView.heightAnchor.constraint(equalToConstant: 24),
 
 			feedTitle.leadingAnchor.constraint(equalTo: faviconView.trailingAnchor, constant: 8),
-			feedTitle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			feedTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+			feedTitle.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
 			feedTitle.trailingAnchor.constraint(lessThanOrEqualTo: unreadCountLabel.leadingAnchor, constant: -8),
 
 			unreadCountLabel.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-			unreadCountLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			unreadCountLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
 		])
 	}
 

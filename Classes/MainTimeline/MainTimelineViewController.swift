@@ -227,9 +227,10 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 		if navigationController?.navigationBar.isHidden ?? false {
 			navigationController?.navigationBar.alpha = 0
 		}
-		//navigationItem.subtitle = "" // don't inherit feeds subtitle on push
-		updateNavigationBarTitle(coordinator?.timelineFeed?.nameForDisplay ?? "")
-		coordinator?.updateNavigationBarSubtitles(nil)
+		// Use "Timeline" as title to match storyboard behavior
+		updateNavigationBarTitle(NSLocalizedString("Timeline", comment: "Timeline"))
+		// Clear subtitle to match storyboard (no subtitle)
+		updateNavigationBarSubtitle("")
 	}
 
 	override func viewDidAppear(_ animated: Bool) {

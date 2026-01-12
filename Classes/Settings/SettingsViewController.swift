@@ -62,9 +62,9 @@ final class SettingsViewController: UITableViewController {
 		return toggle
 	}()
 
-	// Section titles
+	// Section titles (matching storyboard)
 	private let sectionTitles = [
-		"",
+		NSLocalizedString("Notifications, Badge, Data, & More", comment: "Notifications, Badge, Data, & More"),
 		NSLocalizedString("Feeds", comment: "Feeds"),
 		NSLocalizedString("Timeline", comment: "Timeline"),
 		NSLocalizedString("Articles", comment: "Articles"),
@@ -88,7 +88,8 @@ final class SettingsViewController: UITableViewController {
 		super.viewDidLoad()
 
 		title = NSLocalizedString("Settings", comment: "Settings")
-		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done(_:)))
+		// Use X button to match storyboard
+		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(done(_:)))
 
 		NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange), name: UIContentSizeCategory.didChangeNotification, object: nil)
 
@@ -161,10 +162,10 @@ final class SettingsViewController: UITableViewController {
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		switch (indexPath.section, indexPath.row) {
-		// Section 0: System Settings
+		// Section 0: System Settings (matching storyboard label)
 		case (0, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("System Settings", comment: "System Settings")
+			cell.textLabel?.text = NSLocalizedString("Open System Settings", comment: "Open System Settings")
 			cell.accessoryType = .disclosureIndicator
 			return cell
 
@@ -181,7 +182,7 @@ final class SettingsViewController: UITableViewController {
 			return cell
 		case (1, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Add NetNewsWire News", comment: "Add NetNewsWire News")
+			cell.textLabel?.text = NSLocalizedString("Add NetNewsWire News Feed", comment: "Add NetNewsWire News Feed")
 			cell.accessoryType = .none
 			return cell
 
@@ -200,7 +201,7 @@ final class SettingsViewController: UITableViewController {
 			return cell
 		case (2, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Refresh Clears Read Articles", comment: "Refresh Clears Read Articles")
+			cell.textLabel?.text = NSLocalizedString("Refresh to Clear Read Articles", comment: "Refresh to Clear Read Articles")
 			cell.accessoryView = refreshClearsReadArticlesSwitch
 			cell.selectionStyle = .none
 			return cell

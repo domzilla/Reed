@@ -76,8 +76,9 @@ final class AddFeedViewController: UITableViewController {
 	override func viewDidLoad() {
         super.viewDidLoad()
 
-		title = NSLocalizedString("Add Feed", comment: "Add Feed")
-		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)))
+		title = NSLocalizedString("Add Web Feed", comment: "Add Web Feed")
+		// Use text "Cancel" button to match storyboard (not X icon)
+		navigationItem.leftBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .plain, target: self, action: #selector(cancel(_:)))
 		navigationItem.rightBarButtonItem = addButton
 
 		if initialFeed == nil, let urlString = UIPasteboard.general.string {
@@ -215,7 +216,8 @@ final class AddFeedViewController: UITableViewController {
 		case 2:
 			let cell = tableView.dequeueReusableCell(withIdentifier: "AddFeedSelectFolderTableViewCell", for: indexPath) as! AddFeedSelectFolderTableViewCell
 			cell.detailLabel.text = folderLabel
-			cell.accessoryType = .disclosureIndicator
+			// No chevron to match storyboard
+			cell.accessoryType = .none
 			return cell
 		default:
 			fatalError("Unexpected row")

@@ -92,7 +92,8 @@ final class FeedInspectorViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done(_:)))
+		// Checkmark on left to match storyboard
+		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done(_:)))
 
 		tableView.register(InspectorIconHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeader")
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
@@ -223,9 +224,9 @@ final class FeedInspectorViewController: UITableViewController {
 			return cell
 
 		case (0, 2):
-			// Always show reader view switch
+			// Always show reader view switch (matching storyboard label)
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Always Show Reader View", comment: "Always Show Reader View")
+			cell.textLabel?.text = NSLocalizedString("Always Use Reader View", comment: "Always Use Reader View")
 			cell.textLabel?.font = .preferredFont(forTextStyle: .body)
 			cell.textLabel?.adjustsFontForContentSizeCategory = true
 			cell.accessoryView = alwaysShowReaderViewSwitch
@@ -233,11 +234,15 @@ final class FeedInspectorViewController: UITableViewController {
 			return cell
 
 		case (1, 0):
-			// Home Page URL
+			// Home Page URL (external link icon to match storyboard)
 			let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
 			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
 			cell.selectionStyle = .default
-			cell.accessoryType = .disclosureIndicator
+			// Use external link icon instead of chevron to match storyboard
+			let linkImage = UIImage(systemName: "arrow.up.forward.app")
+			let linkImageView = UIImageView(image: linkImage)
+			linkImageView.tintColor = .secondaryLabel
+			cell.accessoryView = linkImageView
 			cell.contentView.addSubview(homePageLabel)
 			NSLayoutConstraint.activate([
 				homePageLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),

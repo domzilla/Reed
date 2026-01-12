@@ -69,12 +69,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		// Set up navigation bar
-		navigationItem.rightBarButtonItem = addNewItemButton
+		// Set up navigation bar (filter on right, matching storyboard)
+		navigationItem.rightBarButtonItem = filterButton
 
-		// Set up toolbar
+		// Set up toolbar (settings left, add right, matching storyboard)
 		let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-		toolbarItems = [settingsButton, flexSpace, filterButton]
+		toolbarItems = [settingsButton, flexSpace, addNewItemButton]
 
 		registerForNotifications()
 		configureCollectionView()
@@ -629,7 +629,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 	}
 
 	func setFilterButtonToInactive() {
-		filterButton.tintColor = nil
+		filterButton.tintColor = .label
 		filterButton.accLabelText = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
 	}
 
@@ -694,7 +694,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 	@objc
 	func configureContextMenu(_: Any? = nil) {
 		/*
-			Context Menu Order:
+			Context Menu Order (matching storyboard):
 			1. Add Feed
 			2. Add Folder
 		*/
@@ -714,7 +714,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
 		menuItems.append(addFolderAction)
 
-		let contextMenu = UIMenu(title: NSLocalizedString("Add Item", comment: "Add Item"), image: nil, identifier: nil, options: [], children: menuItems.reversed())
+		// Use .singleSelection to anchor menu properly, children in order (Add Feed first)
+		let contextMenu = UIMenu(title: NSLocalizedString("Add Item", comment: "Add Item"), image: nil, identifier: nil, options: [], children: menuItems)
 
 		self.addNewItemButton.menu = contextMenu
 	}
