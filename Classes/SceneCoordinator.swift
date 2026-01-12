@@ -1207,12 +1207,20 @@ struct FeedNode: Hashable, Sendable {
 		guard let feed = timelineFeed as? Feed ?? currentArticle?.feed else {
 			return
 		}
-		showFeedInspector(for: feed)
+		// Try to find the container from the current feed selection
+		var container: Container?
+		if let indexPath = currentFeedIndexPath,
+		   let node = nodeFor(indexPath),
+		   let parentContainer = node.parent?.representedObject as? Container {
+			container = parentContainer
+		}
+		showFeedInspector(for: feed, in: container)
 	}
 
-	func showFeedInspector(for feed: Feed) {
+	func showFeedInspector(for feed: Feed, in container: Container? = nil) {
 		let feedInspectorController = FeedInspectorViewController()
 		feedInspectorController.feed = feed
+		feedInspectorController.container = container ?? feed.account
 
 		let feedInspectorNavController = UINavigationController(rootViewController: feedInspectorController)
 		feedInspectorNavController.modalPresentationStyle = .formSheet

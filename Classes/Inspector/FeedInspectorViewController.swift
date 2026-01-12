@@ -16,6 +16,7 @@ final class FeedInspectorViewController: UITableViewController {
 	static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 500.0)
 
 	var feed: Feed!
+	var container: Container?
 
 	private var headerView: InspectorIconHeaderView?
 	private var iconImage: IconImage? {
@@ -99,6 +100,7 @@ final class FeedInspectorViewController: UITableViewController {
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SwitchCell")
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "LabelCell")
+		tableView.register(Value1TableViewCell.self, forCellReuseIdentifier: "FolderCell")
 
 		navigationItem.title = feed.nameForDisplay
 		nameTextField.text = feed.nameForDisplay
@@ -179,7 +181,7 @@ final class FeedInspectorViewController: UITableViewController {
 		let actualSection = actualSectionIndex(for: section)
 		switch actualSection {
 		case 0:
-			return 3 // Name, Notify, Reader View
+			return 4 // Name, Notify, Reader View, Folder
 		case 1:
 			return 1 // Home Page
 		case 2:
@@ -231,6 +233,19 @@ final class FeedInspectorViewController: UITableViewController {
 			cell.textLabel?.adjustsFontForContentSizeCategory = true
 			cell.accessoryView = alwaysShowReaderViewSwitch
 			cell.selectionStyle = .none
+			return cell
+
+		case (0, 3):
+			// Folder selection
+			let cell = tableView.dequeueReusableCell(withIdentifier: "FolderCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Folder", comment: "Folder")
+			cell.textLabel?.font = .preferredFont(forTextStyle: .body)
+			cell.textLabel?.adjustsFontForContentSizeCategory = true
+			cell.detailTextLabel?.text = (container as? DisplayNameProvider)?.nameForDisplay ?? feed.account?.nameForDisplay
+			cell.detailTextLabel?.font = .preferredFont(forTextStyle: .body)
+			cell.detailTextLabel?.adjustsFontForContentSizeCategory = true
+			cell.accessoryType = .disclosureIndicator
+			cell.selectionStyle = .default
 			return cell
 
 		case (1, 0):
@@ -294,6 +309,14 @@ final class FeedInspectorViewController: UITableViewController {
 
 	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		let actualSection = actualSectionIndex(for: indexPath.section)
+
+		if actualSection == 0 && indexPath.row == 3 {
+			// Folder selection
+			showFolderPicker()
+			tableView.deselectRow(at: indexPath, animated: true)
+			return
+		}
+
 		if actualSection == 1,
 			let homePageUrlString = feed.homePageURL,
 			let homePageUrl = URL(string: homePageUrlString) {
@@ -304,6 +327,16 @@ final class FeedInspectorViewController: UITableViewController {
 				tableView.deselectRow(at: indexPath, animated: true)
 			}
 		}
+	}
+
+	private func showFolderPicker() {
+		let folderViewController = AddFeedFolderViewController()
+		folderViewController.delegate = self
+		folderViewController.initialContainer = container
+
+		let navController = UINavigationController(rootViewController: folderViewController)
+		navController.modalPresentationStyle = .formSheet
+		present(navController, animated: true)
 	}
 
 	// MARK: - Private
@@ -356,4 +389,40 @@ extension FeedInspectorViewController {
 		return alert
 	}
 
+}
+
+// MARK: - AddFeedFolderViewControllerDelegate
+
+extension FeedInspectorViewController: AddFeedFolderViewControllerDelegate {
+
+	func didSelect(container newContainer: Container) {
+		guard let sourceContainer = container, sourceContainer !== newContainer else { return }
+
+		BatchUpdate.shared.start()
+		sourceContainer.account?.moveFeed(feed, from: sourceContainer, to: newContainer) { [weak self] result in
+			BatchUpdate.shared.end()
+			Task { @MainActor in
+				switch result {
+				case .success:
+					self?.container = newContainer
+					self?.tableView.reloadData()
+				case .failure(let error):
+					self?.presentError(error)
+				}
+			}
+		}
+	}
+}
+
+// MARK: - Value1 Style Cell
+
+private final class Value1TableViewCell: UITableViewCell {
+	override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+		super.init(style: .value1, reuseIdentifier: reuseIdentifier)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(style:reuseIdentifier:)")
+	}
 }

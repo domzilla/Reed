@@ -65,6 +65,9 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 	/// `viewDidAppear(_:)` after a delay to allow the deselection animation to complete.
 	private var isAnimating: Bool = false
 
+	/// Tracks the index path of the feed being moved via the "Move to..." context menu action
+	private var feedIndexPathBeingMoved: IndexPath?
+
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -884,6 +887,10 @@ extension MainFeedCollectionViewController {
 				menuElements.append(UIMenu(title: "", options: .displayInline, children: [markAllAction]))
 			}
 
+			if let moveAction = self.moveToFolderAction(indexPath: indexPath) {
+				menuElements.append(UIMenu(title: "", options: .displayInline, children: [moveAction]))
+			}
+
 			if includeDeleteRename {
 				menuElements.append(UIMenu(title: "",
 										   options: .displayInline,
@@ -955,6 +962,35 @@ extension MainFeedCollectionViewController {
 			completion(true)
 		}
 		return action
+	}
+
+	func moveToFolderAction(indexPath: IndexPath) -> UIAction? {
+		guard coordinator.nodeFor(indexPath)?.representedObject is Feed else {
+			return nil
+		}
+
+		let title = NSLocalizedString("Move to Folder...", comment: "Move to Folder")
+		let action = UIAction(title: title, image: UIImage(systemName: "folder")) { [weak self] _ in
+			self?.showFolderPickerForMoving(indexPath: indexPath)
+		}
+		return action
+	}
+
+	func showFolderPickerForMoving(indexPath: IndexPath) {
+		feedIndexPathBeingMoved = indexPath
+
+		let folderViewController = AddFeedFolderViewController()
+		folderViewController.delegate = self
+
+		// Set initial container to current parent
+		if let node = coordinator.nodeFor(indexPath),
+		   let parentContainer = node.parent?.representedObject as? Container {
+			folderViewController.initialContainer = parentContainer
+		}
+
+		let navController = UINavigationController(rootViewController: folderViewController)
+		navController.modalPresentationStyle = .formSheet
+		present(navController, animated: true)
 	}
 
 	func copyFeedPageAction(indexPath: IndexPath) -> UIAction? {
@@ -1054,25 +1090,29 @@ extension MainFeedCollectionViewController {
 	}
 
 	func getInfoAction(indexPath: IndexPath) -> UIAction? {
-		guard let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed else {
+		guard let node = coordinator.nodeFor(indexPath),
+			  let feed = node.representedObject as? Feed else {
 			return nil
 		}
+		let container = node.parent?.representedObject as? Container
 
 		let title = NSLocalizedString("Get Info", comment: "Get Info")
 		let action = UIAction(title: title, image: Assets.Images.info) { [weak self] action in
-			self?.coordinator.showFeedInspector(for: feed)
+			self?.coordinator.showFeedInspector(for: feed, in: container)
 		}
 		return action
 	}
 
 	func getInfoAlertAction(indexPath: IndexPath, completion: @escaping (Bool) -> Void) -> UIAlertAction? {
-		guard let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed else {
+		guard let node = coordinator.nodeFor(indexPath),
+			  let feed = node.representedObject as? Feed else {
 			return nil
 		}
+		let container = node.parent?.representedObject as? Container
 
 		let title = NSLocalizedString("Get Info", comment: "Get Info")
 		let action = UIAlertAction(title: title, style: .default) { [weak self] action in
-			self?.coordinator.showFeedInspector(for: feed)
+			self?.coordinator.showFeedInspector(for: feed, in: container)
 			completion(true)
 		}
 		return action
@@ -1218,6 +1258,29 @@ extension MainFeedCollectionViewController {
 
 		pushUndoableCommand(deleteCommand)
 		deleteCommand.perform()
+	}
+}
+
+// MARK: - AddFeedFolderViewControllerDelegate
+
+extension MainFeedCollectionViewController: AddFeedFolderViewControllerDelegate {
+
+	func didSelect(container: Container) {
+		guard let indexPath = feedIndexPathBeingMoved,
+			  let node = coordinator.nodeFor(indexPath),
+			  let feed = node.representedObject as? Feed,
+			  let sourceContainer = node.parent?.representedObject as? Container else {
+			feedIndexPathBeingMoved = nil
+			return
+		}
+
+		feedIndexPathBeingMoved = nil
+
+		if sourceContainer.account == container.account {
+			moveFeedInAccount(feed: feed, sourceContainer: sourceContainer, destinationContainer: container)
+		} else {
+			moveFeedBetweenAccounts(feed: feed, sourceContainer: sourceContainer, destinationContainer: container)
+		}
 	}
 }
 

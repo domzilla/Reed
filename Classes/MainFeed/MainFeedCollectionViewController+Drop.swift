@@ -54,7 +54,7 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
 			if let container = (destNode?.representedObject as? Container) ?? (destNode?.parent?.representedObject as? Container) {
 				return container
 			} else {
-				// If we got here, we are trying to drop on an empty section header.  Go and find the Account for this section
+				// If we got here, we are trying to drop on an empty section header. Go and find the Account for this section
 				return self.coordinator.rootNode.childAtIndex(destIndexPath.section)?.representedObject as? Account
 			}
 		}()
@@ -70,8 +70,14 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
 
 	func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: any UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
 
-		guard let destIndexPath = destinationIndexPath,	destIndexPath.section > 0, collectionView.hasActiveDrag else {
-			return UICollectionViewDropProposal(operation: .forbidden)
+		// Reject if no active drag or no destination
+		guard let destIndexPath = destinationIndexPath, collectionView.hasActiveDrag else {
+			return UICollectionViewDropProposal(operation: .cancel)
+		}
+
+		// Reject drops on section 0 (Smart Feeds)
+		guard destIndexPath.section > 0 else {
+			return UICollectionViewDropProposal(operation: .cancel)
 		}
 
 		guard let destFeed = coordinator.nodeFor(destIndexPath)?.representedObject as? SidebarItem,
