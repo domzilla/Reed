@@ -35,6 +35,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 		return item
 	}()
 
+	private lazy var settingsButton: UIBarButtonItem = {
+		let item = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(settings(_:)))
+		item.accessibilityLabel = NSLocalizedString("Settings", comment: "Settings")
+		return item
+	}()
+
 	private let keyboardManager = KeyboardManager(type: .sidebar)
 	override var keyCommands: [UIKeyCommand]? {
 
@@ -68,7 +74,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
 		// Set up toolbar
 		let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-		toolbarItems = [flexSpace, filterButton]
+		toolbarItems = [settingsButton, flexSpace, filterButton]
 
 		registerForNotifications()
 		configureCollectionView()
