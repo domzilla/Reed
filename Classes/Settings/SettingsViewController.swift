@@ -62,9 +62,10 @@ final class SettingsViewController: UITableViewController {
 		return toggle
 	}()
 
-	// Section titles (matching storyboard)
+	// Section titles
 	private let sectionTitles = [
 		NSLocalizedString("Notifications, Badge, Data, & More", comment: "Notifications, Badge, Data, & More"),
+		NSLocalizedString("Display Options", comment: "Display Options"),
 		NSLocalizedString("Feeds", comment: "Feeds"),
 		NSLocalizedString("Timeline", comment: "Timeline"),
 		NSLocalizedString("Articles", comment: "Articles"),
@@ -95,7 +96,8 @@ final class SettingsViewController: UITableViewController {
 
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "SwitchCell")
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DetailCell")
+		// Register DetailCell with value1 style for showing detail text on right
+		tableView.register(Value1TableViewCell.self, forCellReuseIdentifier: "DetailCell")
 
 		tableView.rowHeight = UITableView.automaticDimension
 		tableView.estimatedRowHeight = 44
@@ -132,7 +134,7 @@ final class SettingsViewController: UITableViewController {
 		self.tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
 		if scrollToArticlesSection {
-			tableView.scrollToRow(at: IndexPath(row: 0, section: 3), at: .top, animated: true)
+			tableView.scrollToRow(at: IndexPath(row: 0, section: 4), at: .top, animated: true)
 			scrollToArticlesSection = false
 		}
 	}
@@ -140,18 +142,19 @@ final class SettingsViewController: UITableViewController {
 	// MARK: - Table view data source
 
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return 5
+		return 6
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		switch section {
 		case 0: return 1 // System Settings
-		case 1: // Feeds
+		case 1: return 1 // Display Options (Appearance)
+		case 2: // Feeds
 			return AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() ? 2 : 3
-		case 2: return 4 // Timeline
-		case 3: // Articles
+		case 3: return 4 // Timeline
+		case 4: // Articles
 			return traitCollection.userInterfaceIdiom == .phone ? 4 : 3
-		case 4: return 4 // Help
+		case 5: return 4 // Help
 		default: return 0
 		}
 	}
@@ -162,98 +165,106 @@ final class SettingsViewController: UITableViewController {
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		switch (indexPath.section, indexPath.row) {
-		// Section 0: System Settings (matching storyboard label)
+		// Section 0: System Settings
 		case (0, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Open System Settings", comment: "Open System Settings")
 			cell.accessoryType = .disclosureIndicator
 			return cell
 
-		// Section 1: Feeds
+		// Section 1: Display Options
 		case (1, 0):
+			let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath)
+			cell.textLabel?.text = NSLocalizedString("Appearance", comment: "Appearance")
+			cell.detailTextLabel?.text = String(describing: AppDefaults.userInterfaceColorPalette)
+			cell.accessoryType = .disclosureIndicator
+			return cell
+
+		// Section 2: Feeds
+		case (2, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Import Subscriptions...", comment: "Import Subscriptions")
 			cell.accessoryType = .none
 			return cell
-		case (1, 1):
+		case (2, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Export Subscriptions...", comment: "Export Subscriptions")
 			cell.accessoryType = .none
 			return cell
-		case (1, 2):
+		case (2, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Add NetNewsWire News Feed", comment: "Add NetNewsWire News Feed")
 			cell.accessoryType = .none
 			return cell
 
-		// Section 2: Timeline
-		case (2, 0):
+		// Section 3: Timeline
+		case (3, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Sort Oldest to Newest", comment: "Sort Oldest to Newest")
 			cell.accessoryView = timelineSortOrderSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (2, 1):
+		case (3, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Group by Feed", comment: "Group by Feed")
 			cell.accessoryView = groupByFeedSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (2, 2):
+		case (3, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Refresh to Clear Read Articles", comment: "Refresh to Clear Read Articles")
 			cell.accessoryView = refreshClearsReadArticlesSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (2, 3):
+		case (3, 3):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Timeline Layout", comment: "Timeline Layout")
 			cell.accessoryType = .disclosureIndicator
 			return cell
 
-		// Section 3: Articles
-		case (3, 0):
+		// Section 4: Articles
+		case (4, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Confirm Mark All as Read", comment: "Confirm Mark All as Read")
 			cell.accessoryView = confirmMarkAllAsReadSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (3, 1):
+		case (4, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Enable Full Screen Articles", comment: "Enable Full Screen Articles")
 			cell.accessoryView = showFullscreenArticlesSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (3, 2):
+		case (4, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Open Links in App", comment: "Open Links in App")
 			cell.accessoryView = openLinksInNetNewsWireSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (3, 3):
+		case (4, 3):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Enable JavaScript", comment: "Enable JavaScript")
 			cell.accessoryView = enableJavaScriptSwitch
 			cell.selectionStyle = .none
 			return cell
 
-		// Section 4: Help
-		case (4, 0):
+		// Section 5: Help
+		case (5, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Help", comment: "Help")
 			cell.accessoryType = .disclosureIndicator
 			return cell
-		case (4, 1):
+		case (5, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Release Notes", comment: "Release Notes")
 			cell.accessoryType = .disclosureIndicator
 			return cell
-		case (4, 2):
+		case (5, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Report an Issue", comment: "Report an Issue")
 			cell.accessoryType = .disclosureIndicator
 			return cell
-		case (4, 3):
+		case (5, 3):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("About", comment: "About")
 			cell.accessoryType = .disclosureIndicator
@@ -271,35 +282,39 @@ final class SettingsViewController: UITableViewController {
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
 		case (1, 0):
+			let appearance = ColorPaletteTableViewController()
+			navigationController?.pushViewController(appearance, animated: true)
+
+		case (2, 0):
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 			if let sourceView = tableView.cellForRow(at: indexPath) {
 				let sourceRect = tableView.rectForRow(at: indexPath)
 				importOPML(sourceView: sourceView, sourceRect: sourceRect)
 			}
-		case (1, 1):
+		case (2, 1):
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 			if let sourceView = tableView.cellForRow(at: indexPath) {
 				let sourceRect = tableView.rectForRow(at: indexPath)
 				exportOPML(sourceView: sourceView, sourceRect: sourceRect)
 			}
-		case (1, 2):
+		case (2, 2):
 			addFeed()
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
-		case (2, 3):
+		case (3, 3):
 			let timeline = ModernTimelineCustomizerTableViewController()
 			navigationController?.pushViewController(timeline, animated: true)
 
-		case (4, 0):
+		case (5, 0):
 			openURL(HelpURL.helpHome.rawValue)
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (4, 1):
+		case (5, 1):
 			openURL(HelpURL.releaseNotes.rawValue)
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (4, 2):
+		case (5, 2):
 			openURL(HelpURL.bugTracker.rawValue)
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (4, 3):
+		case (5, 3):
 			let about = AboutViewController()
 			navigationController?.pushViewController(about, animated: true)
 
@@ -449,5 +464,18 @@ private extension SettingsViewController {
 		let vc = SFSafariViewController(url: URL(string: urlString)!)
 		vc.modalPresentationStyle = .pageSheet
 		present(vc, animated: true)
+	}
+}
+
+// MARK: - Value1 Style Cell
+
+private final class Value1TableViewCell: UITableViewCell {
+	override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+		super.init(style: .value1, reuseIdentifier: reuseIdentifier)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("Use init(style:reuseIdentifier:)")
 	}
 }

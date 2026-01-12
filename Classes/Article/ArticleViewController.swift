@@ -138,6 +138,9 @@ final class ArticleViewController: UIViewController {
 		fullScreenTapZone.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapNavigationBar)))
 		navigationItem.titleView = fullScreenTapZone
 
+		// Add article navigation buttons to nav bar (up/down arrows on right side)
+		navigationItem.rightBarButtonItems = [nextArticleBarButtonItem, prevArticleBarButtonItem]
+
 		if let parentNavController = navigationController?.parent as? UINavigationController {
 			poppableDelegate.navigationController = parentNavController
 			parentNavController.interactivePopGestureRecognizer?.delegate = poppableDelegate
