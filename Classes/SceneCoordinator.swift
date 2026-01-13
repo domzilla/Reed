@@ -1058,10 +1058,7 @@ struct FeedNode: Hashable, Sendable {
 	}
 
 	func markAllAsReadInTimeline(completion: (() -> Void)? = nil) {
-		markAllAsRead(articles) {
-			self.rootSplitViewController.show(.primary)
-			completion?()
-		}
+		markAllAsRead(articles, completion: completion)
 	}
 
 	func canMarkAboveAsRead(for article: Article) -> Bool {
