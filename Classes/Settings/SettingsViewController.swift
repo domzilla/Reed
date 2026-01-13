@@ -14,8 +14,6 @@ import RSCore
 
 final class SettingsViewController: UITableViewController {
 
-	var scrollToArticlesSection = false
-
 	// MARK: - UI Elements
 
 	private lazy var timelineSortOrderSwitch: UISwitch = {
@@ -33,12 +31,6 @@ final class SettingsViewController: UITableViewController {
 	private lazy var refreshClearsReadArticlesSwitch: UISwitch = {
 		let toggle = UISwitch()
 		toggle.addTarget(self, action: #selector(switchClearsReadArticles(_:)), for: .valueChanged)
-		return toggle
-	}()
-
-	private lazy var confirmMarkAllAsReadSwitch: UISwitch = {
-		let toggle = UISwitch()
-		toggle.addTarget(self, action: #selector(switchConfirmMarkAllAsRead(_:)), for: .valueChanged)
 		return toggle
 	}()
 
@@ -106,7 +98,6 @@ final class SettingsViewController: UITableViewController {
 		timelineSortOrderSwitch.isOn = AppDefaults.shared.timelineSortDirection == .orderedAscending
 		groupByFeedSwitch.isOn = AppDefaults.shared.timelineGroupByFeed
 		refreshClearsReadArticlesSwitch.isOn = AppDefaults.shared.refreshClearsReadArticles
-		confirmMarkAllAsReadSwitch.isOn = AppDefaults.shared.confirmMarkAllAsRead
 		showFullscreenArticlesSwitch.isOn = AppDefaults.shared.articleFullscreenAvailable
 		enableJavaScriptSwitch.isOn = AppDefaults.shared.isArticleContentJavascriptEnabled
 		openLinksInNetNewsWireSwitch.isOn = !AppDefaults.shared.useSystemBrowser
@@ -129,11 +120,6 @@ final class SettingsViewController: UITableViewController {
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
 		self.tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-
-		if scrollToArticlesSection {
-			tableView.scrollToRow(at: IndexPath(row: 0, section: 4), at: .top, animated: true)
-			scrollToArticlesSection = false
-		}
 	}
 
 	// MARK: - Table view data source
@@ -149,7 +135,7 @@ final class SettingsViewController: UITableViewController {
 		case 2: return 2 // Feeds (Import/Export)
 		case 3: return 4 // Timeline
 		case 4: // Articles
-			return traitCollection.userInterfaceIdiom == .phone ? 4 : 3
+			return traitCollection.userInterfaceIdiom == .phone ? 3 : 2
 		default: return 0
 		}
 	}
@@ -215,23 +201,17 @@ final class SettingsViewController: UITableViewController {
 		// Section 4: Articles
 		case (4, 0):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Confirm Mark All as Read", comment: "Confirm Mark All as Read")
-			cell.accessoryView = confirmMarkAllAsReadSwitch
-			cell.selectionStyle = .none
-			return cell
-		case (4, 1):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Enable Full Screen Articles", comment: "Enable Full Screen Articles")
 			cell.accessoryView = showFullscreenArticlesSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (4, 2):
+		case (4, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Open Links in App", comment: "Open Links in App")
 			cell.accessoryView = openLinksInNetNewsWireSwitch
 			cell.selectionStyle = .none
 			return cell
-		case (4, 3):
+		case (4, 2):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Enable JavaScript", comment: "Enable JavaScript")
 			cell.accessoryView = enableJavaScriptSwitch
@@ -295,10 +275,6 @@ final class SettingsViewController: UITableViewController {
 
 	@objc func switchClearsReadArticles(_ sender: Any) {
 		AppDefaults.shared.refreshClearsReadArticles = refreshClearsReadArticlesSwitch.isOn
-	}
-
-	@objc func switchConfirmMarkAllAsRead(_ sender: Any) {
-		AppDefaults.shared.confirmMarkAllAsRead = confirmMarkAllAsReadSwitch.isOn
 	}
 
 	@objc func switchFullscreenArticles(_ sender: Any) {

@@ -277,7 +277,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 		let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
 
 		if let source = sender as? UIBarButtonItem {
-			MarkAsReadAlertController.confirm(self, coordinator: coordinator, confirmTitle: title, sourceType: source) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: source) { [weak self] in
 				self?.markAllAsReadInTimeline()
 			}
 		}
@@ -287,7 +287,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 				return
 			}
 
-			MarkAsReadAlertController.confirm(self, coordinator: coordinator, confirmTitle: title, sourceType: contentView) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
 				self?.markAllAsReadInTimeline()
 			}
 		}
@@ -915,7 +915,7 @@ private extension MainTimelineViewController {
 		let title = NSLocalizedString("Mark Above as Read", comment: "Mark Above as Read")
 		let image = Assets.Images.markAboveAsRead
 		let action = UIAction(title: title, image: image) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
 				self?.markAboveAsRead(article)
 			}
 		}
@@ -940,7 +940,7 @@ private extension MainTimelineViewController {
 		let title = NSLocalizedString("Mark Below as Read", comment: "Mark Below as Read")
 		let image = Assets.Images.markBelowAsRead
 		let action = UIAction(title: title, image: image) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
 				self?.markBelowAsRead(article)
 			}
 		}
@@ -958,7 +958,7 @@ private extension MainTimelineViewController {
 		}
 
 		let action = UIAlertAction(title: title, style: .default) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
 				self?.markAboveAsRead(article)
 				completion(true)
 			}
@@ -977,7 +977,7 @@ private extension MainTimelineViewController {
 		}
 
 		let action = UIAlertAction(title: title, style: .default) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
 				self?.markBelowAsRead(article)
 				completion(true)
 			}
@@ -1039,7 +1039,7 @@ private extension MainTimelineViewController {
 		let title = NSString.localizedStringWithFormat(localizedMenuText as NSString, feed.nameForDisplay) as String
 
 		let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
 				self?.markAllAsRead(articles)
 			}
 		}
@@ -1064,7 +1064,7 @@ private extension MainTimelineViewController {
 		}
 
 		let action = UIAlertAction(title: title, style: .default) { [weak self] action in
-			MarkAsReadAlertController.confirm(self, coordinator: self?.coordinator, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
+			MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView, cancelCompletion: cancel) { [weak self] in
 				self?.markAllAsRead(articles)
 				completion(true)
 			}

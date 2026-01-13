@@ -1193,9 +1193,8 @@ struct FeedNode: Hashable, Sendable {
 		}
 	}
 
-	func showSettings(scrollToArticlesSection: Bool = false) {
+	func showSettings() {
 		let settingsViewController = SettingsViewController()
-		settingsViewController.scrollToArticlesSection = scrollToArticlesSection
 
 		let settingsNavController = UINavigationController(rootViewController: settingsViewController)
 		settingsNavController.modalPresentationStyle = .formSheet

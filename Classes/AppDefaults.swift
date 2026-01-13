@@ -54,7 +54,6 @@ final class AppDefaults: Sendable {
 		static let timelineSortDirection = "timelineSortDirection"
 		static let articleFullscreenAvailable = "articleFullscreenAvailable"
 		static let articleFullscreenEnabled = "articleFullscreenEnabled"
-		static let confirmMarkAllAsRead = "confirmMarkAllAsRead"
 		static let lastRefresh = "lastRefresh"
 		static let addFeedAccountID = "addFeedAccountID"
 		static let addFeedFolderName = "addFeedFolderName"
@@ -203,15 +202,6 @@ final class AppDefaults: Sendable {
 
 	var logicalArticleFullscreenEnabled: Bool {
 		articleFullscreenAvailable && articleFullscreenEnabled
-	}
-
-	var confirmMarkAllAsRead: Bool {
-		get {
-			return AppDefaults.bool(for: Key.confirmMarkAllAsRead)
-		}
-		set {
-			AppDefaults.setBool(for: Key.confirmMarkAllAsRead, newValue)
-		}
 	}
 
 	var isArticleContentJavascriptEnabled: Bool {
@@ -367,7 +357,6 @@ final class AppDefaults: Sendable {
 										Key.refreshInterval: RefreshInterval.everyHour.rawValue,
 										Key.articleFullscreenAvailable: false,
 										Key.articleFullscreenEnabled: false,
-										Key.confirmMarkAllAsRead: true,
 										Key.articleContentJavascriptEnabled: true,
 										Key.currentThemeName: Self.defaultThemeName]
 		AppDefaults.store.register(defaults: defaults)
