@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreServices
-import SafariServices
 import SwiftUI
 import UniformTypeIdentifiers
 import RSCore
@@ -16,7 +15,6 @@ import RSCore
 final class SettingsViewController: UITableViewController {
 
 	var scrollToArticlesSection = false
-	weak var presentingParentController: UIViewController?
 
 	// MARK: - UI Elements
 
@@ -68,8 +66,7 @@ final class SettingsViewController: UITableViewController {
 		NSLocalizedString("Display Options", comment: "Display Options"),
 		NSLocalizedString("Feeds", comment: "Feeds"),
 		NSLocalizedString("Timeline", comment: "Timeline"),
-		NSLocalizedString("Articles", comment: "Articles"),
-		NSLocalizedString("Help", comment: "Help")
+		NSLocalizedString("Articles", comment: "Articles")
 	]
 
 	// MARK: - Initialization
@@ -142,19 +139,17 @@ final class SettingsViewController: UITableViewController {
 	// MARK: - Table view data source
 
 	override func numberOfSections(in tableView: UITableView) -> Int {
-		return 6
+		return 5
 	}
 
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		switch section {
 		case 0: return 1 // System Settings
 		case 1: return 1 // Display Options (Appearance)
-		case 2: // Feeds
-			return AccountManager.shared.anyAccountHasNetNewsWireNewsSubscription() ? 2 : 3
+		case 2: return 2 // Feeds (Import/Export)
 		case 3: return 4 // Timeline
 		case 4: // Articles
 			return traitCollection.userInterfaceIdiom == .phone ? 4 : 3
-		case 5: return 4 // Help
 		default: return 0
 		}
 	}
@@ -189,11 +184,6 @@ final class SettingsViewController: UITableViewController {
 		case (2, 1):
 			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 			cell.textLabel?.text = NSLocalizedString("Export Subscriptions...", comment: "Export Subscriptions")
-			cell.accessoryType = .none
-			return cell
-		case (2, 2):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Add NetNewsWire News Feed", comment: "Add NetNewsWire News Feed")
 			cell.accessoryType = .none
 			return cell
 
@@ -248,28 +238,6 @@ final class SettingsViewController: UITableViewController {
 			cell.selectionStyle = .none
 			return cell
 
-		// Section 5: Help
-		case (5, 0):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Help", comment: "Help")
-			cell.accessoryType = .disclosureIndicator
-			return cell
-		case (5, 1):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Release Notes", comment: "Release Notes")
-			cell.accessoryType = .disclosureIndicator
-			return cell
-		case (5, 2):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("Report an Issue", comment: "Report an Issue")
-			cell.accessoryType = .disclosureIndicator
-			return cell
-		case (5, 3):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-			cell.textLabel?.text = NSLocalizedString("About", comment: "About")
-			cell.accessoryType = .disclosureIndicator
-			return cell
-
 		default:
 			return UITableViewCell()
 		}
@@ -297,26 +265,10 @@ final class SettingsViewController: UITableViewController {
 				let sourceRect = tableView.rectForRow(at: indexPath)
 				exportOPML(sourceView: sourceView, sourceRect: sourceRect)
 			}
-		case (2, 2):
-			addFeed()
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
 
 		case (3, 3):
 			let timeline = ModernTimelineCustomizerTableViewController()
 			navigationController?.pushViewController(timeline, animated: true)
-
-		case (5, 0):
-			openURL(HelpURL.helpHome.rawValue)
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (5, 1):
-			openURL(HelpURL.releaseNotes.rawValue)
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (5, 2):
-			openURL(HelpURL.bugTracker.rawValue)
-			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
-		case (5, 3):
-			let about = AboutViewController()
-			navigationController?.pushViewController(about, animated: true)
 
 		default:
 			tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
@@ -395,20 +347,6 @@ extension SettingsViewController: UIDocumentPickerDelegate {
 
 private extension SettingsViewController {
 
-	func addFeed() {
-		self.dismiss(animated: true)
-
-		let addViewController = AddFeedViewController()
-		addViewController.initialFeed = AccountManager.netNewsWireNewsURL
-		addViewController.initialFeedName = NSLocalizedString("NetNewsWire News", comment: "NetNewsWire News")
-
-		let addNavViewController = UINavigationController(rootViewController: addViewController)
-		addNavViewController.modalPresentationStyle = .formSheet
-		addNavViewController.preferredContentSize = AddFeedViewController.preferredContentSizeForFormSheetDisplay
-
-		presentingParentController?.present(addNavViewController, animated: true)
-	}
-
 	func importOPML(sourceView: UIView, sourceRect: CGRect) {
 		// Single account - import directly
 		importOPMLDocumentPicker()
@@ -458,12 +396,6 @@ private extension SettingsViewController {
 		let docPicker = UIDocumentPickerViewController(forExporting: [tempFile])
 		docPicker.modalPresentationStyle = .formSheet
 		self.present(docPicker, animated: true)
-	}
-
-	func openURL(_ urlString: String) {
-		let vc = SFSafariViewController(url: URL(string: urlString)!)
-		vc.modalPresentationStyle = .pageSheet
-		present(vc, animated: true)
 	}
 }
 

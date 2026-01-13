@@ -19,9 +19,6 @@ import RSDatabase
 @MainActor public final class DataStoreManager: UnreadCountProvider {
 	public static var shared = DataStoreManager()
 
-	public static let netNewsWireNewsURL = "https://netnewswire.blog/feed.xml"
-	private static let jsonNetNewsWireNewsURL = "https://netnewswire.blog/feed.json"
-
 	/// The primary data store used for all feeds and articles
 	public let defaultDataStore: DataStore
 
@@ -218,10 +215,6 @@ import RSDatabase
 		defaultDataStore.isActive && defaultDataStore.hasAtLeastOneFeed()
 	}
 
-	@MainActor public func anyDataStoreHasNetNewsWireNewsSubscription() -> Bool {
-		anyDataStoreHasFeedWithURL(Self.netNewsWireNewsURL) || anyDataStoreHasFeedWithURL(Self.jsonNetNewsWireNewsURL)
-	}
-
 	@MainActor public func anyDataStoreHasFeedWithURL(_ urlString: String) -> Bool {
 		guard defaultDataStore.isActive else { return false }
 		return defaultDataStore.existingFeed(withURL: urlString) != nil
@@ -414,11 +407,6 @@ public extension DataStoreManager {
 	/// Backward compatible method alias
 	func existingAccount(accountID: String) -> DataStore? {
 		existingDataStore(dataStoreID: accountID)
-	}
-
-	/// Backward compatible method alias
-	func anyAccountHasNetNewsWireNewsSubscription() -> Bool {
-		anyDataStoreHasNetNewsWireNewsSubscription()
 	}
 
 	/// Backward compatible method alias
