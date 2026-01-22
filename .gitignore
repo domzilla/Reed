@@ -76,3 +76,4 @@ fastlane/test_output
 *.py[cod]
 /Secrets/Sources/Secrets/SecretKey.swift
 /Modules/Secrets/Sources/Secrets/SecretKey.swift
+/queuestack
