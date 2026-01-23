@@ -5,7 +5,7 @@ RSS/Atom/JSON Feed reader for iOS. Fork of NetNewsWire with customizations.
 ## Build
 
 ```bash
-xcodebuild -scheme "NetNewsWire-iOS" -destination "generic/platform=iOS Simulator" build
+xcodebuild -project src/Reed.xcodeproj -scheme "Reed" -destination "generic/platform=iOS Simulator" build
 ```
 
 ## Architecture
@@ -24,21 +24,40 @@ xcodebuild -scheme "NetNewsWire-iOS" -destination "generic/platform=iOS Simulato
 
 ### Project Structure
 ```
-Classes/
-  SceneDelegate.swift      # Window/coordinator setup
-  SceneCoordinator.swift   # Navigation logic
-  RootSplitViewController.swift
-  MainFeed/                # Feed list (collection view)
-  MainTimeline/            # Article list (table view)
-  Article/                 # Article detail (web view)
-  Settings/                # Settings screens
-  Add/                     # Add feed/folder flows
-  Inspector/               # Feed inspector
-Modules/
-  RSCore/                  # Core utilities
-  RSParser/                # Feed parsing
-  RSWeb/                   # Network utilities
-ShareExtension/            # Share extension
+src/
+  Reed/                      # Main iOS app
+    Classes/                 # All Swift source files
+      SceneDelegate.swift        # Window/coordinator setup
+      SceneCoordinator.swift     # Navigation logic
+      RootSplitViewController.swift
+      MainFeed/              # Feed list (collection view)
+      MainTimeline/          # Article list (table view)
+      Article/               # Article detail (web view)
+      Settings/              # Settings screens
+      Add/                   # Add feed/folder flows
+      Inspector/             # Feed inspector
+      Articles/              # Article models
+      ArticlesDatabase/      # Article persistence
+      CloudKitSync/          # iCloud sync
+      Commands/              # User commands
+      DataStore/             # Data layer
+      Exporters/             # Export functionality
+      Extensions/            # Swift extensions
+      Favicons/              # Favicon handling
+      FeedFinder/            # Feed discovery
+      Images/                # Image handling
+      SmartFeeds/            # Smart feed filters
+      SyncDatabase/          # Sync persistence
+      Timeline/              # Timeline logic
+      Tree/                  # Tree data structure
+      UserNotifications/     # Push notifications
+      Widget/                # Widget support
+    Resources/               # Assets, icons, launch screen
+  Shared/                    # Shared code (app + extension)
+  ShareExtension/            # Share extension
+  Reed.xcodeproj             # Xcode project
+vendor/
+  NetNewsWire/               # Upstream submodule (RS* modules)
 ```
 
 ### Cell Registration Pattern
