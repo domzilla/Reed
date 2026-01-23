@@ -84,9 +84,7 @@
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreenPhone</string>
-	<key>UILaunchStoryboardName~ipad</key>
-	<string>LaunchScreenPad</string>
+	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
