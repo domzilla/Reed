@@ -38,9 +38,8 @@ final class AppDefaults: Sendable {
 	private init() {}
 
 	nonisolated(unsafe) static let store: UserDefaults = {
-		let appIdentifierPrefix = Bundle.main.object(forInfoDictionaryKey: "AppIdentifierPrefix") as! String
-		let suiteName = "\(appIdentifierPrefix)group.\(Bundle.main.bundleIdentifier!)"
-		return UserDefaults.init(suiteName: suiteName)!
+		let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
+		return UserDefaults(suiteName: appGroup)!
 	}()
 
 	struct Key {
