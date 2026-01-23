@@ -1,0 +1,714 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F2C8F2DD2F236942005B39D1 /* Reed Share Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F2C8F4E92F2373B3005B39D1 /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4E82F2373B3005B39D1 /* RSCore */; };
+		F2C8F4EE2F237402005B39D1 /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4ED2F237402005B39D1 /* RSDatabase */; };
+		F2C8F4F62F23743A005B39D1 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4F52F23743A005B39D1 /* RSParser */; };
+		F2C8F4FB2F23745A005B39D1 /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4FA2F23745A005B39D1 /* RSTree */; };
+		F2C8F4FD2F237525005B39D1 /* RSCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4E82F2373B3005B39D1 /* RSCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F4FF2F237528005B39D1 /* RSDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4ED2F237402005B39D1 /* RSDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5002F23752A005B39D1 /* RSParser in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4F52F23743A005B39D1 /* RSParser */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5012F23752C005B39D1 /* RSTree in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4FA2F23745A005B39D1 /* RSTree */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5042F237589005B39D1 /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5032F237589005B39D1 /* RSCore */; };
+		F2C8F5052F237589005B39D1 /* RSCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5032F237589005B39D1 /* RSCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5072F237589005B39D1 /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5062F237589005B39D1 /* RSDatabase */; };
+		F2C8F5082F237589005B39D1 /* RSDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5062F237589005B39D1 /* RSDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F50A2F237589005B39D1 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5092F237589005B39D1 /* RSParser */; };
+		F2C8F50B2F237589005B39D1 /* RSParser in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5092F237589005B39D1 /* RSParser */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F50D2F237589005B39D1 /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50C2F237589005B39D1 /* RSTree */; };
+		F2C8F50E2F237589005B39D1 /* RSTree in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50C2F237589005B39D1 /* RSTree */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5102F237589005B39D1 /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50F2F237589005B39D1 /* RSWeb */; };
+		F2C8F5112F237589005B39D1 /* RSWeb in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50F2F237589005B39D1 /* RSWeb */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		F2C8F5162F237659005B39D1 /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5152F237659005B39D1 /* RSWeb */; };
+		F2C8F5172F237659005B39D1 /* RSWeb in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5152F237659005B39D1 /* RSWeb */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F2C8F2DB2F236942005B39D1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F2C8ED5E2F2276CF005B39D1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F2C8F2D22F236942005B39D1;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F2C8F2DE2F236942005B39D1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F2C8F2DD2F236942005B39D1 /* Reed Share Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2C8F4FE2F237525005B39D1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F2C8F5002F23752A005B39D1 /* RSParser in Embed Frameworks */,
+				F2C8F4FF2F237528005B39D1 /* RSDatabase in Embed Frameworks */,
+				F2C8F5172F237659005B39D1 /* RSWeb in Embed Frameworks */,
+				F2C8F4FD2F237525005B39D1 /* RSCore in Embed Frameworks */,
+				F2C8F5012F23752C005B39D1 /* RSTree in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2C8F5122F237589005B39D1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F2C8F50B2F237589005B39D1 /* RSParser in Embed Frameworks */,
+				F2C8F5082F237589005B39D1 /* RSDatabase in Embed Frameworks */,
+				F2C8F5112F237589005B39D1 /* RSWeb in Embed Frameworks */,
+				F2C8F5052F237589005B39D1 /* RSCore in Embed Frameworks */,
+				F2C8F50E2F237589005B39D1 /* RSTree in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F2C8ED662F2276CF005B39D1 /* Reed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Reed Share Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F2C8F5182F23770C005B39D1 /* Exceptions for "Reed" folder in "Reed" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Info.plist,
+			);
+			target = F2C8ED652F2276CF005B39D1 /* Reed */;
+		};
+		F2C8F5192F237714005B39D1 /* Exceptions for "ShareExtension" folder in "Reed Share Extension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Info.plist,
+			);
+			target = F2C8F2D22F236942005B39D1 /* Reed Share Extension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F2C8ED682F2276CF005B39D1 /* Reed */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F2C8F5182F23770C005B39D1 /* Exceptions for "Reed" folder in "Reed" target */,
+			);
+			path = Reed;
+			sourceTree = "<group>";
+		};
+		F2C8F2D42F236942005B39D1 /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F2C8F5192F237714005B39D1 /* Exceptions for "ShareExtension" folder in "Reed Share Extension" target */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
+		F2C8F2FD2F236BB5005B39D1 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F2C8ED632F2276CF005B39D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2C8F4F62F23743A005B39D1 /* RSParser in Frameworks */,
+				F2C8F4FB2F23745A005B39D1 /* RSTree in Frameworks */,
+				F2C8F5162F237659005B39D1 /* RSWeb in Frameworks */,
+				F2C8F4E92F2373B3005B39D1 /* RSCore in Frameworks */,
+				F2C8F4EE2F237402005B39D1 /* RSDatabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2C8F2D02F236942005B39D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2C8F50A2F237589005B39D1 /* RSParser in Frameworks */,
+				F2C8F5072F237589005B39D1 /* RSDatabase in Frameworks */,
+				F2C8F5102F237589005B39D1 /* RSWeb in Frameworks */,
+				F2C8F5042F237589005B39D1 /* RSCore in Frameworks */,
+				F2C8F50D2F237589005B39D1 /* RSTree in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F2C8ED5D2F2276CF005B39D1 = {
+			isa = PBXGroup;
+			children = (
+				F2C8F4E62F236CEE005B39D1 /* Vendor */,
+				F2C8F2FD2F236BB5005B39D1 /* Shared */,
+				F2C8ED682F2276CF005B39D1 /* Reed */,
+				F2C8F2D42F236942005B39D1 /* ShareExtension */,
+				F2C8F5022F237589005B39D1 /* Frameworks */,
+				F2C8ED672F2276CF005B39D1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F2C8ED672F2276CF005B39D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F2C8ED662F2276CF005B39D1 /* Reed.app */,
+				F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F2C8F4E62F236CEE005B39D1 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Vendor;
+			sourceTree = "<group>";
+		};
+		F2C8F5022F237589005B39D1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F2C8ED652F2276CF005B39D1 /* Reed */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2C8ED792F2276D2005B39D1 /* Build configuration list for PBXNativeTarget "Reed" */;
+			buildPhases = (
+				F2C8ED622F2276CF005B39D1 /* Sources */,
+				F2C8ED632F2276CF005B39D1 /* Frameworks */,
+				F2C8ED642F2276CF005B39D1 /* Resources */,
+				F2C8F2DE2F236942005B39D1 /* Embed Foundation Extensions */,
+				F2C8F4FE2F237525005B39D1 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F2C8F2DC2F236942005B39D1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F2C8ED682F2276CF005B39D1 /* Reed */,
+				F2C8F2FD2F236BB5005B39D1 /* Shared */,
+			);
+			name = Reed;
+			packageProductDependencies = (
+				F2C8F4E82F2373B3005B39D1 /* RSCore */,
+				F2C8F4ED2F237402005B39D1 /* RSDatabase */,
+				F2C8F4F52F23743A005B39D1 /* RSParser */,
+				F2C8F4FA2F23745A005B39D1 /* RSTree */,
+				F2C8F5152F237659005B39D1 /* RSWeb */,
+			);
+			productName = Reed;
+			productReference = F2C8ED662F2276CF005B39D1 /* Reed.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F2C8F2D22F236942005B39D1 /* Reed Share Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2C8F2E22F236942005B39D1 /* Build configuration list for PBXNativeTarget "Reed Share Extension" */;
+			buildPhases = (
+				F2C8F2CF2F236942005B39D1 /* Sources */,
+				F2C8F2D02F236942005B39D1 /* Frameworks */,
+				F2C8F2D12F236942005B39D1 /* Resources */,
+				F2C8F5122F237589005B39D1 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F2C8F2D42F236942005B39D1 /* ShareExtension */,
+				F2C8F2FD2F236BB5005B39D1 /* Shared */,
+			);
+			name = "Reed Share Extension";
+			packageProductDependencies = (
+				F2C8F5032F237589005B39D1 /* RSCore */,
+				F2C8F5062F237589005B39D1 /* RSDatabase */,
+				F2C8F5092F237589005B39D1 /* RSParser */,
+				F2C8F50C2F237589005B39D1 /* RSTree */,
+				F2C8F50F2F237589005B39D1 /* RSWeb */,
+			);
+			productName = ShareExtension;
+			productReference = F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F2C8ED5E2F2276CF005B39D1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					F2C8ED652F2276CF005B39D1 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					F2C8F2D22F236942005B39D1 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = F2C8ED612F2276CF005B39D1 /* Build configuration list for PBXProject "Reed" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F2C8ED5D2F2276CF005B39D1;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */,
+				F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */,
+				F2C8F4F12F23741C005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSMarkdown" */,
+				F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */,
+				F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */,
+				F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F2C8ED672F2276CF005B39D1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F2C8ED652F2276CF005B39D1 /* Reed */,
+				F2C8F2D22F236942005B39D1 /* Reed Share Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F2C8ED642F2276CF005B39D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2C8F2D12F236942005B39D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F2C8ED622F2276CF005B39D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F2C8F2CF2F236942005B39D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F2C8F2DC2F236942005B39D1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F2C8F2D22F236942005B39D1 /* Reed Share Extension */;
+			targetProxy = F2C8F2DB2F236942005B39D1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F2C8ED7A2F2276D2005B39D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = Icon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Reed/Resources/Reed.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Reed/Resources/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.domzilla.reed;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Reed/Classes/Reed-Bridging-Header.h";
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F2C8ED7B2F2276D2005B39D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = Icon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Reed/Resources/Reed.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Reed/Resources/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.news";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.domzilla.reed;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Reed/Classes/Reed-Bridging-Header.h";
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F2C8ED7C2F2276D2005B39D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F2C8ED7D2F2276D2005B39D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F2C8F2DF2F236942005B39D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/Resources/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Resources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.domzilla.reed.share-extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F2C8F2E02F236942005B39D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/Resources/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 568T6RKXH7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Resources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.domzilla.reed.share-extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F2C8ED612F2276CF005B39D1 /* Build configuration list for PBXProject "Reed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2C8ED7C2F2276D2005B39D1 /* Debug */,
+				F2C8ED7D2F2276D2005B39D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2C8ED792F2276D2005B39D1 /* Build configuration list for PBXNativeTarget "Reed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2C8ED7A2F2276D2005B39D1 /* Debug */,
+				F2C8ED7B2F2276D2005B39D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F2C8F2E22F236942005B39D1 /* Build configuration list for PBXNativeTarget "Reed Share Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2C8F2DF2F236942005B39D1 /* Debug */,
+				F2C8F2E02F236942005B39D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSCore;
+		};
+		F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSDatabase;
+		};
+		F2C8F4F12F23741C005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSMarkdown" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSMarkdown;
+		};
+		F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSParser;
+		};
+		F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSTree;
+		};
+		F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../vendor/NetNewsWire/Modules/RSWeb;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F2C8F4E82F2373B3005B39D1 /* RSCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSCore;
+		};
+		F2C8F4ED2F237402005B39D1 /* RSDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSDatabase;
+		};
+		F2C8F4F52F23743A005B39D1 /* RSParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSParser;
+		};
+		F2C8F4FA2F23745A005B39D1 /* RSTree */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RSTree;
+		};
+		F2C8F5032F237589005B39D1 /* RSCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */;
+			productName = RSCore;
+		};
+		F2C8F5062F237589005B39D1 /* RSDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */;
+			productName = RSDatabase;
+		};
+		F2C8F5092F237589005B39D1 /* RSParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */;
+			productName = RSParser;
+		};
+		F2C8F50C2F237589005B39D1 /* RSTree */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */;
+			productName = RSTree;
+		};
+		F2C8F50F2F237589005B39D1 /* RSWeb */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */;
+			productName = RSWeb;
+		};
+		F2C8F5152F237659005B39D1 /* RSWeb */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */;
+			productName = RSWeb;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F2C8ED5E2F2276CF005B39D1 /* Project object */;
+}
