@@ -1,0 +1,3 @@
+[submodule "vendor/NetNewsWire"]
+	path = vendor/NetNewsWire
+	url = https://github.com/Ranchero-Software/NetNewsWire.git
