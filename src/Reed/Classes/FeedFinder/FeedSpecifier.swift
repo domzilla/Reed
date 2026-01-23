@@ -9,7 +9,7 @@
 import Foundation
 import RSWeb
 
-public struct FeedSpecifier: Hashable, Sendable {
+public struct FeedSpecifier: Sendable {
 	public enum Source: Int, Sendable {
 		case UserEntered = 0, HTMLHead, HTMLLink
 
@@ -26,15 +26,15 @@ public struct FeedSpecifier: Hashable, Sendable {
 		calculatedScore()
 	}
 
-	public init(title: String?, urlString: String, source: Source, orderFound: Int) {
+	public nonisolated init(title: String?, urlString: String, source: Source, orderFound: Int) {
 		self.title = title
 		self.urlString = urlString
 		self.source = source
 		self.orderFound = orderFound
 	}
-	
+
 	/// Some feed URLs are known in advance. Save time/bandwidth by special-casing those.
-	static func knownFeedSpecifier(url: URL) -> FeedSpecifier? {
+	nonisolated static func knownFeedSpecifier(url: URL) -> FeedSpecifier? {
 		if url.isRachelByTheBayURL {
 			let feedURLString = "https://rachelbythebay.com/w/atom.xml"
 			return FeedSpecifier(title: "writing - rachelbythebay", urlString: feedURLString, source: .UserEntered, orderFound: 0)
@@ -53,7 +53,7 @@ public struct FeedSpecifier: Hashable, Sendable {
 		return FeedSpecifier(title: mergedTitle, urlString: urlString, source: mergedSource, orderFound: mergedOrderFound)
 	}
 
-	public static func bestFeed(in feedSpecifiers: Set<FeedSpecifier>) -> FeedSpecifier? {
+	nonisolated public static func bestFeed(in feedSpecifiers: Set<FeedSpecifier>) -> FeedSpecifier? {
 		if feedSpecifiers.isEmpty {
 			return nil
 		}
@@ -73,6 +73,18 @@ public struct FeedSpecifier: Hashable, Sendable {
 		}
 
 		return currentBestFeed
+	}
+
+}
+
+// MARK: - Hashable
+extension FeedSpecifier: Hashable {
+	nonisolated public func hash(into hasher: inout Hasher) {
+		hasher.combine(urlString)
+	}
+
+	nonisolated public static func ==(lhs: FeedSpecifier, rhs: FeedSpecifier) -> Bool {
+		return lhs.urlString == rhs.urlString
 	}
 }
 

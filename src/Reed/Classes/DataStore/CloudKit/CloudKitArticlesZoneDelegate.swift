@@ -46,7 +46,7 @@ final class CloudKitArticlesZoneDelegate: CloudKitZoneDelegate {
 private extension CloudKitArticlesZoneDelegate {
 
 	func delete(recordKeys: [CloudKitRecordKey], pendingStarredStatusArticleIDs: Set<String>) async {
-		let receivedRecordIDs = recordKeys.filter({ $0.recordType == CloudKitArticlesZone.CloudKitArticleStatus.recordType }).map({ $0.recordID })
+		let receivedRecordIDs = recordKeys.filter({ $0.recordType == CloudKitArticleStatus.recordType }).map({ $0.recordID })
 		let receivedArticleIDs = Set(receivedRecordIDs.map({ stripPrefix($0.externalID) }))
 		let deletableArticleIDs = receivedArticleIDs.subtracting(pendingStarredStatusArticleIDs)
 
@@ -60,10 +60,10 @@ private extension CloudKitArticlesZoneDelegate {
 
 	func update(records: [CKRecord], pendingReadStatusArticleIDs: Set<String>, pendingStarredStatusArticleIDs: Set<String>) async throws {
 
-		let receivedUnreadArticleIDs = Set(records.filter({ $0[CloudKitArticlesZone.CloudKitArticleStatus.Fields.read] == "0" }).map({ stripPrefix($0.externalID) }))
-		let receivedReadArticleIDs =  Set(records.filter({ $0[CloudKitArticlesZone.CloudKitArticleStatus.Fields.read] == "1" }).map({ stripPrefix($0.externalID) }))
-		let receivedUnstarredArticleIDs =  Set(records.filter({ $0[CloudKitArticlesZone.CloudKitArticleStatus.Fields.starred] == "0" }).map({ stripPrefix($0.externalID) }))
-		let receivedStarredArticleIDs =  Set(records.filter({ $0[CloudKitArticlesZone.CloudKitArticleStatus.Fields.starred] == "1" }).map({ stripPrefix($0.externalID) }))
+		let receivedUnreadArticleIDs = Set(records.filter({ $0[CloudKitArticleStatus.Fields.read] == "0" }).map({ stripPrefix($0.externalID) }))
+		let receivedReadArticleIDs =  Set(records.filter({ $0[CloudKitArticleStatus.Fields.read] == "1" }).map({ stripPrefix($0.externalID) }))
+		let receivedUnstarredArticleIDs =  Set(records.filter({ $0[CloudKitArticleStatus.Fields.starred] == "0" }).map({ stripPrefix($0.externalID) }))
+		let receivedStarredArticleIDs =  Set(records.filter({ $0[CloudKitArticleStatus.Fields.starred] == "1" }).map({ stripPrefix($0.externalID) }))
 
 		let updateableUnreadArticleIDs = receivedUnreadArticleIDs.subtracting(pendingReadStatusArticleIDs)
 		let updateableReadArticleIDs = receivedReadArticleIDs.subtracting(pendingReadStatusArticleIDs)
@@ -133,7 +133,7 @@ private extension CloudKitArticlesZoneDelegate {
 }
 
 nonisolated func makeParsedItem(_ articleRecord: CKRecord) -> ParsedItem? {
-	guard articleRecord.recordType == CloudKitArticlesZone.CloudKitArticle.recordType else {
+	guard articleRecord.recordType == CloudKitArticle.recordType else {
 		return nil
 	}
 
@@ -141,7 +141,7 @@ nonisolated func makeParsedItem(_ articleRecord: CKRecord) -> ParsedItem? {
 
 	let decoder = JSONDecoder()
 
-	if let encodedParsedAuthors = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.parsedAuthors] as? [String] {
+	if let encodedParsedAuthors = articleRecord[CloudKitArticle.Fields.parsedAuthors] as? [String] {
 		for encodedParsedAuthor in encodedParsedAuthors {
 			if let data = encodedParsedAuthor.data(using: .utf8), let parsedAuthor = try? decoder.decode(ParsedAuthor.self, from: data) {
 				parsedAuthors.insert(parsedAuthor)
@@ -149,20 +149,20 @@ nonisolated func makeParsedItem(_ articleRecord: CKRecord) -> ParsedItem? {
 		}
 	}
 
-	guard let uniqueID = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.uniqueID] as? String,
-		  let feedURL = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.feedURL] as? String else {
+	guard let uniqueID = articleRecord[CloudKitArticle.Fields.uniqueID] as? String,
+		  let feedURL = articleRecord[CloudKitArticle.Fields.feedURL] as? String else {
 		return nil
 	}
 
-	var contentHTML = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.contentHTML] as? String
-	if let contentHTMLData = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.contentHTMLData] as? NSData {
+	var contentHTML = articleRecord[CloudKitArticle.Fields.contentHTML] as? String
+	if let contentHTMLData = articleRecord[CloudKitArticle.Fields.contentHTMLData] as? NSData {
 		if let decompressedContentHTMLData = try? contentHTMLData.decompressed(using: .lzfse) {
 			contentHTML = String(data: decompressedContentHTMLData as Data, encoding: .utf8)
 		}
 	}
 
-	var contentText = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.contentText] as? String
-	if let contentTextData = articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.contentTextData] as? NSData {
+	var contentText = articleRecord[CloudKitArticle.Fields.contentText] as? String
+	if let contentTextData = articleRecord[CloudKitArticle.Fields.contentTextData] as? NSData {
 		if let decompressedContentTextData = try? contentTextData.decompressed(using: .lzfse) {
 			contentText = String(data: decompressedContentTextData as Data, encoding: .utf8)
 		}
@@ -171,18 +171,18 @@ nonisolated func makeParsedItem(_ articleRecord: CKRecord) -> ParsedItem? {
 	let parsedItem = ParsedItem(syncServiceID: nil,
 								uniqueID: uniqueID,
 								feedURL: feedURL,
-								url: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.url] as? String,
-								externalURL: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.externalURL] as? String,
-								title: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.title] as? String,
+								url: articleRecord[CloudKitArticle.Fields.url] as? String,
+								externalURL: articleRecord[CloudKitArticle.Fields.externalURL] as? String,
+								title: articleRecord[CloudKitArticle.Fields.title] as? String,
 								language: nil,
 								contentHTML: contentHTML,
 								contentText: contentText,
 								markdown: nil,
-								summary: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.summary] as? String,
-								imageURL: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.imageURL] as? String,
-								bannerImageURL: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.imageURL] as? String,
-								datePublished: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.datePublished] as? Date,
-								dateModified: articleRecord[CloudKitArticlesZone.CloudKitArticle.Fields.dateModified] as? Date,
+								summary: articleRecord[CloudKitArticle.Fields.summary] as? String,
+								imageURL: articleRecord[CloudKitArticle.Fields.imageURL] as? String,
+								bannerImageURL: articleRecord[CloudKitArticle.Fields.imageURL] as? String,
+								datePublished: articleRecord[CloudKitArticle.Fields.datePublished] as? Date,
+								dateModified: articleRecord[CloudKitArticle.Fields.dateModified] as? Date,
 								authors: parsedAuthors,
 								tags: nil,
 								attachments: nil)

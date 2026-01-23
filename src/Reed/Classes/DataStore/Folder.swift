@@ -143,13 +143,13 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 
 	// MARK: - Hashable
 
-	public func hash(into hasher: inout Hasher) {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(folderID)
 	}
 
 	// MARK: - Equatable
 
-	static public func ==(lhs: Folder, rhs: Folder) -> Bool {
+	nonisolated static public func ==(lhs: Folder, rhs: Folder) -> Bool {
 		return lhs === rhs
 	}
 }

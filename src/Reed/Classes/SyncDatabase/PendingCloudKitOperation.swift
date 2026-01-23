@@ -29,7 +29,7 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
 	public let createdAt: Date
 	public let selected: Bool
 
-	public init(id: String = UUID().uuidString, operationType: OperationType, payload: Data, createdAt: Date = Date(), selected: Bool = false) {
+	nonisolated public init(id: String = UUID().uuidString, operationType: OperationType, payload: Data, createdAt: Date = Date(), selected: Bool = false) {
 		self.id = id
 		self.operationType = operationType
 		self.payload = payload
@@ -37,7 +37,7 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
 		self.selected = selected
 	}
 
-	public func databaseDictionary() -> DatabaseDictionary {
+	nonisolated public func databaseDictionary() -> DatabaseDictionary {
 		[
 			PendingOperationKey.id: id,
 			PendingOperationKey.operationType: operationType.rawValue,
@@ -47,7 +47,7 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
 		]
 	}
 
-	public func hash(into hasher: inout Hasher) {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(id)
 	}
 }
@@ -146,7 +146,7 @@ public extension PendingCloudKitOperation {
 
 // MARK: - Database Keys
 
-struct PendingOperationKey {
+struct PendingOperationKey: Sendable {
 	static let id = "id"
 	static let operationType = "operationType"
 	static let payload = "payload"

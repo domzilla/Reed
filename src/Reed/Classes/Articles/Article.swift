@@ -10,7 +10,7 @@ import Foundation
 
 public typealias ArticleSetBlock = (Set<Article>) -> Void
 
-public final class Article: Hashable, Sendable {
+public final class Article: Sendable {
 	public let articleID: String // Unique database ID (possibly sync service ID)
 	public let accountID: String
 	public let feedID: String // Likely a URL, but not necessarily
@@ -57,38 +57,38 @@ public final class Article: Hashable, Sendable {
 		return databaseIDWithString("\(feedID) \(uniqueID)")
 	}
 
-	// MARK: - Hashable
+}
 
-	public func hash(into hasher: inout Hasher) {
+// MARK: - Hashable
+extension Article: Hashable {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(articleID)
 	}
 
-	// MARK: - Equatable
-
-	static public func ==(lhs: Article, rhs: Article) -> Bool {
+	nonisolated static public func ==(lhs: Article, rhs: Article) -> Bool {
 		return lhs.articleID == rhs.articleID && lhs.accountID == rhs.accountID && lhs.feedID == rhs.feedID && lhs.uniqueID == rhs.uniqueID && lhs.title == rhs.title && lhs.contentHTML == rhs.contentHTML && lhs.contentText == rhs.contentText && lhs.rawLink == rhs.rawLink && lhs.rawExternalLink == rhs.rawExternalLink && lhs.summary == rhs.summary && lhs.rawImageLink == rhs.rawImageLink && lhs.datePublished == rhs.datePublished && lhs.dateModified == rhs.dateModified && lhs.authors == rhs.authors
 	}
 }
 
 public extension Set where Element == Article {
 
-	func articleIDs() -> Set<String> {
+	nonisolated func articleIDs() -> Set<String> {
 		return Set<String>(map { $0.articleID })
 	}
 
-	func unreadArticles() -> Set<Article> {
+	nonisolated func unreadArticles() -> Set<Article> {
 		let articles = self.filter { !$0.status.read }
 		return Set(articles)
 	}
 
-	func contains(accountID: String, articleID: String) -> Bool {
+	nonisolated func contains(accountID: String, articleID: String) -> Bool {
 		return contains(where: { $0.accountID == accountID && $0.articleID == articleID})
 	}
 }
 
 public extension Array where Element == Article {
 
-	func articleIDs() -> [String] {
+	nonisolated func articleIDs() -> [String] {
 		return map { $0.articleID }
 	}
 }

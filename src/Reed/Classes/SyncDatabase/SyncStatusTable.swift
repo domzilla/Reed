@@ -10,10 +10,10 @@ import Foundation
 import RSDatabase
 import RSDatabaseObjC
 
-struct SyncStatusTable {
+struct SyncStatusTable: Sendable {
 	static let name = "syncStatus"
 
-	static func selectForProcessing(limit: Int?, database: FMDatabase) -> Set<SyncStatus>? {
+	nonisolated static func selectForProcessing(limit: Int?, database: FMDatabase) -> Set<SyncStatus>? {
 		database.beginTransaction()
 
 		let updateSQL = "update \(name) set selected = true"
@@ -42,7 +42,7 @@ struct SyncStatusTable {
 		return statuses
 	}
 
-	static func selectPendingCount(database: FMDatabase) -> Int? {
+	nonisolated static func selectPendingCount(database: FMDatabase) -> Int? {
 		let sql = "select count(*) from \(name)"
 		guard let resultSet = database.executeQuery(sql, withArgumentsIn: nil) else {
 			return nil
@@ -52,20 +52,20 @@ struct SyncStatusTable {
 		return count
 	}
 
-	static func selectPendingReadStatusArticleIDs(database: FMDatabase) -> Set<String>? {
+	nonisolated static func selectPendingReadStatusArticleIDs(database: FMDatabase) -> Set<String>? {
 		selectPendingArticleIDs(.read, database: database)
 	}
 
-	static func selectPendingStarredStatusArticleIDs(database: FMDatabase) -> Set<String>? {
+	nonisolated static func selectPendingStarredStatusArticleIDs(database: FMDatabase) -> Set<String>? {
 		selectPendingArticleIDs(.starred, database: database)
 	}
 
-	static func resetAllSelectedForProcessing(database: FMDatabase) {
+	nonisolated static func resetAllSelectedForProcessing(database: FMDatabase) {
 		let updateSQL = "update \(name) set selected = false"
 		database.executeUpdateInTransaction(updateSQL)
 	}
 
-	static func resetSelectedForProcessing(_ articleIDs: Set<String>, database: FMDatabase) {
+	nonisolated static func resetSelectedForProcessing(_ articleIDs: Set<String>, database: FMDatabase) {
 		guard !articleIDs.isEmpty else {
 			return
 		}
@@ -76,7 +76,7 @@ struct SyncStatusTable {
 		database.executeUpdateInTransaction(updateSQL, withArgumentsIn: parameters)
 	}
 
-	static func deleteSelectedForProcessing(_ articleIDs: Set<String>, database: FMDatabase) {
+	nonisolated static func deleteSelectedForProcessing(_ articleIDs: Set<String>, database: FMDatabase) {
 		guard !articleIDs.isEmpty else {
 			return
 		}
@@ -87,7 +87,7 @@ struct SyncStatusTable {
 		database.executeUpdateInTransaction(deleteSQL, withArgumentsIn: parameters)
 	}
 
-	static func insertStatuses(_ statuses: Set<SyncStatus>, database: FMDatabase) {
+	nonisolated static func insertStatuses(_ statuses: Set<SyncStatus>, database: FMDatabase) {
 		database.beginTransaction()
 
 		let statusArray = statuses.map { $0.databaseDictionary() }
@@ -99,7 +99,7 @@ struct SyncStatusTable {
 
 private extension SyncStatusTable {
 
-	static func statusWithRow(_ row: FMResultSet) -> SyncStatus? {
+	nonisolated static func statusWithRow(_ row: FMResultSet) -> SyncStatus? {
 		guard let articleID = row.string(forColumn: SyncDatabaseKey.articleID),
 			let rawKey = row.string(forColumn: SyncDatabaseKey.key),
 			let key = SyncStatus.Key(rawValue: rawKey) else {
@@ -112,7 +112,7 @@ private extension SyncStatusTable {
 		return SyncStatus(articleID: articleID, key: key, flag: flag, selected: selected)
 	}
 
-	static func selectPendingArticleIDs(_ statusKey: ArticleStatus.Key, database: FMDatabase) -> Set<String>? {
+	nonisolated static func selectPendingArticleIDs(_ statusKey: ArticleStatus.Key, database: FMDatabase) -> Set<String>? {
 		let sql = "select articleID from \(name) where selected == false and key = \"\(statusKey.rawValue)\";"
 		guard let resultSet = database.executeQuery(sql, withArgumentsIn: nil) else {
 			return nil

@@ -14,19 +14,19 @@ struct ErrorHandler: Sendable {
 
 	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ErrorHandler")
 
-	@Sendable public static func present(_ viewController: UIViewController) -> @Sendable (Error) -> () {
+	nonisolated public static func present(_ viewController: UIViewController) -> @Sendable (Error) -> () {
 		return { [weak viewController] error in
 			Task { @MainActor in
 				if UIApplication.shared.applicationState == .active {
 					viewController?.presentError(error)
 				} else {
-					log(error)
+					ErrorHandler.log(error)
 				}
 			}
 		}
 	}
 
-	@Sendable nonisolated public static func log(_ error: Error) {
+	nonisolated public static func log(_ error: Error) {
 		logger.error("\(error.localizedDescription)")
 	}
 }

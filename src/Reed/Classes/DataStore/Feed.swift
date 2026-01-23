@@ -271,14 +271,14 @@ import RSWeb
 
 	// MARK: - Hashable
 
-	public func hash(into hasher: inout Hasher) {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(feedID)
 		hasher.combine(dataStoreID)
 	}
 
 	// MARK: - Equatable
 
-	public class func ==(lhs: Feed, rhs: Feed) -> Bool {
+	nonisolated public class func ==(lhs: Feed, rhs: Feed) -> Bool {
 		return lhs.feedID == rhs.feedID && lhs.dataStoreID == rhs.dataStoreID
 	}
 }

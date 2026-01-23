@@ -873,13 +873,13 @@ public enum FetchType {
 
 	// MARK: - Hashable
 
-	public func hash(into hasher: inout Hasher) {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(dataStoreID)
 	}
 
 	// MARK: - Equatable
 
-	public class func ==(lhs: DataStore, rhs: DataStore) -> Bool {
+	nonisolated public class func ==(lhs: DataStore, rhs: DataStore) -> Bool {
 		return lhs === rhs
 	}
 }

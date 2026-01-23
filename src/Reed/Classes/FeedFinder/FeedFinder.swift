@@ -23,8 +23,8 @@ public enum FeedFinderError: LocalizedError {
 	}
 }
 
-public final class FeedFinder {
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedFinder")
+public final class FeedFinder: Sendable {
+	nonisolated private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedFinder")
 
 	@concurrent public static func find(url: URL) async throws -> Set<FeedSpecifier> {
 		// Check special cases first.
@@ -137,7 +137,7 @@ private extension FeedFinder {
 		return feedSpecifiers
 	}
 
-	static func isHTML(_ data: Data) -> Bool {
+	nonisolated static func isHTML(_ data: Data) -> Bool {
 		return data.isProbablyHTML
 	}
 
@@ -176,7 +176,7 @@ private extension FeedFinder {
 		return Set(resultFeedSpecifiers.values)
 	}
 
-	static func isFeed(_ data: Data, _ urlString: String) -> Bool {
+	nonisolated static func isFeed(_ data: Data, _ urlString: String) -> Bool {
 		let parserData = ParserData(url: urlString, data: data)
 		return FeedParser.canParse(parserData)
 	}

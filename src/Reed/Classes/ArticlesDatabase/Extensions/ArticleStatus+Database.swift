@@ -23,11 +23,11 @@ extension ArticleStatus {
 
 extension ArticleStatus: DatabaseObject {
 
-	public var databaseID: String {
+	nonisolated public var databaseID: String {
 		return articleID
 	}
 
-	public func databaseDictionary() -> DatabaseDictionary? {
+	nonisolated public func databaseDictionary() -> DatabaseDictionary? {
 		return [DatabaseKey.articleID: articleID, DatabaseKey.read: read, DatabaseKey.starred: starred, DatabaseKey.dateArrived: dateArrived]
 	}
 }

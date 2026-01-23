@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol ExtensionContainer: Codable {
+protocol ExtensionContainer: Codable, Sendable {
 	var name: String { get }
 	var accountID: String { get }
 	var containerID: ContainerIdentifier? { get }
@@ -81,7 +81,7 @@ struct ExtensionAccount: ExtensionContainer {
 
 }
 
-struct ExtensionFolder: ExtensionContainer {
+struct ExtensionFolder: ExtensionContainer, Sendable {
 
 	enum CodingKeys: String, CodingKey {
 		case accountName

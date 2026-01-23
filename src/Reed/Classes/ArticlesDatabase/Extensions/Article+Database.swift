@@ -138,7 +138,7 @@ extension Article {
 
 extension Article: DatabaseObject {
 
-	public func databaseDictionary() -> DatabaseDictionary? {
+	nonisolated public func databaseDictionary() -> DatabaseDictionary? {
 		var d = DatabaseDictionary()
 
 		d[DatabaseKey.articleID] = articleID
@@ -178,11 +178,11 @@ extension Article: DatabaseObject {
 		return d
 	}
 
-	public var databaseID: String {
+	nonisolated public var databaseID: String {
 		return articleID
 	}
 
-	public func relatedObjectsWithName(_ name: String) -> [DatabaseObject]? {
+	nonisolated public func relatedObjectsWithName(_ name: String) -> [DatabaseObject]? {
 		switch name {
 		case RelationshipName.authors:
 			return databaseObjectArray(with: authors)
@@ -191,7 +191,7 @@ extension Article: DatabaseObject {
 		}
 	}
 
-	private func databaseObjectArray<T: DatabaseObject>(with objects: Set<T>?) -> [DatabaseObject]? {
+	nonisolated private func databaseObjectArray<T: DatabaseObject>(with objects: Set<T>?) -> [DatabaseObject]? {
 		guard let objects = objects else {
 			return nil
 		}

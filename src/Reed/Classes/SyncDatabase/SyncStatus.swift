@@ -9,7 +9,7 @@
 import Foundation
 import RSDatabase
 
-public struct SyncStatus: Hashable, Equatable, Sendable {
+public struct SyncStatus: Sendable {
 	public enum Key: String, Sendable {
 		case read
 		case starred
@@ -38,12 +38,19 @@ public struct SyncStatus: Hashable, Equatable, Sendable {
 		self.selected = selected
 	}
 
-	public func databaseDictionary() -> DatabaseDictionary {
+	nonisolated public func databaseDictionary() -> DatabaseDictionary {
 		[SyncDatabaseKey.articleID: articleID, SyncDatabaseKey.key: key.rawValue, SyncDatabaseKey.flag: flag, SyncDatabaseKey.selected: selected]
 	}
+}
 
-	public func hash(into hasher: inout Hasher) {
+// MARK: - Hashable
+extension SyncStatus: Hashable {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(articleID)
 		hasher.combine(key)
+	}
+
+	nonisolated public static func ==(lhs: SyncStatus, rhs: SyncStatus) -> Bool {
+		return lhs.articleID == rhs.articleID && lhs.key == rhs.key
 	}
 }

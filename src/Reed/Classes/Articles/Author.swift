@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct Author: Codable, Hashable, Sendable {
+public struct Author: Codable, Sendable {
 	public let authorID: String // calculated
 	public let name: String?
 	public let url: String?
@@ -36,7 +36,7 @@ public struct Author: Codable, Hashable, Sendable {
 		}
 	}
 
-	public static func authorsWithJSON(_ jsonString: String) -> Set<Author>? {
+	nonisolated public static func authorsWithJSON(_ jsonString: String) -> Set<Author>? {
 		// This is JSON stored in the database, not the JSON Feed version of an author.
 		guard let data = jsonString.data(using: .utf8) else {
 			return nil
@@ -53,24 +53,24 @@ public struct Author: Codable, Hashable, Sendable {
 		return nil
 	}
 
-	// MARK: - Hashable
+}
 
-	public func hash(into hasher: inout Hasher) {
+// MARK: - Hashable
+extension Author: Hashable {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(authorID)
 	}
 
-	// MARK: - Equatable
-
-	static public func ==(lhs: Author, rhs: Author) -> Bool {
+	nonisolated static public func ==(lhs: Author, rhs: Author) -> Bool {
 		// The authorID is a calculation based on all the properties,
-		// and so it’s a quick shortcut to determine equality.
+		// and so it's a quick shortcut to determine equality.
 		return lhs.authorID == rhs.authorID
 	}
 }
 
 extension Set where Element == Author {
 
-	public func json() -> String? {
+	nonisolated public func json() -> String? {
 		let encoder = JSONEncoder()
 		do {
 			let jsonData = try encoder.encode(Array(self))

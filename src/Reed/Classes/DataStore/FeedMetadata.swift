@@ -9,11 +9,11 @@
 import Foundation
 import RSWeb
 
-@MainActor protocol FeedMetadataDelegate: AnyObject {
-	func valueDidChange(_ feedMetadata: FeedMetadata, key: FeedMetadata.CodingKeys)
+protocol FeedMetadataDelegate: AnyObject {
+	@MainActor func valueDidChange(_ feedMetadata: FeedMetadata, key: FeedMetadata.CodingKeys)
 }
 
-@MainActor final class FeedMetadata: Codable {
+final class FeedMetadata: Codable, @unchecked Sendable {
 	enum CodingKeys: String, CodingKey {
 		case feedID
 		case homePageURL
@@ -167,6 +167,9 @@ import RSWeb
 	}
 
 	func valueDidChange(_ key: CodingKeys) {
-		delegate?.valueDidChange(self, key: key)
+		Task { @MainActor [weak self] in
+			guard let self else { return }
+			self.delegate?.valueDidChange(self, key: key)
+		}
 	}
 }

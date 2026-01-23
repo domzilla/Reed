@@ -10,10 +10,10 @@ import Foundation
 import RSDatabase
 import RSDatabaseObjC
 
-struct PendingCloudKitOperationTable {
+struct PendingCloudKitOperationTable: Sendable {
 	static let name = "pendingCloudKitOperations"
 
-	static func selectForProcessing(limit: Int?, database: FMDatabase) -> [PendingCloudKitOperation]? {
+	nonisolated static func selectForProcessing(limit: Int?, database: FMDatabase) -> [PendingCloudKitOperation]? {
 		database.beginTransaction()
 
 		let updateSQL = "update \(name) set selected = true"
@@ -42,7 +42,7 @@ struct PendingCloudKitOperationTable {
 		return operations
 	}
 
-	static func selectPendingCount(database: FMDatabase) -> Int? {
+	nonisolated static func selectPendingCount(database: FMDatabase) -> Int? {
 		let sql = "select count(*) from \(name)"
 		guard let resultSet = database.executeQuery(sql, withArgumentsIn: nil) else {
 			return nil
@@ -52,12 +52,12 @@ struct PendingCloudKitOperationTable {
 		return count
 	}
 
-	static func resetAllSelectedForProcessing(database: FMDatabase) {
+	nonisolated static func resetAllSelectedForProcessing(database: FMDatabase) {
 		let updateSQL = "update \(name) set selected = false"
 		database.executeUpdateInTransaction(updateSQL)
 	}
 
-	static func resetSelectedForProcessing(_ ids: Set<String>, database: FMDatabase) {
+	nonisolated static func resetSelectedForProcessing(_ ids: Set<String>, database: FMDatabase) {
 		guard !ids.isEmpty else {
 			return
 		}
@@ -68,7 +68,7 @@ struct PendingCloudKitOperationTable {
 		database.executeUpdateInTransaction(updateSQL, withArgumentsIn: parameters)
 	}
 
-	static func deleteSelectedForProcessing(_ ids: Set<String>, database: FMDatabase) {
+	nonisolated static func deleteSelectedForProcessing(_ ids: Set<String>, database: FMDatabase) {
 		guard !ids.isEmpty else {
 			return
 		}
@@ -79,7 +79,7 @@ struct PendingCloudKitOperationTable {
 		database.executeUpdateInTransaction(deleteSQL, withArgumentsIn: parameters)
 	}
 
-	static func insertOperation(_ operation: PendingCloudKitOperation, database: FMDatabase) {
+	nonisolated static func insertOperation(_ operation: PendingCloudKitOperation, database: FMDatabase) {
 		database.beginTransaction()
 
 		let dict = operation.databaseDictionary()
@@ -88,7 +88,7 @@ struct PendingCloudKitOperationTable {
 		database.commit()
 	}
 
-	static func insertOperations(_ operations: [PendingCloudKitOperation], database: FMDatabase) {
+	nonisolated static func insertOperations(_ operations: [PendingCloudKitOperation], database: FMDatabase) {
 		guard !operations.isEmpty else { return }
 
 		database.beginTransaction()
@@ -99,12 +99,12 @@ struct PendingCloudKitOperationTable {
 		database.commit()
 	}
 
-	static func deleteOperation(_ id: String, database: FMDatabase) {
+	nonisolated static func deleteOperation(_ id: String, database: FMDatabase) {
 		let deleteSQL = "delete from \(name) where id = ?"
 		database.executeUpdateInTransaction(deleteSQL, withArgumentsIn: [id as AnyObject])
 	}
 
-	static func deleteAllOperations(database: FMDatabase) {
+	nonisolated static func deleteAllOperations(database: FMDatabase) {
 		let deleteSQL = "delete from \(name)"
 		database.executeUpdateInTransaction(deleteSQL)
 	}
@@ -112,7 +112,7 @@ struct PendingCloudKitOperationTable {
 
 private extension PendingCloudKitOperationTable {
 
-	static func operationWithRow(_ row: FMResultSet) -> PendingCloudKitOperation? {
+	nonisolated static func operationWithRow(_ row: FMResultSet) -> PendingCloudKitOperation? {
 		guard let id = row.string(forColumn: PendingOperationKey.id),
 			  let rawType = row.string(forColumn: PendingOperationKey.operationType),
 			  let operationType = PendingCloudKitOperation.OperationType(rawValue: rawType),

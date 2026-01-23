@@ -6,7 +6,7 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-struct SyncDatabaseKey {
+struct SyncDatabaseKey: Sendable {
 	// Sync Status
 	static let articleID = "articleID"
 	static let key = "key"

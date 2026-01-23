@@ -9,7 +9,7 @@
 import Foundation
 import Synchronization
 
-public final class ArticleStatus: Hashable, Sendable {
+public final class ArticleStatus: Sendable {
 	public enum Key: String, Sendable {
 		case read
 		case starred
@@ -25,7 +25,7 @@ public final class ArticleStatus: Hashable, Sendable {
 
 	private let state: Mutex<State>
 
-	public var read: Bool {
+	nonisolated public var read: Bool {
 		get {
 			state.withLock { $0.read }
 		}
@@ -34,7 +34,7 @@ public final class ArticleStatus: Hashable, Sendable {
 		}
 	}
 
-	public var starred: Bool {
+	nonisolated public var starred: Bool {
 		get {
 			state.withLock { $0.starred }
 		}
@@ -53,7 +53,7 @@ public final class ArticleStatus: Hashable, Sendable {
 		self.init(articleID: articleID, read: read, starred: false, dateArrived: dateArrived)
 	}
 
-	public func boolStatus(forKey key: ArticleStatus.Key) -> Bool {
+	nonisolated public func boolStatus(forKey key: ArticleStatus.Key) -> Bool {
 		switch key {
 		case .read:
 			return read
@@ -62,7 +62,7 @@ public final class ArticleStatus: Hashable, Sendable {
 		}
 	}
 
-	public func setBoolStatus(_ status: Bool, forKey key: ArticleStatus.Key) {
+	nonisolated public func setBoolStatus(_ status: Bool, forKey key: ArticleStatus.Key) {
 		switch key {
 		case .read:
 			read = status
@@ -71,15 +71,15 @@ public final class ArticleStatus: Hashable, Sendable {
 		}
 	}
 
-	// MARK: - Hashable
+}
 
-	public func hash(into hasher: inout Hasher) {
+// MARK: - Hashable
+extension ArticleStatus: Hashable {
+	nonisolated public func hash(into hasher: inout Hasher) {
 		hasher.combine(articleID)
 	}
 
-	// MARK: - Equatable
-
-	public static func ==(lhs: ArticleStatus, rhs: ArticleStatus) -> Bool {
+	nonisolated public static func ==(lhs: ArticleStatus, rhs: ArticleStatus) -> Bool {
 		return lhs.articleID == rhs.articleID && lhs.dateArrived == rhs.dateArrived && lhs.read == rhs.read && lhs.starred == rhs.starred
 	}
 }

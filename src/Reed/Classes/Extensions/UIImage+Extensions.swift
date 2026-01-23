@@ -13,11 +13,11 @@ extension UIImage {
 
 	static let maxIconSize = 48
 
-	static func scaledForIcon(_ data: Data, imageResultBlock: @escaping ImageResultBlock) {
+	@MainActor static func scaledForIcon(_ data: Data, imageResultBlock: @escaping ImageResultBlock) {
 		IconScalerQueue.shared.scaledForIcon(data, imageResultBlock)
 	}
 
-	static func scaledForIcon(_ data: Data) -> UIImage? {
+	nonisolated static func scaledForIcon(_ data: Data) -> UIImage? {
 		let scaledMaxPixelSize = Int(ceil(CGFloat(UIImage.maxIconSize) * RSScreen.maxScreenScale))
 		guard let cgImage = UIImage.scaleImage(data, maxPixelSize: scaledMaxPixelSize) else {
 			return nil

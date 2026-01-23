@@ -9,31 +9,35 @@
 import UIKit
 
 final class FindInArticleActivity: UIActivity {
-	override var activityTitle: String? {
+	nonisolated override init() {
+		super.init()
+	}
+
+	nonisolated override var activityTitle: String? {
 		NSLocalizedString("Find in Article", comment: "Find in Article")
 	}
 
-	override var activityType: UIActivity.ActivityType? {
+	nonisolated override var activityType: UIActivity.ActivityType? {
 		UIActivity.ActivityType(rawValue: "net.domzilla.reed.find")
 	}
 
-	override var activityImage: UIImage? {
+	nonisolated override var activityImage: UIImage? {
 		UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
 	}
 
-	override class var activityCategory: UIActivity.Category {
+	nonisolated override class var activityCategory: UIActivity.Category {
 		.action
 	}
 
-	override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
+	nonisolated override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
 		true
 	}
 
-	override func prepare(withActivityItems activityItems: [Any]) {
+	nonisolated override func prepare(withActivityItems activityItems: [Any]) {
 
 	}
 
-	override func perform() {
+	nonisolated override func perform() {
 		NotificationCenter.default.post(Notification(name: .FindInArticle))
 		activityDidFinish(true)
 	}

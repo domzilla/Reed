@@ -41,11 +41,11 @@ extension Author {
 
 extension Author: DatabaseObject {
 
-	public var databaseID: String {
+	nonisolated public var databaseID: String {
 		return authorID
 	}
 
-	public func databaseDictionary() -> DatabaseDictionary? {
+	nonisolated public func databaseDictionary() -> DatabaseDictionary? {
 		var d: DatabaseDictionary = [DatabaseKey.authorID: authorID]
 		if let name = name {
 			d[DatabaseKey.name] = name

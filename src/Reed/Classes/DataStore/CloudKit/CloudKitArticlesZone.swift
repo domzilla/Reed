@@ -13,6 +13,37 @@ import RSParser
 import RSWeb
 import CloudKit
 
+// Moved outside class to avoid MainActor isolation inheritance
+struct CloudKitArticle: Sendable {
+	static let recordType = "Article"
+	struct Fields: Sendable {
+		static let articleStatus = "articleStatus"
+		static let feedURL = "webFeedURL"
+		static let uniqueID = "uniqueID"
+		static let title = "title"
+		static let contentHTML = "contentHTML"
+		static let contentHTMLData = "contentHTMLData"
+		static let contentText = "contentText"
+		static let contentTextData = "contentTextData"
+		static let url = "url"
+		static let externalURL = "externalURL"
+		static let summary = "summary"
+		static let imageURL = "imageURL"
+		static let datePublished = "datePublished"
+		static let dateModified = "dateModified"
+		static let parsedAuthors = "parsedAuthors"
+	}
+}
+
+struct CloudKitArticleStatus: Sendable {
+	static let recordType = "ArticleStatus"
+	struct Fields: Sendable {
+		static let feedExternalID = "webFeedExternalID"
+		static let read = "read"
+		static let starred = "starred"
+	}
+}
+
 final class CloudKitArticlesZone: CloudKitZone {
 
 	var zoneID: CKRecordZone.ID
@@ -22,36 +53,6 @@ final class CloudKitArticlesZone: CloudKitZone {
 	var delegate: CloudKitZoneDelegate? = nil
 
 	let compressionQueue = DispatchQueue(label: "Articles Zone Compression Queue")
-
-	struct CloudKitArticle: Sendable {
-		static let recordType = "Article"
-		struct Fields {
-			static let articleStatus = "articleStatus"
-			static let feedURL = "webFeedURL"
-			static let uniqueID = "uniqueID"
-			static let title = "title"
-			static let contentHTML = "contentHTML"
-			static let contentHTMLData = "contentHTMLData"
-			static let contentText = "contentText"
-			static let contentTextData = "contentTextData"
-			static let url = "url"
-			static let externalURL = "externalURL"
-			static let summary = "summary"
-			static let imageURL = "imageURL"
-			static let datePublished = "datePublished"
-			static let dateModified = "dateModified"
-			static let parsedAuthors = "parsedAuthors"
-		}
-	}
-
-	struct CloudKitArticleStatus: Sendable {
-		static let recordType = "ArticleStatus"
-		struct Fields {
-			static let feedExternalID = "webFeedExternalID"
-			static let read = "read"
-			static let starred = "starred"
-		}
-	}
 
 	init(container: CKContainer) {
 		self.container = container
