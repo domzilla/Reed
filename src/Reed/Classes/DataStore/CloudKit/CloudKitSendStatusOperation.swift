@@ -47,7 +47,7 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 				if showProgress {
 					let count = (try await syncDatabase.selectPendingCount()) ?? 0
 					let ticks = count / blockSize
-					localProgress.addTasks(ticks)
+					localProgress.addTasks(max(ticks, 1))
 				}
 
 				await selectForProcessing()
