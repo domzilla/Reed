@@ -161,7 +161,6 @@
 		F2C8ED5D2F2276CF005B39D1 = {
 			isa = PBXGroup;
 			children = (
-				F2C8F4E62F236CEE005B39D1 /* Vendor */,
 				F2C8F2FD2F236BB5005B39D1 /* Shared */,
 				F2C8ED682F2276CF005B39D1 /* Reed */,
 				F2C8F2D42F236942005B39D1 /* ShareExtension */,
@@ -177,13 +176,6 @@
 				F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F2C8F4E62F236CEE005B39D1 /* Vendor */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Vendor;
 			sourceTree = "<group>";
 		};
 		F2C8F5022F237589005B39D1 /* Frameworks */ = {
