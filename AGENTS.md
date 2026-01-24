@@ -27,6 +27,27 @@ RSS/Atom/JSON Feed reader for iOS. Fork of NetNewsWire with customizations.
 - Swift 6 migration (compact): `~/Agents/Guides/swift6-migration-compact-guide.md`
 - Swift 6 migration (full): `~/Agents/Guides/swift6-migration-full-guide.md`
 
+## Logging (MANDATORY)
+This project uses **DZFoundation** (`~/GIT/Libraries/DZFoundation`) for logging.
+
+**All debug logging must use:**
+- `DZLog("message")` — General debug output
+- `DZErrorLog(error)` — Conditional error logging (only prints if error is non-nil)
+
+```swift
+import DZFoundation
+
+DZLog("Starting fetch")       // 🔶 fetchData() 42: Starting fetch
+DZErrorLog(error)             // ❌ MyFile.swift:45 fetchData() ERROR: Network unavailable
+```
+
+**Do NOT use:**
+- `print()` for debug output
+- `os.Logger` instances
+- `NSLog`
+
+Both functions are no-ops in release builds.
+
 ## API Documentation
 Local Apple API documentation is available at:
 `~/Agents/API Documentation/Apple/`
