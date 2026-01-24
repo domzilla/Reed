@@ -538,8 +538,13 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     }
 
     @objc
-    func displayNameDidChange(_: Notification) {
+    func displayNameDidChange(_ note: Notification) {
         rebuildBackingStores()
+
+        // Reload the cell for the object whose display name changed
+        if let object = note.object, let indexPath = indexPathFor(object as AnyObject) {
+            self.mainFeedCollectionViewController.collectionView.reloadItems(at: [indexPath])
+        }
     }
 
     @objc
