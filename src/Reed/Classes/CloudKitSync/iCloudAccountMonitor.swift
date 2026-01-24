@@ -7,8 +7,8 @@
 //
 
 import CloudKit
+import DZFoundation
 import Foundation
-import os.log
 
 extension Notification.Name {
     public static let iCloudAccountStatusDidChange = Notification.Name(rawValue: "iCloudAccountStatusDidChange")
@@ -19,8 +19,6 @@ extension Notification.Name {
 @MainActor
 public final class iCloudAccountMonitor {
     public static let shared = iCloudAccountMonitor()
-
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "iCloudAccountMonitor")
 
     public private(set) var isAvailable: Bool = false
     public private(set) var accountStatus: CKAccountStatus = .couldNotDetermine
@@ -47,7 +45,7 @@ public final class iCloudAccountMonitor {
             self.updateStatus(status)
         } catch {
             // Don't log error - this is expected when iCloud isn't available
-            Self.logger.debug("iCloud: Account status check returned error (iCloud likely not enabled)")
+            DZLog("iCloud: Account status check returned error (iCloud likely not enabled)")
             self.updateStatus(.couldNotDetermine)
         }
     }
@@ -103,7 +101,7 @@ public final class iCloudAccountMonitor {
         self.isAvailable = (status == .available)
 
         if wasAvailable != self.isAvailable {
-            Self.logger.info("iCloud: Account status changed to \(self.isAvailable ? "available" : "unavailable")")
+            DZLog("iCloud: Account status changed to \(self.isAvailable ? "available" : "unavailable")")
             NotificationCenter.default.post(name: .iCloudAccountStatusDidChange, object: self)
         }
     }

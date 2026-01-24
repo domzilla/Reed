@@ -5,6 +5,7 @@
 //  Main app extension for ExtensionContainersFile that handles saving.
 //
 
+import DZFoundation
 import Foundation
 import RSCore
 
@@ -72,12 +73,12 @@ extension ExtensionContainersFile {
                 let data = try encoder.encode(extensionContainers)
                 try data.write(to: writeURL)
             } catch let error as NSError {
-                Self.logger.error("Save to disk failed: \(error.localizedDescription)")
+                DZLog("Save to disk failed: \(error.localizedDescription)")
             }
         })
 
         if let error = errorPointer?.pointee {
-            Self.logger.error("Save to disk coordination failed: \(error.localizedDescription)")
+            DZLog("Save to disk coordination failed: \(error.localizedDescription)")
         }
     }
 }

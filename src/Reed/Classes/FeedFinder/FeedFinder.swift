@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSParser
 import RSWeb
@@ -18,20 +18,17 @@ public enum FeedFinderError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .feedNotFound:
-            NSLocalizedString("The feed couldn’t be found and can’t be added.", comment: "Not found")
+            NSLocalizedString("The feed couldn't be found and can't be added.", comment: "Not found")
         }
     }
 }
 
 public final class FeedFinder: Sendable {
-    private nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedFinder")
-
     @concurrent
     public static func find(url: URL) async throws -> Set<FeedSpecifier> {
         // Check special cases first.
         if let feedSpecifier = FeedSpecifier.knownFeedSpecifier(url: url) {
-            self.logger
-                .info("FeedFinder: found special case feed URL: \(url.absoluteString) - \(feedSpecifier.urlString)")
+            DZLog("FeedFinder: found special case feed URL: \(url.absoluteString) - \(feedSpecifier.urlString)")
             return Set([feedSpecifier])
         }
 

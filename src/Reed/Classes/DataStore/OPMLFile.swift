@@ -6,8 +6,8 @@
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSParser
 
@@ -23,7 +23,6 @@ final class OPMLFile {
     }
 
     private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "OPMLFile")
 
     init(filename: String, dataStore: DataStore) {
         self.fileURL = URL(fileURLWithPath: filename)
@@ -51,7 +50,7 @@ final class OPMLFile {
         do {
             try opmlDocumentString.write(to: self.fileURL, atomically: true, encoding: .utf8)
         } catch let error as NSError {
-            Self.logger.error("OPML save to disk failed: \(error.localizedDescription)")
+            DZLog("OPML save to disk failed: \(error.localizedDescription)")
         }
     }
 }
@@ -83,7 +82,7 @@ extension OPMLFile {
         do {
             fileData = try Data(contentsOf: self.fileURL)
         } catch {
-            Self.logger.error("OPML read from disk failed: \(error.localizedDescription)")
+            DZLog("OPML read from disk failed: \(error.localizedDescription)")
         }
 
         return fileData
@@ -96,7 +95,7 @@ extension OPMLFile {
         do {
             opmlDocument = try RSOPMLParser.parseOPML(with: parserData)
         } catch {
-            Self.logger.error("OPML import failed: \(error.localizedDescription)")
+            DZLog("OPML import failed: \(error.localizedDescription)")
             return nil
         }
 

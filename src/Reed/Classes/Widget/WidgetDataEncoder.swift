@@ -6,8 +6,8 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import UIKit
 import WidgetKit
@@ -22,15 +22,13 @@ final class WidgetDataEncoder {
     private let imageContainer: URL
     private let dataURL: URL
 
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "WidgetDataEncoder")
-
     init?() {
         guard let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as? String else {
-            Self.logger.error("WidgetDataEncoder: unable to create appGroup")
+            DZLog("WidgetDataEncoder: unable to create appGroup")
             return nil
         }
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
-            Self.logger.error("WidgetDataEncoder: unable to create containerURL")
+            DZLog("WidgetDataEncoder: unable to create containerURL")
             return nil
         }
 
@@ -44,18 +42,18 @@ final class WidgetDataEncoder {
                 attributes: nil
             )
         } catch {
-            Self.logger.error("WidgetDataEncoder: unable to create folder for images")
+            DZLog("WidgetDataEncoder: unable to create folder for images")
             return nil
         }
     }
 
     func encode() {
         if self.isRunning {
-            Self.logger.debug("WidgetDataEncoder: skipping encode because already in encode")
+            DZLog("WidgetDataEncoder: skipping encode because already in encode")
             return
         }
 
-        Self.logger.debug("WidgetDataEncoder: encoding")
+        DZLog("WidgetDataEncoder: encoding")
         self.isRunning = true
 
         flushSharedContainer()
@@ -69,7 +67,7 @@ final class WidgetDataEncoder {
             do {
                 latestData = try await fetchWidgetData()
             } catch {
-                Self.logger.error("WidgetDataEncoder: error fetching widget data: \(error.localizedDescription)")
+                DZLog("WidgetDataEncoder: error fetching widget data: \(error.localizedDescription)")
                 return
             }
 
@@ -77,20 +75,20 @@ final class WidgetDataEncoder {
             do {
                 encodedData = try JSONEncoder().encode(latestData)
             } catch {
-                Self.logger.error("WidgetDataEncoder: error encoding widget data: \(error.localizedDescription)")
+                DZLog("WidgetDataEncoder: error encoding widget data: \(error.localizedDescription)")
                 return
             }
 
             if fileExists() {
                 try? FileManager.default.removeItem(at: self.dataURL)
-                Self.logger.debug("WidgetDataEncoder: removed widget data from container")
+                DZLog("WidgetDataEncoder: removed widget data from container")
             }
 
             if FileManager.default.createFile(atPath: self.dataURL.path, contents: encodedData, attributes: nil) {
-                Self.logger.debug("WidgetDataEncoder: wrote data to container")
+                DZLog("WidgetDataEncoder: wrote data to container")
                 WidgetCenter.shared.reloadAllTimelines()
             } else {
-                Self.logger.error("WidgetDataEncoder: could not write data to container")
+                DZLog("WidgetDataEncoder: could not write data to container")
             }
         }
     }

@@ -6,15 +6,13 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import Synchronization
 
 /// Handles reading and writing feed add requests to shared App Group storage.
 final class ExtensionFeedAddRequestFile: NSObject, NSFilePresenter, Sendable {
     static let shared = ExtensionFeedAddRequestFile()
-
-    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExtensionFeedAddRequestFile")
 
     static let filePath: String = {
         let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
@@ -69,13 +67,13 @@ final class ExtensionFeedAddRequestFile: NSObject, NSFilePresenter, Sendable {
                     try data.write(to: url)
 
                 } catch let error as NSError {
-                    logger.error("Save to disk failed: \(error.localizedDescription)")
+                    DZLog("Save to disk failed: \(error.localizedDescription)")
                 }
             }
         )
 
         if let error = errorPointer?.pointee {
-            self.logger.error("Save to disk coordination failed: \(error.localizedDescription)")
+            DZLog("Save to disk coordination failed: \(error.localizedDescription)")
         }
     }
 }

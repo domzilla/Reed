@@ -6,13 +6,11 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os
 import RSWeb
 
 enum CacheCleaner {
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CacheCleaner")
-
     static func purgeIfNecessary() {
         guard let flushDate = AppDefaults.shared.lastImageCacheFlushDate else {
             AppDefaults.shared.lastImageCacheFlushDate = Date()
@@ -37,10 +35,10 @@ enum CacheCleaner {
                     homePagesWithNoIconURL,
                 ] {
                     do {
-                        self.logger.info("Removing cache file: \(tempItem.absoluteString)")
+                        DZLog("Removing cache file: \(tempItem.absoluteString)")
                         try FileManager.default.removeItem(at: tempItem)
                     } catch {
-                        self.logger.error("Could not delete cache file: \(error.localizedDescription)")
+                        DZLog("Could not delete cache file: \(error.localizedDescription)")
                     }
                 }
 

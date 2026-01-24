@@ -6,8 +6,8 @@
 //  Copyright © 2015 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os
 import RSCore
 import RSDatabase
 import RSWeb
@@ -27,8 +27,6 @@ public final class DataStoreManager: UnreadCountProvider {
     private let iCloudDataStoreIdentifier = "iCloud"
 
     public var isSuspended = false
-
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DataStoreManager")
 
     @MainActor public var areUnreadCountsInitialized: Bool {
         self.defaultDataStore.areUnreadCountsInitialized
@@ -205,7 +203,7 @@ public final class DataStoreManager: UnreadCountProvider {
     @MainActor
     public func refreshAll(errorHandler: ErrorHandlerCallback? = nil) async {
         guard NetworkMonitor.shared.isConnected else {
-            Self.logger.info("DataStoreManager: skipping refreshAll — not connected to internet.")
+            DZLog("DataStoreManager: skipping refreshAll — not connected to internet.")
             return
         }
 

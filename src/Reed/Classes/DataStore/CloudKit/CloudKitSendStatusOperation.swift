@@ -6,8 +6,8 @@
 //  Copyright © 2020 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSWeb
 
@@ -19,7 +19,6 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
     private let localProgress = DownloadProgress(numberOfTasks: 0)
     private var showProgress: Bool
     private var syncDatabase: SyncDatabase
-    private static let logger = cloudKitLogger
 
     init(
         dataStore: DataStore,
@@ -42,7 +41,7 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
 
     @MainActor
     override func run() {
-        Self.logger.debug("iCloud: Sending article statuses")
+        DZLog("iCloud: Sending article statuses")
 
         Task { @MainActor in
             defer {
@@ -58,9 +57,9 @@ final class CloudKitSendStatusOperation: MainThreadOperation, @unchecked Sendabl
                 }
 
                 await selectForProcessing()
-                Self.logger.debug("iCloud: Finished sending article statuses")
+                DZLog("iCloud: Finished sending article statuses")
             } catch {
-                Self.logger.debug("iCloud: Send status error: \(error.localizedDescription)")
+                DZLog("iCloud: Send status error: \(error.localizedDescription)")
             }
         }
     }
@@ -90,7 +89,7 @@ extension CloudKitSendStatusOperation {
 
             await self.selectForProcessing()
         } catch {
-            Self.logger.debug("iCloud: Send status error: \(error.localizedDescription)")
+            DZLog("iCloud: Send status error: \(error.localizedDescription)")
         }
     }
 
@@ -107,7 +106,7 @@ extension CloudKitSendStatusOperation {
             articles = try await dataStore.fetchArticlesAsync(.articleIDs(Set(articleIDs)))
         } catch {
             try? await self.syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map(\.articleID)))
-            Self.logger.error("iCloud: Send article status fetch articles error: \(error.localizedDescription)")
+            DZLog("iCloud: Send article status fetch articles error: \(error.localizedDescription)")
             return true
         }
 
@@ -133,7 +132,7 @@ extension CloudKitSendStatusOperation {
             } catch {
                 try? await self.syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map(\.articleID)))
                 self.processSyncError(dataStore, error)
-                Self.logger.error("iCloud: Send article status modify articles error: \(error.localizedDescription)")
+                DZLog("iCloud: Send article status modify articles error: \(error.localizedDescription)")
                 return true
             }
         }

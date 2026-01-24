@@ -6,7 +6,6 @@
 //  Copyright © 2025 Ranchero Software. All rights reserved.
 //
 
-import os
 import RSCore
 import RSTree
 import RSWeb

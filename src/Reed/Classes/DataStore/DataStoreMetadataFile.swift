@@ -6,8 +6,8 @@
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 
 final class DataStoreMetadataFile {
@@ -21,7 +21,6 @@ final class DataStoreMetadataFile {
     }
 
     private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DataStoreMetadataFile")
 
     init(filename: String, dataStore: Account) {
         self.fileURL = URL(fileURLWithPath: filename)
@@ -54,10 +53,9 @@ final class DataStoreMetadataFile {
             let data = try encoder.encode(self.dataStore.metadata)
             try data.write(to: self.fileURL)
         } catch let error as NSError {
-            Self.logger
-                .error(
-                    "DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)"
-                )
+            DZLog(
+                "DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)"
+            )
         }
     }
 }

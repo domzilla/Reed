@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ranchero Software. All rights reserved.
 //
 
-import os.log
+import DZFoundation
 import UIKit
 
 enum UserInterfaceColorPalette: Int, CustomStringConvertible, CaseIterable {
@@ -34,7 +34,6 @@ extension Notification.Name {
 final class AppDefaults: Sendable {
     static let shared = AppDefaults()
     static let defaultThemeName = "Default"
-    fileprivate static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "AppDefaults")
 
     private init() {}
 
@@ -289,7 +288,7 @@ final class AppDefaults: Sendable {
             return Set(containerIdentifiers)
         }
         set {
-            Self.logger.debug("AppDefaults: set expandedContainers: \(newValue)")
+            DZLog("AppDefaults: set expandedContainers: \(newValue)")
             let containerIdentifierUserInfos = newValue.compactMap(\.userInfo)
             UserDefaults.standard.set(containerIdentifierUserInfos, forKey: Key.expandedContainers)
         }
@@ -464,10 +463,9 @@ struct StateRestorationInfo {
         let selectedArticleDictionary: [String: String] = selectedArticle?.dictionary ?? [:]
         let isShowingExtractedArticleString = isShowingExtractedArticle ? "true" : "false"
 
-        AppDefaults.logger
-            .debug(
-                "AppDefaults: StateRestorationInfo:\nexpandedContainers: \(expandedContainersDescription)\nselectedSidebarItem: \(selectedSidebarItemUserInfo)\nsidebarItemsHidingReadArticles: \(sidebarItemsHidingDescription)\nselectedArticle: \(selectedArticleDictionary)\narticleWindowScrollY: \(articleWindowScrollY)\nisShowingExtractedArticle: \(isShowingExtractedArticleString)"
-            )
+        DZLog(
+            "AppDefaults: StateRestorationInfo:\nexpandedContainers: \(expandedContainersDescription)\nselectedSidebarItem: \(selectedSidebarItemUserInfo)\nsidebarItemsHidingReadArticles: \(sidebarItemsHidingDescription)\nselectedArticle: \(selectedArticleDictionary)\narticleWindowScrollY: \(articleWindowScrollY)\nisShowingExtractedArticle: \(isShowingExtractedArticleString)"
+        )
     }
 
     init() {

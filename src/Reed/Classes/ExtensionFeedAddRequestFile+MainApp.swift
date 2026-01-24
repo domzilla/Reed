@@ -5,6 +5,7 @@
 //  Main app extension for ExtensionFeedAddRequestFile that handles processing feed add requests.
 //
 
+import DZFoundation
 import Foundation
 
 extension ExtensionFeedAddRequestFile {
@@ -78,13 +79,13 @@ extension ExtensionFeedAddRequestFile {
                     try data.write(to: url)
 
                 } catch let error as NSError {
-                    Self.logger.error("Process from disk failed: \(error.localizedDescription)")
+                    DZLog("Process from disk failed: \(error.localizedDescription)")
                 }
             }
         )
 
         if let error = errorPointer?.pointee {
-            Self.logger.error("Process from disk coordination failed: \(error.localizedDescription)")
+            DZLog("Process from disk coordination failed: \(error.localizedDescription)")
         }
 
         requests?.forEach { self.processRequest($0) }

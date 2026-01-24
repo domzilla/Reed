@@ -6,15 +6,13 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 
 /// Handles reading and writing ExtensionContainers to shared App Group storage.
 @MainActor
 final class ExtensionContainersFile {
     static let shared = ExtensionContainersFile()
-
-    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ExtensionContainersFile")
 
     static var filePath: String = {
         let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
@@ -37,7 +35,7 @@ final class ExtensionContainersFile {
         })
 
         if let error = errorPointer?.pointee {
-            self.logger.error("Read from disk coordination failed: \(error.localizedDescription)")
+            DZLog("Read from disk coordination failed: \(error.localizedDescription)")
         }
 
         return extensionContainers

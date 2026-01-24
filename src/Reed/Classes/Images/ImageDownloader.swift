@@ -6,8 +6,8 @@
 //  Copyright © 2017 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSWeb
 
@@ -18,11 +18,6 @@ extension Notification.Name {
 @MainActor
 final class ImageDownloader {
     static let shared = ImageDownloader()
-
-    private nonisolated static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: "ImageDownloader"
-    )
 
     private nonisolated let diskCache: BinaryDiskCache
     private let queue: DispatchQueue
@@ -121,7 +116,7 @@ extension ImageDownloader {
 
             return nil
         } catch {
-            Self.logger.error("Error downloading image at \(url) \(error.localizedDescription)")
+            DZLog("Error downloading image at \(url) \(error.localizedDescription)")
             return nil
         }
     }

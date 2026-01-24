@@ -6,8 +6,8 @@
 //  Copyright © 2015 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSDatabase
 import RSParser
@@ -48,13 +48,8 @@ public final class ArticlesDatabase: Sendable {
     private let retentionStyle: RetentionStyle
     private let accountID: String
 
-    private nonisolated static let logger = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
-        category: "ArticlesDatabase"
-    )
-
     public init(databaseFilePath: String, accountID: String, retentionStyle: RetentionStyle) {
-        Self.logger.debug("Articles Database init \(accountID, privacy: .public)")
+        DZLog("Articles Database init \(accountID)")
 
         let queue = DatabaseQueue(databasePath: databaseFilePath)
         self.queue = queue
@@ -69,13 +64,13 @@ public final class ArticlesDatabase: Sendable {
 
         try! queue.runCreateStatements(ArticlesDatabase.tableCreationStatements)
         queue.runInDatabase { databaseResult in
-            Self.logger.debug("ArticlesDatabase: creating tables \(accountID, privacy: .public)")
+            DZLog("ArticlesDatabase: creating tables \(accountID)")
             let database = databaseResult.database!
             if !self.articlesTable.containsColumn("searchRowID", in: database) {
                 database.executeStatements("ALTER TABLE articles add column searchRowID INTEGER;")
             }
             if !self.articlesTable.containsColumn("markdown", in: database) {
-                Self.logger.debug("ArticlesDatabase: adding markdown column \(accountID, privacy: .public)")
+                DZLog("ArticlesDatabase: adding markdown column \(accountID)")
                 database.executeStatements("ALTER TABLE articles add column markdown TEXT;")
             }
             database.executeStatements("CREATE INDEX if not EXISTS articles_searchRowID on articles(searchRowID);")
@@ -93,42 +88,42 @@ public final class ArticlesDatabase: Sendable {
     // MARK: - Fetching Articles
 
     public func fetchArticles(feedID: String) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(feedID)
     }
 
     public func fetchArticles(feedIDs: Set<String>) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(feedIDs)
     }
 
     public func fetchArticles(articleIDs: Set<String>) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(articleIDs: articleIDs)
     }
 
     public func fetchUnreadArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchUnreadArticles(feedIDs, limit)
     }
 
     public func fetchTodayArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticlesSince(feedIDs, todayCutoffDate(), limit)
     }
 
     public func fetchStarredArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchStarredArticles(feedIDs, limit)
     }
 
     public func fetchStarredArticlesCount(feedIDs: Set<String>) throws -> Int {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchStarredArticlesCount(feedIDs)
     }
 
     public func fetchArticlesMatching(searchString: String, feedIDs: Set<String>) throws -> Set<Article> {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticlesMatching(searchString, feedIDs)
     }
 
@@ -138,7 +133,7 @@ public final class ArticlesDatabase: Sendable {
     ) throws
         -> Set<Article>
     {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticlesMatchingWithArticleIDs(searchString, articleIDs)
     }
 
@@ -226,7 +221,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Fetch unread count for a single feed.
     public func fetchUnreadCountAsync(feedID: String) async throws -> Int {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadCounts(feedIDs: Set([feedID])) { result in
                 switch result {
@@ -390,7 +385,7 @@ public final class ArticlesDatabase: Sendable {
     /// Cancel current operations and close the database.
     @MainActor
     public func cancelAndSuspend() {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         cancelOperations()
         self.suspend()
     }
@@ -399,7 +394,7 @@ public final class ArticlesDatabase: Sendable {
     /// Any pending calls will complete first.
     @MainActor
     public func suspend() {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.operationQueue.suspend()
         self.queue.suspend()
     }
@@ -407,7 +402,7 @@ public final class ArticlesDatabase: Sendable {
     /// Open the database and allow for running database calls again.
     @MainActor
     public func resume() {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.queue.resume()
         self.operationQueue.resume()
     }
@@ -417,7 +412,7 @@ public final class ArticlesDatabase: Sendable {
     /// Call to free up some memory. Should be done when the app is backgrounded, for instance.
     /// This does not empty *all* caches — just the ones that are empty-able.
     public func emptyCaches() {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.emptyCaches()
     }
 
@@ -429,7 +424,7 @@ public final class ArticlesDatabase: Sendable {
     /// 1) The database would grow to an inordinate size, and
     /// 2) the app would become very slow.
     public func cleanupDatabaseAtStartup(subscribedToFeedIDs: Set<String>) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         if self.retentionStyle == .syncSystem {
             self.articlesTable.deleteOldArticles()
         }
@@ -466,7 +461,7 @@ extension ArticlesDatabase {
     // MARK: - Operations
 
     private func cancelOperations() {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         Task { @MainActor in
             self.operationQueue.cancelAll()
         }
@@ -495,7 +490,7 @@ typealias ArticleStatusesResultBlock = @Sendable (ArticleStatusesResult) -> Void
 
 extension ArticlesDatabase {
     private func _fetchAllUnreadCounts(_ completion: @escaping UnreadCountDictionaryCompletionBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         Task { @MainActor in
             let operation = FetchAllUnreadCountsOperation(databaseQueue: queue)
             if let operationName = operation.name {
@@ -513,7 +508,7 @@ extension ArticlesDatabase {
         feedIDs: Set<String>,
         _ completion: @escaping UnreadCountDictionaryCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchUnreadCounts(feedIDs, completion)
     }
 
@@ -522,7 +517,7 @@ extension ArticlesDatabase {
         since: Date,
         completion: @escaping SingleUnreadCountCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchUnreadCount(feedIDs, since, completion)
     }
 
@@ -530,7 +525,7 @@ extension ArticlesDatabase {
         feedIDs: Set<String>,
         completion: @escaping SingleUnreadCountCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchStarredAndUnreadCount(feedIDs, completion)
     }
 
@@ -540,7 +535,7 @@ extension ArticlesDatabase {
         flag: Bool,
         completion: @escaping ArticleStatusesResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return self.articlesTable.mark(articles, statusKey, flag, completion)
     }
 
@@ -550,27 +545,27 @@ extension ArticlesDatabase {
         flag: Bool,
         completion: @escaping ArticleIDsCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.markAndFetchNew(articleIDs, statusKey, flag, completion)
     }
 
     private func _createStatusesIfNeeded(articleIDs: Set<String>, completion: @escaping DatabaseCompletionBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.createStatusesIfNeeded(articleIDs, completion)
     }
 
     private func _fetchArticlesAsync(feedID: String, _ completion: @escaping ArticleSetResultBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesAsync(feedID, completion)
     }
 
     private func _fetchArticlesAsync(feedIDs: Set<String>, _ completion: @escaping ArticleSetResultBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesAsync(feedIDs, completion)
     }
 
     private func _fetchArticlesAsync(articleIDs: Set<String>, _ completion: @escaping ArticleSetResultBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesAsync(articleIDs: articleIDs, completion)
     }
 
@@ -579,7 +574,7 @@ extension ArticlesDatabase {
         limit: Int? = nil,
         _ completion: @escaping ArticleSetResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchUnreadArticlesAsync(feedIDs, limit, completion)
     }
 
@@ -588,7 +583,7 @@ extension ArticlesDatabase {
         limit: Int? = nil,
         _ completion: @escaping ArticleSetResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesSinceAsync(feedIDs, self.todayCutoffDate(), limit, completion)
     }
 
@@ -597,7 +592,7 @@ extension ArticlesDatabase {
         limit: Int? = nil,
         _ completion: @escaping ArticleSetResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchStarredArticlesAsync(feedIDs, limit, completion)
     }
 
@@ -606,7 +601,7 @@ extension ArticlesDatabase {
         feedIDs: Set<String>,
         _ completion: @escaping ArticleSetResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesMatchingAsync(searchString, feedIDs, completion)
     }
 
@@ -615,7 +610,7 @@ extension ArticlesDatabase {
         articleIDs: Set<String>,
         _ completion: @escaping ArticleSetResultBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticlesMatchingWithArticleIDsAsync(searchString, articleIDs, completion)
     }
 
@@ -625,7 +620,7 @@ extension ArticlesDatabase {
         deleteOlder: Bool,
         completion: @escaping UpdateArticlesCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         precondition(self.retentionStyle == .feedBased)
         self.articlesTable.update(parsedItems, feedID, deleteOlder, completion)
     }
@@ -635,30 +630,30 @@ extension ArticlesDatabase {
         defaultRead: Bool,
         completion: @escaping UpdateArticlesCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         precondition(self.retentionStyle == .syncSystem)
         self.articlesTable.update(feedIDsAndItems, defaultRead, completion)
     }
 
     private func _delete(articleIDs: Set<String>, completion: DatabaseCompletionBlock?) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.delete(articleIDs: articleIDs, completion: completion)
     }
 
     private func _fetchUnreadArticleIDsAsync(completion: @escaping ArticleIDsCompletionBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchUnreadArticleIDsAsync(completion)
     }
 
     private func _fetchStarredArticleIDsAsync(completion: @escaping ArticleIDsCompletionBlock) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchStarredArticleIDsAsync(completion)
     }
 
     private func _fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDate(
         _ completion: @escaping ArticleIDsCompletionBlock
     ) {
-        Self.logger.debug("ArticlesDatabase: \(#function, privacy: .public) \(self.accountID, privacy: .public)")
+        DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDate(completion)
     }
 }

@@ -8,7 +8,6 @@
 
 import CloudKit
 import Foundation
-import os.log
 import RSCore
 import RSParser
 import RSWeb

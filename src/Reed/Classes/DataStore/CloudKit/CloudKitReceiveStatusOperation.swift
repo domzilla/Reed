@@ -6,13 +6,12 @@
 //  Copyright © 2020 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 
 final class CloudKitReceiveStatusOperation: MainThreadOperation, @unchecked Sendable {
     private weak var articlesZone: CloudKitArticlesZone?
-    private static let logger = cloudKitLogger
 
     init(articlesZone: CloudKitArticlesZone) {
         self.articlesZone = articlesZone
@@ -31,12 +30,12 @@ final class CloudKitReceiveStatusOperation: MainThreadOperation, @unchecked Send
                 self.didComplete()
             }
 
-            Self.logger.debug("iCloud: Refreshing article statuses")
+            DZLog("iCloud: Refreshing article statuses")
             do {
                 try await articlesZone.refreshArticles()
-                Self.logger.debug("iCloud: Finished refreshing article statuses")
+                DZLog("iCloud: Finished refreshing article statuses")
             } catch {
-                Self.logger.error("iCloud: Receive status error: \(error.localizedDescription)")
+                DZLog("iCloud: Receive status error: \(error.localizedDescription)")
             }
         }
     }

@@ -6,13 +6,11 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import os
+import DZFoundation
 import RSCore
 import UIKit
 
 struct ErrorHandler: Sendable {
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ErrorHandler")
-
     nonisolated static func present(_ viewController: UIViewController) -> @Sendable (Error) -> Void {
         { [weak viewController] error in
             Task { @MainActor in
@@ -26,6 +24,6 @@ struct ErrorHandler: Sendable {
     }
 
     nonisolated static func log(_ error: Error) {
-        self.logger.error("\(error.localizedDescription)")
+        DZErrorLog(error)
     }
 }

@@ -6,6 +6,7 @@
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
 import RSCore
 import RSDatabase
@@ -957,8 +958,8 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         let t1 = Date()
         let articles = try! _fetchArticlesMatching(searchString: "Brent NetNewsWire")
         let t2 = Date()
-        print(t2.timeIntervalSince(t1))
-        print(articles.count)
+        DZLog("\(t2.timeIntervalSince(t1))")
+        DZLog("\(articles.count)")
         #endif
     }
 

@@ -7,7 +7,7 @@
 //
 
 import BackgroundTasks
-import os
+import DZFoundation
 import RSCore
 import RSWeb
 import UIKit
@@ -32,8 +32,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
             }
         }
     }
-
-    private nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Application")
 
     var unreadCount = 0 {
         didSet {
@@ -164,7 +162,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
     func resumeDatabaseProcessingIfNecessary() {
         if AccountManager.shared.isSuspended {
             AccountManager.shared.resumeAll()
-            Self.logger.info("Application processing resumed.")
+            DZLog("Application processing resumed.")
         }
     }
 
@@ -299,7 +297,7 @@ extension AppDelegate {
             Task { @MainActor in
                 self.completeProcessing(true)
             }
-            Self.logger.info("Accounts wait for progress terminated for running too long.")
+            DZLog("Accounts wait for progress terminated for running too long.")
         }
 
         DispatchQueue.main.async { [weak self] in
@@ -311,7 +309,7 @@ extension AppDelegate {
 
     private func waitToComplete(completion: @escaping (Bool) -> Void) {
         guard UIApplication.shared.applicationState == .background else {
-            Self.logger.info("App came back to foreground, no longer waiting.")
+            DZLog("App came back to foreground, no longer waiting.")
             completion(false)
             return
         }
@@ -320,12 +318,12 @@ extension AppDelegate {
             AccountManager.shared.refreshInProgress || self.isSyncArticleStatusRunning || WidgetDataEncoder.shared?
                 .isRunning ?? false
         {
-            Self.logger.info("Waiting for sync to finish…")
+            DZLog("Waiting for sync to finish…")
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                 self?.waitToComplete(completion: completion)
             }
         } else {
-            Self.logger.info("Refresh progress complete.")
+            DZLog("Refresh progress complete.")
             completion(true)
         }
     }
@@ -348,7 +346,7 @@ extension AppDelegate {
             Task { @MainActor [weak self] in
                 self?.completeSyncProcessing()
             }
-            Self.logger.info("Accounts sync processing terminated for running too long.")
+            DZLog("Accounts sync processing terminated for running too long.")
         }
 
         Task { @MainActor in
@@ -376,7 +374,7 @@ extension AppDelegate {
             }
         }
 
-        Self.logger.info("Application processing suspended.")
+        DZLog("Application processing suspended.")
     }
 }
 
@@ -401,7 +399,7 @@ extension AppDelegate {
                 request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
                 try BGTaskScheduler.shared.submit(request)
             } catch {
-                Self.logger.error("Could not schedule app refresh: \(error.localizedDescription)")
+                DZLog("Could not schedule app refresh: \(error.localizedDescription)")
             }
         }
     }
@@ -412,7 +410,7 @@ extension AppDelegate {
     private func performBackgroundFeedRefresh(with task: BGAppRefreshTask) {
         self.scheduleBackgroundFeedRefresh() // schedule next refresh
 
-        Self.logger.info("Performing background refresh.")
+        DZLog("Performing background refresh.")
 
         Task { @MainActor in
             if AccountManager.shared.isSuspended {
@@ -421,14 +419,14 @@ extension AppDelegate {
             await AccountManager.shared.refreshAll(errorHandler: ErrorHandler.log)
             if !AccountManager.shared.isSuspended {
                 self.suspendApplication()
-                Self.logger.info("Background refresh completed.")
+                DZLog("Background refresh completed.")
                 task.setTaskCompleted(success: true)
             }
         }
 
         // set expiration handler
         task.expirationHandler = { [weak task] in
-            Self.logger.info("Background refresh terminated for running too long.")
+            DZLog("Background refresh terminated for running too long.")
             DispatchQueue.main.async {
                 self.suspendApplication()
                 task?.setTaskCompleted(success: false)
@@ -461,13 +459,13 @@ extension AppDelegate {
 
         guard let account = AccountManager.shared.existingAccount(accountID: accountID) else {
             assertionFailure("Expected account with \(accountID)")
-            Self.logger.error("No account with accountID \(accountID) found from status notification")
+            DZLog("No account with accountID \(accountID) found from status notification")
             return
         }
 
         guard let singleArticleSet = try? account.fetchArticles(.articleIDs([articleID])) else {
             assertionFailure("Expected article with \(articleID)")
-            Self.logger.error("No article with articleID found \(articleID) from status notification")
+            DZLog("No article with articleID found \(articleID) from status notification")
             return
         }
 

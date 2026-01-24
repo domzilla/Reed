@@ -7,8 +7,8 @@
 //
 
 import CloudKit
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSParser
 import RSWeb
@@ -25,8 +25,6 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 
 @MainActor
 final class CloudKitSyncProvider: SyncProvider {
-    private nonisolated static let logger = cloudKitLogger
-
     private let syncDatabase: SyncDatabase
 
     private let container: CKContainer = {
@@ -210,7 +208,7 @@ final class CloudKitSyncProvider: SyncProvider {
             } catch {
                 if iCloudAccountMonitor.isRecoverableError(error) {
                     queueRenameFeedOperation(feedExternalID: externalID, editedName: editedName)
-                    Self.logger.info("iCloud: Queued renameFeed operation for later sync")
+                    DZLog("iCloud: Queued renameFeed operation for later sync")
                 } else {
                     // Revert local change on non-recoverable error
                     feed.editedName = oldEditedName
@@ -220,7 +218,7 @@ final class CloudKitSyncProvider: SyncProvider {
             }
         } else if !externalID.hasPrefix("local-") {
             queueRenameFeedOperation(feedExternalID: externalID, editedName: editedName)
-            Self.logger.info("iCloud: Renamed feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Renamed feed locally, queued for sync when iCloud available")
         }
     }
 
@@ -246,20 +244,19 @@ final class CloudKitSyncProvider: SyncProvider {
             } catch {
                 if iCloudAccountMonitor.isRecoverableError(error) {
                     queueDeleteFeedOperation(feedExternalID: feedExtID, containerExternalID: containerExtID)
-                    Self.logger.info("iCloud: Queued removeFeed operation for later sync")
+                    DZLog("iCloud: Queued removeFeed operation for later sync")
                 } else if case CloudKitZoneError.corruptAccount = error {
                     // Ignore - feed already removed locally
                 } else {
                     // Log but don't throw - local removal already done
-                    Self.logger
-                        .error(
-                            "iCloud: Remove feed CloudKit error (local removal succeeded): \(error.localizedDescription)"
-                        )
+                    DZLog(
+                        "iCloud: Remove feed CloudKit error (local removal succeeded): \(error.localizedDescription)"
+                    )
                 }
             }
         } else {
             queueDeleteFeedOperation(feedExternalID: feedExtID, containerExternalID: containerExtID)
-            Self.logger.info("iCloud: Removed feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Removed feed locally, queued for sync when iCloud available")
         }
     }
 
@@ -296,7 +293,7 @@ final class CloudKitSyncProvider: SyncProvider {
                         fromContainerExternalID: sourceExtID,
                         toContainerExternalID: destExtID
                     )
-                    Self.logger.info("iCloud: Queued moveFeed operation for later sync")
+                    DZLog("iCloud: Queued moveFeed operation for later sync")
                 } else {
                     // Revert local change
                     destinationContainer.removeFeedFromTreeAtTopLevel(feed)
@@ -311,7 +308,7 @@ final class CloudKitSyncProvider: SyncProvider {
                 fromContainerExternalID: sourceExtID,
                 toContainerExternalID: destExtID
             )
-            Self.logger.info("iCloud: Moved feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Moved feed locally, queued for sync when iCloud available")
         }
     }
 
@@ -340,7 +337,7 @@ final class CloudKitSyncProvider: SyncProvider {
                         feedExternalID: feedExternalID,
                         containerExternalID: containerExternalID
                     )
-                    Self.logger.info("iCloud: Queued addFeed operation for later sync")
+                    DZLog("iCloud: Queued addFeed operation for later sync")
                 } else {
                     container.removeFeedFromTreeAtTopLevel(feed)
                     processSyncError(dataStore, error)
@@ -349,7 +346,7 @@ final class CloudKitSyncProvider: SyncProvider {
             }
         } else {
             queueAddFeedToFolderOperation(feedExternalID: feedExternalID, containerExternalID: containerExternalID)
-            Self.logger.info("iCloud: Added feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Added feed locally, queued for sync when iCloud available")
         }
     }
 
@@ -385,7 +382,7 @@ final class CloudKitSyncProvider: SyncProvider {
                 if iCloudAccountMonitor.isRecoverableError(error) {
                     // Queue the operation for later
                     queueCreateFolderOperation(name: name, localFolderID: localExternalID)
-                    Self.logger.info("iCloud: Queued createFolder operation for later sync")
+                    DZLog("iCloud: Queued createFolder operation for later sync")
                 } else {
                     processSyncError(dataStore, error)
                     throw error
@@ -394,7 +391,7 @@ final class CloudKitSyncProvider: SyncProvider {
         } else {
             // Queue the operation for when iCloud becomes available
             queueCreateFolderOperation(name: name, localFolderID: localExternalID)
-            Self.logger.info("iCloud: Created folder locally, queued for sync when iCloud available")
+            DZLog("iCloud: Created folder locally, queued for sync when iCloud available")
         }
 
         return folder
@@ -419,7 +416,7 @@ final class CloudKitSyncProvider: SyncProvider {
             } catch {
                 if iCloudAccountMonitor.isRecoverableError(error) {
                     queueRenameFolderOperation(folderExternalID: externalID, name: name)
-                    Self.logger.info("iCloud: Queued renameFolder operation for later sync")
+                    DZLog("iCloud: Queued renameFolder operation for later sync")
                 } else {
                     // Revert local change on non-recoverable error
                     folder.name = oldName
@@ -430,7 +427,7 @@ final class CloudKitSyncProvider: SyncProvider {
         } else if !externalID.hasPrefix("local-") {
             // Queue if iCloud not available but we have a real external ID
             queueRenameFolderOperation(folderExternalID: externalID, name: name)
-            Self.logger.info("iCloud: Renamed folder locally, queued for sync when iCloud available")
+            DZLog("iCloud: Renamed folder locally, queued for sync when iCloud available")
         }
         // If the folder has a local-only ID, the rename will be synced when the folder is created
     }
@@ -459,7 +456,7 @@ final class CloudKitSyncProvider: SyncProvider {
                         try await self.removeFeedFromCloud(for: dataStore, with: feed, from: folder)
                         return .success(())
                     } catch {
-                        Self.logger.error("CloudKit: Remove folder, remove feed error: \(error.localizedDescription)")
+                        DZLog("CloudKit: Remove folder, remove feed error: \(error.localizedDescription)")
                         return .failure(error)
                     }
                 }
@@ -511,7 +508,7 @@ final class CloudKitSyncProvider: SyncProvider {
                             try await self.restoreFeed(for: dataStore, feed: feed, container: folder)
                             self.syncProgress.completeTask()
                         } catch {
-                            Self.logger.error("CloudKit: Restore folder feed error: \(error.localizedDescription)")
+                            DZLog("CloudKit: Restore folder feed error: \(error.localizedDescription)")
                             self.syncProgress.completeTask()
                         }
                     }
@@ -561,7 +558,7 @@ final class CloudKitSyncProvider: SyncProvider {
             // Always start with a local ID - CloudKit setup will happen via notification
             // when iCloud account status is determined
             dataStore.externalID = self.generateLocalExternalID()
-            Self.logger.info("iCloud: Using local dataStore ID (will upgrade when iCloud confirmed available)")
+            DZLog("iCloud: Using local dataStore ID (will upgrade when iCloud confirmed available)")
         }
     }
 
@@ -614,7 +611,7 @@ extension CloudKitSyncProvider {
                 self.syncProgress.completeTask()
 
                 if iCloudAccountMonitor.isRecoverableError(error) {
-                    Self.logger.info("iCloud: Sync skipped due to recoverable error, will retry later")
+                    DZLog("iCloud: Sync skipped due to recoverable error, will retry later")
                 } else {
                     self.processSyncError(dataStore, error)
                     // Only throw for non-recoverable errors that aren't auth-related
@@ -630,7 +627,7 @@ extension CloudKitSyncProvider {
             // iCloud not available - skip CloudKit sync silently
             self.syncProgress.completeTask()
             self.syncProgress.completeTask()
-            Self.logger.debug("iCloud: Skipping sync (iCloud not available)")
+            DZLog("iCloud: Skipping sync (iCloud not available)")
         }
 
         // Always refresh local feeds
@@ -642,7 +639,7 @@ extension CloudKitSyncProvider {
                 try await self.sendArticleStatus(dataStore: dataStore, showProgress: true)
             } catch {
                 if !iCloudAccountMonitor.isRecoverableError(error) {
-                    Self.logger.error("iCloud: Send article status failed: \(error.localizedDescription)")
+                    DZLog("iCloud: Send article status failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -766,7 +763,7 @@ extension CloudKitSyncProvider {
         localExternalID: String
     ) async {
         guard let containerExternalID = container.externalID else {
-            Self.logger.warning("iCloud: Container has no external ID, cannot sync feed")
+            DZLog("iCloud: Container has no external ID, cannot sync feed")
             return
         }
 
@@ -791,9 +788,9 @@ extension CloudKitSyncProvider {
                         containerExternalID: containerExternalID,
                         localFeedID: localExternalID
                     )
-                    Self.logger.info("iCloud: Queued createFeed operation for later sync")
+                    DZLog("iCloud: Queued createFeed operation for later sync")
                 } else {
-                    Self.logger.error("iCloud: Failed to sync feed to CloudKit: \(error.localizedDescription)")
+                    DZLog("iCloud: Failed to sync feed to CloudKit: \(error.localizedDescription)")
                     self.processSyncError(dataStore, error)
                 }
             }
@@ -806,7 +803,7 @@ extension CloudKitSyncProvider {
                 containerExternalID: containerExternalID,
                 localFeedID: localExternalID
             )
-            Self.logger.info("iCloud: Created feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Created feed locally, queued for sync when iCloud available")
         }
     }
 
@@ -874,9 +871,9 @@ extension CloudKitSyncProvider {
                         containerExternalID: containerExternalID,
                         localFeedID: localExternalID
                     )
-                    Self.logger.info("iCloud: Queued createFeed (dead feed) operation for later sync")
+                    DZLog("iCloud: Queued createFeed (dead feed) operation for later sync")
                 } else {
-                    Self.logger.error("iCloud: Failed to sync dead feed to CloudKit: \(error.localizedDescription)")
+                    DZLog("iCloud: Failed to sync dead feed to CloudKit: \(error.localizedDescription)")
                 }
             }
         } else {
@@ -888,7 +885,7 @@ extension CloudKitSyncProvider {
                 containerExternalID: containerExternalID,
                 localFeedID: localExternalID
             )
-            Self.logger.info("iCloud: Created dead feed locally, queued for sync when iCloud available")
+            DZLog("iCloud: Created dead feed locally, queued for sync when iCloud available")
         }
 
         return feed
@@ -904,7 +901,7 @@ extension CloudKitSyncProvider {
                 try await self.sendArticleStatus(dataStore: dataStore, showProgress: true)
                 try? await self.articlesZone.fetchChangesInZone()
             } catch {
-                Self.logger.error("CloudKit: Feed send articles error: \(error.localizedDescription)")
+                DZLog("CloudKit: Feed send articles error: \(error.localizedDescription)")
             }
         }
     }
@@ -1119,7 +1116,7 @@ extension CloudKitSyncProvider {
     private func processPendingOperations(for dataStore: DataStore) async {
         guard iCloudAccountMonitor.shared.isAvailable else { return }
 
-        Self.logger.info("iCloud: Processing pending operations")
+        DZLog("iCloud: Processing pending operations")
 
         // First, ensure we have a real dataStore external ID
         var didUpgradeDataStore = false
@@ -1130,11 +1127,11 @@ extension CloudKitSyncProvider {
                 self.feedsZone.subscribeToZoneChanges()
                 self.articlesZone.subscribeToZoneChanges()
                 didUpgradeDataStore = true
-                Self.logger.info("iCloud: Upgraded dataStore to real iCloud ID")
+                DZLog("iCloud: Upgraded dataStore to real iCloud ID")
             } catch {
                 // Don't log verbose error for auth failures - this is expected when iCloud isn't fully set up
                 if !iCloudAccountMonitor.isRecoverableError(error) {
-                    Self.logger.debug("iCloud: Could not upgrade dataStore ID (will retry later)")
+                    DZLog("iCloud: Could not upgrade dataStore ID (will retry later)")
                 }
                 return
             }
@@ -1161,14 +1158,13 @@ extension CloudKitSyncProvider {
                 } catch {
                     if iCloudAccountMonitor.isRecoverableError(error) {
                         failedIDs.insert(operation.id)
-                        Self.logger.info("iCloud: Operation \(operation.operationType.rawValue) will be retried later")
+                        DZLog("iCloud: Operation \(operation.operationType.rawValue) will be retried later")
                     } else {
                         // Non-recoverable error - remove from queue
                         processedIDs.insert(operation.id)
-                        Self.logger
-                            .error(
-                                "iCloud: Operation \(operation.operationType.rawValue) failed permanently: \(error.localizedDescription)"
-                            )
+                        DZLog(
+                            "iCloud: Operation \(operation.operationType.rawValue) failed permanently: \(error.localizedDescription)"
+                        )
                     }
                 }
             }
@@ -1182,7 +1178,7 @@ extension CloudKitSyncProvider {
             }
         }
 
-        Self.logger.info("iCloud: Finished processing pending operations")
+        DZLog("iCloud: Finished processing pending operations")
     }
 
     private func processOperation(_ operation: PendingCloudKitOperation, dataStore: DataStore) async throws {
@@ -1237,7 +1233,7 @@ extension CloudKitSyncProvider {
         } else if let folder = dataStore.existingFolder(withExternalID: payload.containerExternalID) {
             container = folder
         } else {
-            Self.logger.warning("iCloud: Cannot find container for createFeed operation")
+            DZLog("iCloud: Cannot find container for createFeed operation")
             return
         }
 

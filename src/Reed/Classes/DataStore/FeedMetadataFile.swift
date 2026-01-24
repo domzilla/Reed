@@ -6,8 +6,8 @@
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 
 @MainActor
@@ -22,7 +22,6 @@ final class FeedMetadataFile {
     }
 
     private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedMetadataFile")
 
     init(filename: String, dataStore: DataStore) {
         self.fileURL = URL(fileURLWithPath: filename)
@@ -56,7 +55,7 @@ final class FeedMetadataFile {
             let data = try encoder.encode(feedMetadata)
             try data.write(to: self.fileURL)
         } catch let error as NSError {
-            Self.logger.error("Save FeedMetadataFile file to disk failed: \(error.localizedDescription)")
+            DZLog("Save FeedMetadataFile file to disk failed: \(error.localizedDescription)")
         }
     }
 }

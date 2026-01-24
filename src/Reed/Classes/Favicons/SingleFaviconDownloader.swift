@@ -6,13 +6,13 @@
 //  Copyright © 2017 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSWeb
 
 // The image may be on disk already. If not, download it.
-// Post .DidLoadFavicon notification once it’s in memory.
+// Post .DidLoadFavicon notification once it's in memory.
 
 extension Notification.Name {
     static let DidLoadFavicon = Notification.Name("DidLoadFaviconNotification")
@@ -28,8 +28,6 @@ final class SingleFaviconDownloader {
     let homePageURL: String?
 
     var iconImage: IconImage?
-
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "SingleFaviconDownloader")
 
     private let diskCache: BinaryDiskCache
     private let queue: DispatchQueue
@@ -141,7 +139,7 @@ extension SingleFaviconDownloader {
             }
 
         } catch {
-            Self.logger.error("Error downloading image at \(url.absoluteString): \(error.localizedDescription)")
+            DZLog("Error downloading image at \(url.absoluteString): \(error.localizedDescription)")
         }
 
         return nil

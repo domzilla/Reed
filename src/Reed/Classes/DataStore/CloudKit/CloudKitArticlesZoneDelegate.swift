@@ -7,15 +7,13 @@
 //
 
 import CloudKit
+import DZFoundation
 import Foundation
-import os.log
 import RSCore
 import RSParser
 import RSWeb
 
 final class CloudKitArticlesZoneDelegate: CloudKitZoneDelegate {
-    private static let logger = cloudKitLogger
-
     weak var dataStore: DataStore?
     var syncDatabase: SyncDatabase
     weak var articlesZone: CloudKitArticlesZone?
@@ -40,7 +38,7 @@ final class CloudKitArticlesZoneDelegate: CloudKitZoneDelegate {
                 pendingStarredStatusArticleIDs: pendingStarredStatusArticleIDs
             )
         } catch {
-            Self.logger.error("CloudKit: Error getting sync status records: \(error.localizedDescription)")
+            DZLog("CloudKit: Error getting sync status records: \(error.localizedDescription)")
             throw CloudKitZoneError.unknown
         }
     }
@@ -91,28 +89,28 @@ extension CloudKitArticlesZoneDelegate {
             try await self.dataStore?.markAsUnreadAsync(articleIDs: updateableUnreadArticleIDs)
         } catch {
             updateError = error
-            Self.logger.error("CloudKit: Error while storing unread statuses: \(error.localizedDescription)")
+            DZLog("CloudKit: Error while storing unread statuses: \(error.localizedDescription)")
         }
 
         do {
             try await self.dataStore?.markAsReadAsync(articleIDs: updateableReadArticleIDs)
         } catch {
             updateError = error
-            Self.logger.error("CloudKit: Error while storing read statuses: \(error.localizedDescription)")
+            DZLog("CloudKit: Error while storing read statuses: \(error.localizedDescription)")
         }
 
         do {
             try await self.dataStore?.markAsUnstarredAsync(articleIDs: updateableUnstarredArticleIDs)
         } catch {
             updateError = error
-            Self.logger.error("CloudKit: Error while storing unstarred statuses: \(error.localizedDescription)")
+            DZLog("CloudKit: Error while storing unstarred statuses: \(error.localizedDescription)")
         }
 
         do {
             try await self.dataStore?.markAsStarredAsync(articleIDs: updateableStarredArticleIDs)
         } catch {
             updateError = error
-            Self.logger.error("CloudKit: Error while storing starred statuses: \(error.localizedDescription)")
+            DZLog("CloudKit: Error while storing starred statuses: \(error.localizedDescription)")
         }
 
         for (feedID, parsedItems) in feedIDsAndItems {
@@ -133,7 +131,7 @@ extension CloudKitArticlesZoneDelegate {
                 try? await self.syncDatabase.insertStatuses(syncStatuses)
             } catch {
                 updateError = error
-                Self.logger.error("CloudKit: Error while storing articles: \(error.localizedDescription)")
+                DZLog("CloudKit: Error while storing articles: \(error.localizedDescription)")
             }
         }
 
