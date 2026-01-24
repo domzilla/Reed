@@ -6,21 +6,17 @@
 //  Copyright © 2020 Ranchero Software, LLC. All rights reserved.
 //
 
-import Foundation
 import CloudKit
+import Foundation
 
 extension CKRecord {
-
-	var externalID: String {
-		return recordID.externalID
-	}
-
+    var externalID: String {
+        recordID.externalID
+    }
 }
 
 extension CKRecord.ID {
-
-	var externalID: String {
-		return recordName
-	}
-
+    var externalID: String {
+        recordName
+    }
 }

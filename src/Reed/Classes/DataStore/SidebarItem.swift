@@ -9,28 +9,30 @@
 import Foundation
 import RSCore
 
-nonisolated public enum ReadFilterType: Sendable {
-	case read
-	case none
-	case alwaysRead
+public nonisolated enum ReadFilterType: Sendable {
+    case read
+    case none
+    case alwaysRead
 }
 
-@MainActor public protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvider, UnreadCountProvider {
-	@MainActor var account: Account? { get }
-	@MainActor var defaultReadFilterType: ReadFilterType { get }
+@MainActor
+public protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvider,
+    UnreadCountProvider
+{
+    @MainActor var account: Account? { get }
+    @MainActor var defaultReadFilterType: ReadFilterType { get }
 }
 
-@MainActor public extension SidebarItem {
-
-	func readFiltered(readFilterEnabledTable: [SidebarItemIdentifier: Bool]) -> Bool {
-		guard defaultReadFilterType != .alwaysRead else {
-			return true
-		}
-		if let sidebarItemID, let readFilterEnabled = readFilterEnabledTable[sidebarItemID] {
-			return readFilterEnabled
-		} else {
-			return defaultReadFilterType == .read
-		}
-
-	}
+@MainActor
+extension SidebarItem {
+    public func readFiltered(readFilterEnabledTable: [SidebarItemIdentifier: Bool]) -> Bool {
+        guard defaultReadFilterType != .alwaysRead else {
+            return true
+        }
+        if let sidebarItemID, let readFilterEnabled = readFilterEnabledTable[sidebarItemID] {
+            return readFilterEnabled
+        } else {
+            return defaultReadFilterType == .read
+        }
+    }
 }

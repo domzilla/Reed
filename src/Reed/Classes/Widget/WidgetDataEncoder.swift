@@ -7,158 +7,172 @@
 //
 
 import Foundation
-import WidgetKit
 import os.log
-import UIKit
 import RSCore
+import UIKit
+import WidgetKit
 
-@MainActor final class WidgetDataEncoder {
-	static let shared = WidgetDataEncoder()
+@MainActor
+final class WidgetDataEncoder {
+    static let shared = WidgetDataEncoder()
 
-	var isRunning = false
+    var isRunning = false
 
-	private let fetchLimit = 7
-	private let imageContainer: URL
-	private let dataURL: URL
+    private let fetchLimit = 7
+    private let imageContainer: URL
+    private let dataURL: URL
 
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "WidgetDataEncoder")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "WidgetDataEncoder")
 
-	init?() {
-		guard let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as? String else {
-			Self.logger.error("WidgetDataEncoder: unable to create appGroup")
-			return nil
-		}
-		guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
-			Self.logger.error("WidgetDataEncoder: unable to create containerURL")
-			return nil
-		}
+    init?() {
+        guard let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as? String else {
+            Self.logger.error("WidgetDataEncoder: unable to create appGroup")
+            return nil
+        }
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
+            Self.logger.error("WidgetDataEncoder: unable to create containerURL")
+            return nil
+        }
 
-		self.imageContainer = containerURL.appendingPathComponent("widgetImages", isDirectory: true)
-		self.dataURL = containerURL.appendingPathComponent("widget-data.json")
+        self.imageContainer = containerURL.appendingPathComponent("widgetImages", isDirectory: true)
+        self.dataURL = containerURL.appendingPathComponent("widget-data.json")
 
-		do {
-			try FileManager.default.createDirectory(at: imageContainer, withIntermediateDirectories: true, attributes: nil)
-		} catch {
-			Self.logger.error("WidgetDataEncoder: unable to create folder for images")
-			return nil
-		}
-	}
+        do {
+            try FileManager.default.createDirectory(
+                at: self.imageContainer,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+        } catch {
+            Self.logger.error("WidgetDataEncoder: unable to create folder for images")
+            return nil
+        }
+    }
 
-	func encode() {
-		if isRunning {
-			Self.logger.debug("WidgetDataEncoder: skipping encode because already in encode")
-			return
-		}
+    func encode() {
+        if self.isRunning {
+            Self.logger.debug("WidgetDataEncoder: skipping encode because already in encode")
+            return
+        }
 
-		Self.logger.debug("WidgetDataEncoder: encoding")
-		isRunning = true
+        Self.logger.debug("WidgetDataEncoder: encoding")
+        self.isRunning = true
 
-		flushSharedContainer()
+        flushSharedContainer()
 
-		Task { @MainActor in
-			defer {
-				isRunning = false
-			}
+        Task { @MainActor in
+            defer {
+                isRunning = false
+            }
 
-			let latestData: WidgetData
-			do {
-				latestData = try await fetchWidgetData()
-			} catch {
-				Self.logger.error("WidgetDataEncoder: error fetching widget data: \(error.localizedDescription)")
-				return
-			}
+            let latestData: WidgetData
+            do {
+                latestData = try await fetchWidgetData()
+            } catch {
+                Self.logger.error("WidgetDataEncoder: error fetching widget data: \(error.localizedDescription)")
+                return
+            }
 
-			let encodedData: Data
-			do {
-				encodedData = try JSONEncoder().encode(latestData)
-			} catch {
-				Self.logger.error("WidgetDataEncoder: error encoding widget data: \(error.localizedDescription)")
-				return
-			}
+            let encodedData: Data
+            do {
+                encodedData = try JSONEncoder().encode(latestData)
+            } catch {
+                Self.logger.error("WidgetDataEncoder: error encoding widget data: \(error.localizedDescription)")
+                return
+            }
 
-			if fileExists() {
-				try? FileManager.default.removeItem(at: dataURL)
-				Self.logger.debug("WidgetDataEncoder: removed widget data from container")
-			}
+            if fileExists() {
+                try? FileManager.default.removeItem(at: self.dataURL)
+                Self.logger.debug("WidgetDataEncoder: removed widget data from container")
+            }
 
-			if FileManager.default.createFile(atPath: dataURL.path, contents: encodedData, attributes: nil) {
-				Self.logger.debug("WidgetDataEncoder: wrote data to container")
-				WidgetCenter.shared.reloadAllTimelines()
-			} else {
-				Self.logger.error("WidgetDataEncoder: could not write data to container")
-			}
-		}
-	}
+            if FileManager.default.createFile(atPath: self.dataURL.path, contents: encodedData, attributes: nil) {
+                Self.logger.debug("WidgetDataEncoder: wrote data to container")
+                WidgetCenter.shared.reloadAllTimelines()
+            } else {
+                Self.logger.error("WidgetDataEncoder: could not write data to container")
+            }
+        }
+    }
 }
 
-@MainActor private extension WidgetDataEncoder {
+@MainActor
+extension WidgetDataEncoder {
+    private func fetchWidgetData() async throws -> WidgetData {
+        let fetchedUnreadArticles = try await AccountManager.shared.fetchArticlesAsync(.unread(self.fetchLimit))
+        let unreadArticles = self.sortedLatestArticles(fetchedUnreadArticles)
 
-	func fetchWidgetData() async throws -> WidgetData {
-		let fetchedUnreadArticles = try await AccountManager.shared.fetchArticlesAsync(.unread(fetchLimit))
-		let unreadArticles = sortedLatestArticles(fetchedUnreadArticles)
+        let fetchedStarredArticles = try await AccountManager.shared.fetchArticlesAsync(.starred(self.fetchLimit))
+        let starredArticles = self.sortedLatestArticles(fetchedStarredArticles)
 
-		let fetchedStarredArticles = try await AccountManager.shared.fetchArticlesAsync(.starred(fetchLimit))
-		let starredArticles = sortedLatestArticles(fetchedStarredArticles)
+        let fetchedTodayArticles = try await AccountManager.shared.fetchArticlesAsync(.today(self.fetchLimit))
+        let todayArticles = self.sortedLatestArticles(fetchedTodayArticles)
 
-		let fetchedTodayArticles = try await AccountManager.shared.fetchArticlesAsync(.today(fetchLimit))
-		let todayArticles = sortedLatestArticles(fetchedTodayArticles)
+        let latestData = WidgetData(
+            currentUnreadCount: SmartFeedsController.shared.unreadFeed.unreadCount,
+            currentTodayCount: SmartFeedsController.shared.todayFeed.unreadCount,
+            currentStarredCount: (try? AccountManager.shared.fetchCountForStarredArticles()) ??
+                0,
+            unreadArticles: unreadArticles,
+            starredArticles: starredArticles,
+            todayArticles: todayArticles,
+            lastUpdateTime: Date()
+        )
+        return latestData
+    }
 
-		let latestData = WidgetData(currentUnreadCount: SmartFeedsController.shared.unreadFeed.unreadCount,
-									currentTodayCount: SmartFeedsController.shared.todayFeed.unreadCount,
-									currentStarredCount: (try? AccountManager.shared.fetchCountForStarredArticles()) ?? 0,
-									unreadArticles: unreadArticles,
-									starredArticles: starredArticles,
-									todayArticles: todayArticles,
-									lastUpdateTime: Date())
-		return latestData
-	}
+    private func fileExists() -> Bool {
+        FileManager.default.fileExists(atPath: self.dataURL.path)
+    }
 
-	func fileExists() -> Bool {
-		FileManager.default.fileExists(atPath: dataURL.path)
-	}
+    private func writeImageDataToSharedContainer(_ imageData: Data?) -> String? {
+        guard let imageData else {
+            return nil
+        }
 
-	func writeImageDataToSharedContainer(_ imageData: Data?) -> String? {
-		guard let imageData else {
-			return nil
-		}
+        // Each image gets a UUID
+        let uuid = UUID().uuidString
 
-		// Each image gets a UUID
-		let uuid = UUID().uuidString
+        let imagePath = self.imageContainer.appendingPathComponent(uuid, isDirectory: false)
+        do {
+            try imageData.write(to: imagePath)
+            return imagePath.path
+        } catch {
+            return nil
+        }
+    }
 
-		let imagePath = imageContainer.appendingPathComponent(uuid, isDirectory: false)
-		do {
-			try imageData.write(to: imagePath)
-			return imagePath.path
-		} catch {
-			return nil
-		}
-	}
+    private func flushSharedContainer() {
+        try? FileManager.default.removeItem(atPath: self.imageContainer.path)
+        try? FileManager.default.createDirectory(
+            at: self.imageContainer,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+    }
 
-	func flushSharedContainer() {
-		try? FileManager.default.removeItem(atPath: imageContainer.path)
-		try? FileManager.default.createDirectory(at: imageContainer, withIntermediateDirectories: true, attributes: nil)
-	}
+    private func createLatestArticle(_ article: Article) -> LatestArticle {
+        let truncatedTitle = ArticleStringFormatter.truncatedTitle(article)
+        let articleTitle = truncatedTitle.isEmpty ? ArticleStringFormatter.truncatedSummary(article) : truncatedTitle
 
-	func createLatestArticle(_ article: Article) -> LatestArticle {
-		let truncatedTitle = ArticleStringFormatter.truncatedTitle(article)
-		let articleTitle = truncatedTitle.isEmpty ? ArticleStringFormatter.truncatedSummary(article) : truncatedTitle
+        // TODO: It looks like we write images each time, but we’re probably over-writing unchanged images sometimes.
+        let feedIconPath = self.writeImageDataToSharedContainer(article.iconImage()?.image.dataRepresentation())
 
-		// TODO: It looks like we write images each time, but we’re probably over-writing unchanged images sometimes.
-		let feedIconPath = writeImageDataToSharedContainer(article.iconImage()?.image.dataRepresentation())
+        let pubDate = article.datePublished?.description ?? ""
 
-		let pubDate = article.datePublished?.description ?? ""
+        let latestArticle = LatestArticle(
+            id: article.sortableArticleID,
+            feedTitle: article.sortableName,
+            articleTitle: articleTitle,
+            articleSummary: article.summary,
+            feedIconPath: feedIconPath,
+            pubDate: pubDate
+        )
+        return latestArticle
+    }
 
-		let latestArticle = LatestArticle(id: article.sortableArticleID,
-										  feedTitle: article.sortableName,
-										  articleTitle: articleTitle,
-										  articleSummary: article.summary,
-										  feedIconPath: feedIconPath,
-										  pubDate: pubDate)
-		return latestArticle
-	}
-
-	func sortedLatestArticles(_ fetchedArticles: Set<Article>) -> [LatestArticle] {
-		let latestArticles = fetchedArticles.map(createLatestArticle)
-		return latestArticles.sorted(by: { $0.pubDate > $1.pubDate })
-	}
+    private func sortedLatestArticles(_ fetchedArticles: Set<Article>) -> [LatestArticle] {
+        let latestArticles = fetchedArticles.map(self.createLatestArticle)
+        return latestArticles.sorted(by: { $0.pubDate > $1.pubDate })
+    }
 }

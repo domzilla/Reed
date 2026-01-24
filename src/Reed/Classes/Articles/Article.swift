@@ -11,120 +11,164 @@ import Foundation
 public typealias ArticleSetBlock = (Set<Article>) -> Void
 
 public final class Article: Sendable {
-	public let articleID: String // Unique database ID (possibly sync service ID)
-	public let accountID: String
-	public let feedID: String // Likely a URL, but not necessarily
-	public let uniqueID: String // Unique per feed (RSS guid, for example)
-	public let title: String?
-	public let contentHTML: String?
-	public let contentText: String?
-	public let markdown: String?
-	public let rawLink: String? // We store raw source value, but use computed url or link other than where raw value required.
-    public let rawExternalLink: String? // We store raw source value, but use computed externalURL or externalLink other than where raw value required.
-	public let summary: String?
-	public let rawImageLink: String? // We store raw source value, but use computed imageURL or imageLink other than where raw value required.
-	public let datePublished: Date?
-	public let dateModified: Date?
-	public let authors: Set<Author>?
-	public let status: ArticleStatus
+    public let articleID: String // Unique database ID (possibly sync service ID)
+    public let accountID: String
+    public let feedID: String // Likely a URL, but not necessarily
+    public let uniqueID: String // Unique per feed (RSS guid, for example)
+    public let title: String?
+    public let contentHTML: String?
+    public let contentText: String?
+    public let markdown: String?
+    public let rawLink: String? // We store raw source value, but use computed url or link other than where raw value
+    // required.
+    public let rawExternalLink: String? // We store raw source value, but use computed externalURL or externalLink other
+    // than where raw value required.
+    public let summary: String?
+    public let rawImageLink: String? // We store raw source value, but use computed imageURL or imageLink other than
+    // where raw value required.
+    public let datePublished: Date?
+    public let dateModified: Date?
+    public let authors: Set<Author>?
+    public let status: ArticleStatus
 
-	public init(accountID: String, articleID: String?, feedID: String, uniqueID: String, title: String?, contentHTML: String?, contentText: String?, markdown: String?, url: String?, externalURL: String?, summary: String?, imageURL: String?, datePublished: Date?, dateModified: Date?, authors: Set<Author>?, status: ArticleStatus) {
-		self.accountID = accountID
-		self.feedID = feedID
-		self.uniqueID = uniqueID
-		self.title = title
-		self.contentHTML = contentHTML
-		self.contentText = contentText
-		self.markdown = markdown
-		self.rawLink = url
-		self.rawExternalLink = externalURL
-		self.summary = summary
-		self.rawImageLink = imageURL
-		self.datePublished = datePublished
-		self.dateModified = dateModified
-		self.authors = authors
-		self.status = status
+    public init(
+        accountID: String,
+        articleID: String?,
+        feedID: String,
+        uniqueID: String,
+        title: String?,
+        contentHTML: String?,
+        contentText: String?,
+        markdown: String?,
+        url: String?,
+        externalURL: String?,
+        summary: String?,
+        imageURL: String?,
+        datePublished: Date?,
+        dateModified: Date?,
+        authors: Set<Author>?,
+        status: ArticleStatus
+    ) {
+        self.accountID = accountID
+        self.feedID = feedID
+        self.uniqueID = uniqueID
+        self.title = title
+        self.contentHTML = contentHTML
+        self.contentText = contentText
+        self.markdown = markdown
+        self.rawLink = url
+        self.rawExternalLink = externalURL
+        self.summary = summary
+        self.rawImageLink = imageURL
+        self.datePublished = datePublished
+        self.dateModified = dateModified
+        self.authors = authors
+        self.status = status
 
-		if let articleID = articleID {
-			self.articleID = articleID
-		}
-		else {
-			self.articleID = Article.calculatedArticleID(feedID: feedID, uniqueID: uniqueID)
-		}
-	}
+        if let articleID {
+            self.articleID = articleID
+        } else {
+            self.articleID = Article.calculatedArticleID(feedID: feedID, uniqueID: uniqueID)
+        }
+    }
 
-	public static func calculatedArticleID(feedID: String, uniqueID: String) -> String {
-		return databaseIDWithString("\(feedID) \(uniqueID)")
-	}
-
+    public static func calculatedArticleID(feedID: String, uniqueID: String) -> String {
+        databaseIDWithString("\(feedID) \(uniqueID)")
+    }
 }
 
 // MARK: - Hashable
+
 extension Article: Hashable {
-	nonisolated public func hash(into hasher: inout Hasher) {
-		hasher.combine(articleID)
-	}
+    public nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(self.articleID)
+    }
 
-	nonisolated static public func ==(lhs: Article, rhs: Article) -> Bool {
-		return lhs.articleID == rhs.articleID && lhs.accountID == rhs.accountID && lhs.feedID == rhs.feedID && lhs.uniqueID == rhs.uniqueID && lhs.title == rhs.title && lhs.contentHTML == rhs.contentHTML && lhs.contentText == rhs.contentText && lhs.rawLink == rhs.rawLink && lhs.rawExternalLink == rhs.rawExternalLink && lhs.summary == rhs.summary && lhs.rawImageLink == rhs.rawImageLink && lhs.datePublished == rhs.datePublished && lhs.dateModified == rhs.dateModified && lhs.authors == rhs.authors
-	}
+    public nonisolated static func == (lhs: Article, rhs: Article) -> Bool {
+        lhs.articleID == rhs.articleID && lhs.accountID == rhs.accountID && lhs.feedID == rhs.feedID && lhs
+            .uniqueID == rhs.uniqueID && lhs.title == rhs.title && lhs.contentHTML == rhs.contentHTML && lhs
+            .contentText == rhs.contentText && lhs.rawLink == rhs.rawLink && lhs.rawExternalLink == rhs
+            .rawExternalLink && lhs.summary == rhs.summary && lhs.rawImageLink == rhs.rawImageLink && lhs
+            .datePublished == rhs.datePublished && lhs.dateModified == rhs.dateModified && lhs.authors == rhs.authors
+    }
 }
 
-public extension Set where Element == Article {
+extension Set<Article> {
+    public nonisolated func articleIDs() -> Set<String> {
+        Set<String>(map(\.articleID))
+    }
 
-	nonisolated func articleIDs() -> Set<String> {
-		return Set<String>(map { $0.articleID })
-	}
+    public nonisolated func unreadArticles() -> Set<Article> {
+        let articles = self.filter { !$0.status.read }
+        return Set(articles)
+    }
 
-	nonisolated func unreadArticles() -> Set<Article> {
-		let articles = self.filter { !$0.status.read }
-		return Set(articles)
-	}
-
-	nonisolated func contains(accountID: String, articleID: String) -> Bool {
-		return contains(where: { $0.accountID == accountID && $0.articleID == articleID})
-	}
+    public nonisolated func contains(accountID: String, articleID: String) -> Bool {
+        self.contains(where: { $0.accountID == accountID && $0.articleID == articleID })
+    }
 }
 
-public extension Array where Element == Article {
-
-	nonisolated func articleIDs() -> [String] {
-		return map { $0.articleID }
-	}
+extension [Article] {
+    public nonisolated func articleIDs() -> [String] {
+        map(\.articleID)
+    }
 }
 
-public extension Article {
-	private static let allowedTags: Set = ["b", "bdi", "bdo", "cite", "code", "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "s", "samp", "small", "strong", "sub", "sup", "time", "u", "var"]
+extension Article {
+    private static let allowedTags: Set = [
+        "b",
+        "bdi",
+        "bdo",
+        "cite",
+        "code",
+        "del",
+        "dfn",
+        "em",
+        "i",
+        "ins",
+        "kbd",
+        "mark",
+        "q",
+        "s",
+        "samp",
+        "small",
+        "strong",
+        "sub",
+        "sup",
+        "time",
+        "u",
+        "var",
+    ]
 
-	func sanitizedTitle(forHTML: Bool = true) -> String? {
-		guard let title else {
-			return nil
-		}
+    public func sanitizedTitle(forHTML: Bool = true) -> String? {
+        guard let title else {
+            return nil
+        }
 
-		let scanner = Scanner(string: title)
-		scanner.charactersToBeSkipped = nil
-		var result = ""
-		result.reserveCapacity(title.count)
+        let scanner = Scanner(string: title)
+        scanner.charactersToBeSkipped = nil
+        var result = ""
+        result.reserveCapacity(title.count)
 
-		while !scanner.isAtEnd {
-			if let text = scanner.scanUpToString("<") {
-				result.append(text)
-			}
+        while !scanner.isAtEnd {
+            if let text = scanner.scanUpToString("<") {
+                result.append(text)
+            }
 
-			if let _ = scanner.scanString("<") {
-				// All the allowed tags currently don't allow attributes
-				if let tag = scanner.scanUpToString(">") {
-					if Self.allowedTags.contains(tag.replacingOccurrences(of: "/", with: "")) {
-						forHTML ? result.append("<\(tag)>") : result.append("")
-					} else {
-						forHTML ? result.append("&lt;\(tag)&gt;") : result.append("<\(tag)>")
-					}
+            if let _ = scanner.scanString("<") {
+                // All the allowed tags currently don't allow attributes
+                if let tag = scanner.scanUpToString(">") {
+                    if Self.allowedTags.contains(tag.replacingOccurrences(of: "/", with: "")) {
+                        forHTML ? result.append("<\(tag)>") : result.append("")
+                    } else {
+                        forHTML ? result.append("&lt;\(tag)&gt;") : result.append("<\(tag)>")
+                    }
 
-					let _ = scanner.scanString(">")
-				}
-			}
-		}
+                    _ = scanner.scanString(">")
+                }
+            }
+        }
 
-		return result
-	}
+        return result
+    }
 }

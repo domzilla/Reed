@@ -6,173 +6,185 @@
 //  Copyright © 2025 Ranchero Software. All rights reserved.
 //
 
-import UIKit
-import WebKit
 import RSCore
 import RSTree
 import RSWeb
 import SafariServices
+import UIKit
 import UniformTypeIdentifiers
-
+import WebKit
 
 extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        performDropWith coordinator: any UICollectionViewDropCoordinator
+    ) {
+        guard
+            let dragItem = coordinator.items.first?.dragItem,
+            let dragNode = dragItem.localObject as? Node,
+            let source = dragNode.parent?.representedObject as? Container,
+            let destIndexPath = coordinator.destinationIndexPath else
+        {
+            return
+        }
 
-	func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: any UICollectionViewDropCoordinator) {
-		guard let dragItem = coordinator.items.first?.dragItem,
-			  let dragNode = dragItem.localObject as? Node,
-			  let source = dragNode.parent?.representedObject as? Container,
-			  let destIndexPath = coordinator.destinationIndexPath else {
-				  return
-			  }
+        let isFolderDrop: Bool = {
+            if
+                self.coordinator.nodeFor(destIndexPath)?.representedObject is Folder,
+                let propCell = collectionView.cellForItem(at: destIndexPath)
+            {
+                return coordinator.session.location(in: propCell).y >= 0
+            }
+            return false
+        }()
 
-		let isFolderDrop: Bool = {
-			if self.coordinator.nodeFor(destIndexPath)?.representedObject is Folder, let propCell = collectionView.cellForItem(at: destIndexPath) {
-				return coordinator.session.location(in: propCell).y >= 0
-			}
-			return false
-		}()
+        // Based on the drop we have to determine a node to start looking for a parent container.
+        let destNode: Node? = if isFolderDrop {
+            self.coordinator.nodeFor(destIndexPath)
+        } else {
+            if destIndexPath.row == 0 {
+                self.coordinator.nodeFor(IndexPath(row: 0, section: destIndexPath.section))
+            } else if destIndexPath.row > 0 {
+                self.coordinator.nodeFor(IndexPath(row: destIndexPath.row - 1, section: destIndexPath.section))
+            } else {
+                nil
+            }
+        }
 
-		// Based on the drop we have to determine a node to start looking for a parent container.
-		let destNode: Node? = {
+        // Now we start looking for the parent container
+        let destinationContainer: Container? = if
+            let container = (destNode?.representedObject as? Container) ??
+            (destNode?.parent?.representedObject as? Container)
+        {
+            container
+        } else {
+            // If we got here, we are trying to drop on an empty section header. Go and find the Account for this
+            // section
+            self.coordinator.rootNode.childAtIndex(destIndexPath.section)?.representedObject as? Account
+        }
 
-			if isFolderDrop {
-				return self.coordinator.nodeFor(destIndexPath)
-			} else {
-				if destIndexPath.row == 0 {
-					return self.coordinator.nodeFor(IndexPath(row: 0, section: destIndexPath.section))
-				} else if destIndexPath.row > 0 {
-					return self.coordinator.nodeFor(IndexPath(row: destIndexPath.row - 1, section: destIndexPath.section))
-				} else {
-					return nil
-				}
-			}
+        guard let destination = destinationContainer, let feed = dragNode.representedObject as? Feed else { return }
 
-		}()
+        if source.account == destination.account {
+            self.moveFeedInAccount(feed: feed, sourceContainer: source, destinationContainer: destination)
+        } else {
+            self.moveFeedBetweenAccounts(feed: feed, sourceContainer: source, destinationContainer: destination)
+        }
+    }
 
-		// Now we start looking for the parent container
-		let destinationContainer: Container? = {
-			if let container = (destNode?.representedObject as? Container) ?? (destNode?.parent?.representedObject as? Container) {
-				return container
-			} else {
-				// If we got here, we are trying to drop on an empty section header. Go and find the Account for this section
-				return self.coordinator.rootNode.childAtIndex(destIndexPath.section)?.representedObject as? Account
-			}
-		}()
+    func collectionView(
+        _ collectionView: UICollectionView,
+        dropSessionDidUpdate session: any UIDropSession,
+        withDestinationIndexPath destinationIndexPath: IndexPath?
+    )
+        -> UICollectionViewDropProposal
+    {
+        // Reject if no active drag or no destination
+        guard let destIndexPath = destinationIndexPath, collectionView.hasActiveDrag else {
+            return UICollectionViewDropProposal(operation: .cancel)
+        }
 
-		guard let destination = destinationContainer, let feed = dragNode.representedObject as? Feed else { return }
+        // Reject drops on section 0 (Smart Feeds)
+        guard destIndexPath.section > 0 else {
+            return UICollectionViewDropProposal(operation: .cancel)
+        }
 
-		if source.account == destination.account {
-			moveFeedInAccount(feed: feed, sourceContainer: source, destinationContainer: destination)
-		} else {
-			moveFeedBetweenAccounts(feed: feed, sourceContainer: source, destinationContainer: destination)
-		}
-	}
+        guard
+            let destFeed = coordinator.nodeFor(destIndexPath)?.representedObject as? SidebarItem,
+            let destAccount = destFeed.account,
+            let destCell = collectionView.cellForItem(at: destIndexPath) else
+        {
+            return UICollectionViewDropProposal(operation: .forbidden)
+        }
 
-	func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: any UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        // Validate account specific behaviors...
+        if
+            destAccount.behaviors.contains(.disallowFeedInMultipleFolders),
+            let sourceNode = session.localDragSession?.items.first?.localObject as? Node,
+            let sourceFeed = sourceNode.representedObject as? Feed,
+            sourceFeed.account?.accountID != destAccount.accountID, destAccount.hasFeed(withURL: sourceFeed.url)
+        {
+            return UICollectionViewDropProposal(operation: .forbidden)
+        }
 
-		// Reject if no active drag or no destination
-		guard let destIndexPath = destinationIndexPath, collectionView.hasActiveDrag else {
-			return UICollectionViewDropProposal(operation: .cancel)
-		}
+        // Determine the correct drop proposal
+        if destFeed is Folder {
+            if session.location(in: destCell).y >= 0 {
+                return UICollectionViewDropProposal(operation: .move, intent: .insertIntoDestinationIndexPath)
+            } else {
+                return UICollectionViewDropProposal(operation: .move, intent: .unspecified)
+            }
+        } else {
+            return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
+        }
+    }
 
-		// Reject drops on section 0 (Smart Feeds)
-		guard destIndexPath.section > 0 else {
-			return UICollectionViewDropProposal(operation: .cancel)
-		}
+    func collectionView(_: UICollectionView, canHandle session: any UIDropSession) -> Bool {
+        session.localDragSession != nil
+    }
 
-		guard let destFeed = coordinator.nodeFor(destIndexPath)?.representedObject as? SidebarItem,
-			  let destAccount = destFeed.account,
-			  let destCell = collectionView.cellForItem(at: destIndexPath) else {
-				  return UICollectionViewDropProposal(operation: .forbidden)
-			  }
+    func collectionView(_: UICollectionView, dropSessionDidEnd _: UIDropSession) {}
 
-		// Validate account specific behaviors...
-		if destAccount.behaviors.contains(.disallowFeedInMultipleFolders),
-		   let sourceNode = session.localDragSession?.items.first?.localObject as? Node,
-		   let sourceFeed = sourceNode.representedObject as? Feed,
-		   sourceFeed.account?.accountID != destAccount.accountID && destAccount.hasFeed(withURL: sourceFeed.url) {
-			return UICollectionViewDropProposal(operation: .forbidden)
-		}
+    func moveFeedInAccount(feed: Feed, sourceContainer: Container, destinationContainer: Container) {
+        guard sourceContainer !== destinationContainer else { return }
 
-		// Determine the correct drop proposal
-		if destFeed is Folder {
-			if session.location(in: destCell).y >= 0 {
-				return UICollectionViewDropProposal(operation: .move, intent: .insertIntoDestinationIndexPath)
-			} else {
-				return UICollectionViewDropProposal(operation: .move, intent: .unspecified)
-			}
-		} else {
-			return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
-		}
-	}
+        BatchUpdate.shared.start()
+        sourceContainer.account?.moveFeed(feed, from: sourceContainer, to: destinationContainer) { result in
+            BatchUpdate.shared.end()
+            switch result {
+            case .success:
+                break
+            case let .failure(error):
+                self.presentError(error)
+            }
+        }
+    }
 
-	func collectionView(_ collectionView: UICollectionView, canHandle session: any UIDropSession) -> Bool {
-		return session.localDragSession != nil
-	}
+    func moveFeedBetweenAccounts(feed: Feed, sourceContainer: Container, destinationContainer: Container) {
+        if let existingFeed = destinationContainer.account?.existingFeed(withURL: feed.url) {
+            BatchUpdate.shared.start()
+            destinationContainer.account?.addFeed(existingFeed, to: destinationContainer) { result in
+                switch result {
+                case .success:
+                    sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
+                        BatchUpdate.shared.end()
+                        switch result {
+                        case .success:
+                            break
+                        case let .failure(error):
+                            self.presentError(error)
+                        }
+                    }
+                case let .failure(error):
+                    BatchUpdate.shared.end()
+                    self.presentError(error)
+                }
+            }
 
-	func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
-	}
-
-	func moveFeedInAccount(feed: Feed, sourceContainer: Container, destinationContainer: Container) {
-		guard sourceContainer !== destinationContainer else { return }
-
-		BatchUpdate.shared.start()
-		sourceContainer.account?.moveFeed(feed, from: sourceContainer, to: destinationContainer) { result in
-			BatchUpdate.shared.end()
-			switch result {
-			case .success:
-				break
-			case .failure(let error):
-				self.presentError(error)
-			}
-		}
-	}
-
-	func moveFeedBetweenAccounts(feed: Feed, sourceContainer: Container, destinationContainer: Container) {
-
-		if let existingFeed = destinationContainer.account?.existingFeed(withURL: feed.url) {
-
-			BatchUpdate.shared.start()
-			destinationContainer.account?.addFeed(existingFeed, to: destinationContainer) { result in
-				switch result {
-				case .success:
-					sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
-						BatchUpdate.shared.end()
-						switch result {
-						case .success:
-							break
-						case .failure(let error):
-							self.presentError(error)
-						}
-					}
-				case .failure(let error):
-					BatchUpdate.shared.end()
-					self.presentError(error)
-				}
-			}
-
-		} else {
-
-			BatchUpdate.shared.start()
-			destinationContainer.account?.createFeed(url: feed.url, name: feed.editedName, container: destinationContainer, validateFeed: false) { result in
-				switch result {
-				case .success:
-					sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
-						BatchUpdate.shared.end()
-						switch result {
-						case .success:
-							break
-						case .failure(let error):
-							self.presentError(error)
-						}
-					}
-				case .failure(let error):
-					BatchUpdate.shared.end()
-					self.presentError(error)
-				}
-			}
-
-		}
-	}
-
+        } else {
+            BatchUpdate.shared.start()
+            destinationContainer.account?.createFeed(
+                url: feed.url,
+                name: feed.editedName,
+                container: destinationContainer,
+                validateFeed: false
+            ) { result in
+                switch result {
+                case .success:
+                    sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
+                        BatchUpdate.shared.end()
+                        switch result {
+                        case .success:
+                            break
+                        case let .failure(error):
+                            self.presentError(error)
+                        }
+                    }
+                case let .failure(error):
+                    BatchUpdate.shared.end()
+                    self.presentError(error)
+                }
+            }
+        }
+    }
 }

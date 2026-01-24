@@ -10,70 +10,75 @@ import Foundation
 import os.log
 import RSCore
 
-@MainActor final class FeedMetadataFile {
-	private let fileURL: URL
-	private let dataStore: DataStore
+@MainActor
+final class FeedMetadataFile {
+    private let fileURL: URL
+    private let dataStore: DataStore
 
-	@MainActor private var isDirty = false {
-		didSet {
-			queueSaveToDiskIfNeeded()
-		}
-	}
+    @MainActor private var isDirty = false {
+        didSet {
+            queueSaveToDiskIfNeeded()
+        }
+    }
 
-	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-	static private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedMetadataFile")
+    private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FeedMetadataFile")
 
-	init(filename: String, dataStore: DataStore) {
-		self.fileURL = URL(fileURLWithPath: filename)
-		self.dataStore = dataStore
-	}
+    init(filename: String, dataStore: DataStore) {
+        self.fileURL = URL(fileURLWithPath: filename)
+        self.dataStore = dataStore
+    }
 
-	@MainActor func markAsDirty() {
-		isDirty = true
-	}
+    @MainActor
+    func markAsDirty() {
+        self.isDirty = true
+    }
 
-	func load() {
-		if let fileData = try? Data(contentsOf: fileURL) {
-			let decoder = PropertyListDecoder()
-			dataStore.feedMetadata = (try? decoder.decode(DataStore.FeedMetadataDictionary.self, from: fileData)) ?? DataStore.FeedMetadataDictionary()
-		}
-		dataStore.feedMetadata.values.forEach { $0.delegate = dataStore }
-	}
+    func load() {
+        if let fileData = try? Data(contentsOf: fileURL) {
+            let decoder = PropertyListDecoder()
+            self.dataStore
+                .feedMetadata = (try? decoder.decode(DataStore.FeedMetadataDictionary.self, from: fileData)) ??
+                DataStore.FeedMetadataDictionary()
+        }
+        self.dataStore.feedMetadata.values.forEach { $0.delegate = self.dataStore }
+    }
 
-	func save() {
-		guard !dataStore.isDeleted else { return }
+    func save() {
+        guard !self.dataStore.isDeleted else { return }
 
-		let feedMetadata = metadataForOnlySubscribedToFeeds()
+        let feedMetadata = metadataForOnlySubscribedToFeeds()
 
-		let encoder = PropertyListEncoder()
-		encoder.outputFormat = .binary
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
 
-		do {
-			let data = try encoder.encode(feedMetadata)
-			try data.write(to: fileURL)
-		} catch let error as NSError {
-			Self.logger.error("Save FeedMetadataFile file to disk failed: \(error.localizedDescription)")
-		}
-	}
+        do {
+            let data = try encoder.encode(feedMetadata)
+            try data.write(to: self.fileURL)
+        } catch let error as NSError {
+            Self.logger.error("Save FeedMetadataFile file to disk failed: \(error.localizedDescription)")
+        }
+    }
 }
 
-private extension FeedMetadataFile {
+extension FeedMetadataFile {
+    @MainActor
+    private func queueSaveToDiskIfNeeded() {
+        self.saveQueue.add(self, #selector(self.saveToDiskIfNeeded))
+    }
 
-	@MainActor func queueSaveToDiskIfNeeded() {
-		saveQueue.add(self, #selector(saveToDiskIfNeeded))
-	}
+    @MainActor @objc
+    private func saveToDiskIfNeeded() {
+        if self.isDirty {
+            self.isDirty = false
+            self.save()
+        }
+    }
 
-	@MainActor @objc func saveToDiskIfNeeded() {
-		if isDirty {
-			isDirty = false
-			save()
-		}
-	}
-
-	private func metadataForOnlySubscribedToFeeds() -> DataStore.FeedMetadataDictionary {
-		let feedIDs = dataStore.idToFeedDictionary.keys
-		return dataStore.feedMetadata.filter { (feedID: String, metadata: FeedMetadata) -> Bool in
-			return feedIDs.contains(metadata.feedID)
-		}
-	}
+    private func metadataForOnlySubscribedToFeeds() -> DataStore.FeedMetadataDictionary {
+        let feedIDs = self.dataStore.idToFeedDictionary.keys
+        return self.dataStore.feedMetadata.filter { (_: String, metadata: FeedMetadata) -> Bool in
+            return feedIDs.contains(metadata.feedID)
+        }
+    }
 }

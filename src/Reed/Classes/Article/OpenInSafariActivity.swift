@@ -1,5 +1,5 @@
 //
-//  OpenInBrowserActivity.swift
+//  OpenInSafariActivity.swift
 //  NetNewsWire-iOS
 //
 //  Created by Maurice Parker on 1/9/20.
@@ -9,47 +9,46 @@
 import UIKit
 
 final class OpenInBrowserActivity: UIActivity {
+    override nonisolated init() {
+        super.init()
+    }
 
-	nonisolated override init() {
-		super.init()
-	}
+    private nonisolated(unsafe) var activityItems: [Any]?
 
-	private nonisolated(unsafe) var activityItems: [Any]?
+    override nonisolated var activityTitle: String? {
+        NSLocalizedString("Open in Browser", comment: "Open in Browser")
+    }
 
-	nonisolated override var activityTitle: String? {
-		return NSLocalizedString("Open in Browser", comment: "Open in Browser")
-	}
+    override nonisolated var activityImage: UIImage? {
+        UIImage(systemName: "globe", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
+    }
 
-	nonisolated override var activityImage: UIImage? {
-		return UIImage(systemName: "globe", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .regular))
-	}
+    override nonisolated var activityType: UIActivity.ActivityType? {
+        UIActivity.ActivityType(rawValue: "com.rancharo.NetNewsWire-Evergreen.safari")
+    }
 
-	nonisolated override var activityType: UIActivity.ActivityType? {
-		return UIActivity.ActivityType(rawValue: "com.rancharo.NetNewsWire-Evergreen.safari")
-	}
+    override nonisolated class var activityCategory: UIActivity.Category {
+        .action
+    }
 
-	nonisolated override class var activityCategory: UIActivity.Category {
-		return .action
-	}
+    override nonisolated func canPerform(withActivityItems _: [Any]) -> Bool {
+        true
+    }
 
-	nonisolated override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
-		return true
-	}
+    override nonisolated func prepare(withActivityItems activityItems: [Any]) {
+        self.activityItems = activityItems
+    }
 
-	nonisolated override func prepare(withActivityItems activityItems: [Any]) {
-		self.activityItems = activityItems
-	}
+    override nonisolated func perform() {
+        guard let url = activityItems?.first(where: { $0 is URL }) as? URL else {
+            activityDidFinish(false)
+            return
+        }
 
-	nonisolated override func perform() {
-		guard let url = activityItems?.first(where: { $0 is URL }) as? URL else {
-			activityDidFinish(false)
-			return
-		}
+        Task { @MainActor in
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
 
-		Task { @MainActor in
-			UIApplication.shared.open(url, options: [:], completionHandler: nil)
-		}
-
-		activityDidFinish(true)
-	}
+        activityDidFinish(true)
+    }
 }

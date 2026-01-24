@@ -9,43 +9,42 @@
 import UIKit
 
 final class VibrantButton: UIButton {
+    @IBInspectable var backgroundHighlightColor: UIColor = Assets.Colors.secondaryAccent
 
-	@IBInspectable var backgroundHighlightColor: UIColor = Assets.Colors.secondaryAccent
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.commonInit()
+    }
 
-	override init(frame: CGRect) {
-		super.init(frame: frame)
-		commonInit()
-	}
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		commonInit()
-	}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.commonInit()
+    }
 
-	private func commonInit() {
-		setTitleColor(Assets.Colors.vibrantText, for: .highlighted)
-		let disabledColor = Assets.Colors.secondaryAccent.withAlphaComponent(0.5)
-		setTitleColor(disabledColor, for: .disabled)
-	}
+    private func commonInit() {
+        setTitleColor(Assets.Colors.vibrantText, for: .highlighted)
+        let disabledColor = Assets.Colors.secondaryAccent.withAlphaComponent(0.5)
+        setTitleColor(disabledColor, for: .disabled)
+    }
 
-	override var isHighlighted: Bool {
-		didSet {
-			backgroundColor = isHighlighted ? backgroundHighlightColor : nil
-		}
-	}
+    override var isHighlighted: Bool {
+        didSet {
+            backgroundColor = self.isHighlighted ? self.backgroundHighlightColor : nil
+        }
+    }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isHighlighted = true
+        self.isHighlighted = true
         super.touchesBegan(touches, with: event)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isHighlighted = false
+        self.isHighlighted = false
         super.touchesEnded(touches, with: event)
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isHighlighted = false
+        self.isHighlighted = false
         super.touchesCancelled(touches, with: event)
     }
-
 }

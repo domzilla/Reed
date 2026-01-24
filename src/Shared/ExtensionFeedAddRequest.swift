@@ -9,15 +9,13 @@
 import Foundation
 
 struct ExtensionFeedAddRequest: Codable {
+    enum CodingKeys: String, CodingKey {
+        case name
+        case feedURL
+        case destinationContainerID
+    }
 
-	enum CodingKeys: String, CodingKey {
-		case name
-		case feedURL
-		case destinationContainerID
-	}
-
-	let name: String?
-	let feedURL: URL
-	let destinationContainerID: ContainerIdentifier
-
+    let name: String?
+    let feedURL: URL
+    let destinationContainerID: ContainerIdentifier
 }

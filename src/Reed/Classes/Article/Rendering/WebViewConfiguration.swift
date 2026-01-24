@@ -9,59 +9,58 @@
 import Foundation
 import WebKit
 
-@MainActor final class WebViewConfiguration {
+@MainActor
+final class WebViewConfiguration {
+    static func configuration(with urlSchemeHandler: WKURLSchemeHandler) -> WKWebViewConfiguration {
+        assert(Thread.isMainThread)
 
-	static func configuration(with urlSchemeHandler: WKURLSchemeHandler) -> WKWebViewConfiguration {
-		assert(Thread.isMainThread)
+        let configuration = WKWebViewConfiguration()
 
-		let configuration = WKWebViewConfiguration()
+        configuration.preferences = preferences
+        configuration.defaultWebpagePreferences = webpagePreferences
+        configuration.mediaTypesRequiringUserActionForPlayback = .all
+        configuration.setURLSchemeHandler(urlSchemeHandler, forURLScheme: ArticleRenderer.imageIconScheme)
+        configuration.userContentController = userContentController
+        configuration.allowsInlineMediaPlayback = true
 
-		configuration.preferences = preferences
-		configuration.defaultWebpagePreferences = webpagePreferences
-		configuration.mediaTypesRequiringUserActionForPlayback = .all
-		configuration.setURLSchemeHandler(urlSchemeHandler, forURLScheme: ArticleRenderer.imageIconScheme)
-		configuration.userContentController = userContentController
-		configuration.allowsInlineMediaPlayback = true
-
-		return configuration
-	}
+        return configuration
+    }
 }
 
-private extension WebViewConfiguration {
+extension WebViewConfiguration {
+    fileprivate static var preferences: WKPreferences {
+        let preferences = WKPreferences()
+        preferences.javaScriptCanOpenWindowsAutomatically = false
+        preferences.minimumFontSize = 12
+        preferences.isElementFullscreenEnabled = true
 
-	static var preferences: WKPreferences {
-		let preferences = WKPreferences()
-		preferences.javaScriptCanOpenWindowsAutomatically = false
-		preferences.minimumFontSize = 12
-		preferences.isElementFullscreenEnabled = true
+        return preferences
+    }
 
-		return preferences
-	}
+    fileprivate static var webpagePreferences: WKWebpagePreferences {
+        assert(Thread.isMainThread)
 
-	static var webpagePreferences: WKWebpagePreferences {
-		assert(Thread.isMainThread)
+        let preferences = WKWebpagePreferences()
+        preferences.allowsContentJavaScript = AppDefaults.shared.isArticleContentJavascriptEnabled
+        return preferences
+    }
 
-		let preferences = WKWebpagePreferences()
-		preferences.allowsContentJavaScript = AppDefaults.shared.isArticleContentJavascriptEnabled
-		return preferences
-	}
+    fileprivate static var userContentController: WKUserContentController {
+        let userContentController = WKUserContentController()
+        for script in articleScripts {
+            userContentController.addUserScript(script)
+        }
+        return userContentController
+    }
 
-	static var userContentController: WKUserContentController {
-		let userContentController = WKUserContentController()
-		for script in articleScripts {
-			userContentController.addUserScript(script)
-		}
-		return userContentController
-	}
+    fileprivate static let articleScripts: [WKUserScript] = {
+        let filenames = ["main", "main_ios", "newsfoot"]
 
-	static let articleScripts: [WKUserScript] = {
-		let filenames = ["main", "main_ios", "newsfoot"]
-
-		let scripts = filenames.map { filename in
-			let scriptURL = Bundle.main.url(forResource: filename, withExtension: ".js")!
-			let scriptSource = try! String(contentsOf: scriptURL, encoding: .utf8)
-			return WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: true)
-		}
-		return scripts
-	}()
+        let scripts = filenames.map { filename in
+            let scriptURL = Bundle.main.url(forResource: filename, withExtension: ".js")!
+            let scriptSource = try! String(contentsOf: scriptURL, encoding: .utf8)
+            return WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+        }
+        return scripts
+    }()
 }

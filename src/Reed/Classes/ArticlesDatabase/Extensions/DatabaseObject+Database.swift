@@ -9,10 +9,9 @@
 import Foundation
 import RSDatabase
 
-extension Array where Element == DatabaseObject {
-
-	func asAuthors() -> Set<Author>? {
-		let authors = Set(self.map { $0 as! Author })
-		return authors.isEmpty ? nil : authors
-	}
+extension [DatabaseObject] {
+    func asAuthors() -> Set<Author>? {
+        let authors = Set(self.map { $0 as! Author })
+        return authors.isEmpty ? nil : authors
+    }
 }

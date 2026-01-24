@@ -8,77 +8,82 @@
 
 import UIKit
 
-@MainActor struct MainTimelineCellData {
+@MainActor
+struct MainTimelineCellData {
+    private static let noText = NSLocalizedString("(No Text)", comment: "No Text")
 
-	private static let noText = NSLocalizedString("(No Text)", comment: "No Text")
+    let title: String
+    let attributedTitle: NSAttributedString
+    let summary: String
+    let dateString: String
+    let feedName: String
+    let byline: String
+    let showFeedName: ShowFeedName
+    let iconImage: IconImage? // feed icon, user avatar, or favicon
+    let showIcon: Bool // Make space even when icon is nil
+    let read: Bool
+    let starred: Bool
+    let numberOfLines: Int
+    let iconSize: IconSize
 
-	let title: String
-	let attributedTitle: NSAttributedString
-	let summary: String
-	let dateString: String
-	let feedName: String
-	let byline: String
-	let showFeedName: ShowFeedName
-	let iconImage: IconImage? // feed icon, user avatar, or favicon
-	let showIcon: Bool // Make space even when icon is nil
-	let read: Bool
-	let starred: Bool
-	let numberOfLines: Int
-	let iconSize: IconSize
+    init(
+        article: Article,
+        showFeedName: ShowFeedName,
+        feedName: String?,
+        byline: String?,
+        iconImage: IconImage?,
+        showIcon: Bool,
+        numberOfLines: Int,
+        iconSize: IconSize
+    ) {
+        self.title = ArticleStringFormatter.truncatedTitle(article)
+        self.attributedTitle = ArticleStringFormatter.attributedTruncatedTitle(article)
 
-	init(article: Article, showFeedName: ShowFeedName, feedName: String?, byline: String?, iconImage: IconImage?, showIcon: Bool, numberOfLines: Int, iconSize: IconSize) {
+        let truncatedSummary = ArticleStringFormatter.truncatedSummary(article)
+        if self.title.isEmpty, truncatedSummary.isEmpty {
+            self.summary = Self.noText
+        } else {
+            self.summary = truncatedSummary
+        }
 
-		self.title = ArticleStringFormatter.truncatedTitle(article)
-		self.attributedTitle = ArticleStringFormatter.attributedTruncatedTitle(article)
+        self.dateString = ArticleStringFormatter.dateString(article.logicalDatePublished)
 
-		let truncatedSummary = ArticleStringFormatter.truncatedSummary(article)
-		if self.title.isEmpty && truncatedSummary.isEmpty {
-			self.summary = Self.noText
-		} else {
-			self.summary = truncatedSummary
-		}
+        if let feedName {
+            self.feedName = ArticleStringFormatter.truncatedFeedName(feedName)
+        } else {
+            self.feedName = ""
+        }
 
-		self.dateString = ArticleStringFormatter.dateString(article.logicalDatePublished)
+        if let byline {
+            self.byline = byline
+        } else {
+            self.byline = ""
+        }
 
-		if let feedName = feedName {
-			self.feedName = ArticleStringFormatter.truncatedFeedName(feedName)
-		}
-		else {
-			self.feedName = ""
-		}
+        self.showFeedName = showFeedName
 
-		if let byline = byline {
-			self.byline = byline
-		} else {
-			self.byline = ""
-		}
+        self.showIcon = showIcon
+        self.iconImage = iconImage
 
-		self.showFeedName = showFeedName
+        self.read = article.status.read
+        self.starred = article.status.starred
+        self.numberOfLines = numberOfLines
+        self.iconSize = iconSize
+    }
 
-		self.showIcon = showIcon
-		self.iconImage = iconImage
-
-		self.read = article.status.read
-		self.starred = article.status.starred
-		self.numberOfLines = numberOfLines
-		self.iconSize = iconSize
-
-	}
-
-	init() { //Empty
-		self.title = ""
-		self.attributedTitle = NSAttributedString()
-		self.summary = ""
-		self.dateString = ""
-		self.feedName = ""
-		self.byline = ""
-		self.showFeedName = .none
-		self.showIcon = false
-		self.iconImage = nil
-		self.read = true
-		self.starred = false
-		self.numberOfLines = 0
-		self.iconSize = .medium
-	}
-
+    init() { // Empty
+        self.title = ""
+        self.attributedTitle = NSAttributedString()
+        self.summary = ""
+        self.dateString = ""
+        self.feedName = ""
+        self.byline = ""
+        self.showFeedName = .none
+        self.showIcon = false
+        self.iconImage = nil
+        self.read = true
+        self.starred = false
+        self.numberOfLines = 0
+        self.iconSize = .medium
+    }
 }

@@ -1,5 +1,5 @@
 //
-//  Node-Extensions.swift
+//  Node+Extensions.swift
 //  Local
 //
 //  Created by Brent Simmons on 8/10/16.
@@ -7,60 +7,58 @@
 //
 
 import Foundation
-import RSTree
 import RSCore
+import RSTree
 
-@MainActor extension Array where Element == Node {
+@MainActor
+extension [Node] {
+    func sortedAlphabetically() -> [Node] {
+        Node.nodesSortedAlphabetically(self)
+    }
 
-	func sortedAlphabetically() -> [Node] {
-
-		return Node.nodesSortedAlphabetically(self)
-	}
-
-	func sortedAlphabeticallyWithFoldersAtEnd() -> [Node] {
-
-		return Node.nodesSortedAlphabeticallyWithFoldersAtEnd(self)
-	}
+    func sortedAlphabeticallyWithFoldersAtEnd() -> [Node] {
+        Node.nodesSortedAlphabeticallyWithFoldersAtEnd(self)
+    }
 }
 
-@MainActor private extension Node {
+@MainActor
+extension Node {
+    fileprivate class func nodesSortedAlphabetically(_ nodes: [Node]) -> [Node] {
+        nodes.sorted { node1, node2 -> Bool in
+            guard
+                let obj1 = node1.representedObject as? DisplayNameProvider,
+                let obj2 = node2.representedObject as? DisplayNameProvider else
+            {
+                return false
+            }
 
-	class func nodesSortedAlphabetically(_ nodes: [Node]) -> [Node] {
+            let name1 = obj1.nameForDisplay
+            let name2 = obj2.nameForDisplay
 
-		return nodes.sorted { (node1, node2) -> Bool in
+            return name1.localizedStandardCompare(name2) == .orderedAscending
+        }
+    }
 
-			guard let obj1 = node1.representedObject as? DisplayNameProvider, let obj2 = node2.representedObject as? DisplayNameProvider else {
-				return false
-			}
+    fileprivate class func nodesSortedAlphabeticallyWithFoldersAtEnd(_ nodes: [Node]) -> [Node] {
+        nodes.sorted { node1, node2 -> Bool in
+            if node1.canHaveChildNodes != node2.canHaveChildNodes {
+                if node1.canHaveChildNodes {
+                    return false
+                }
+                return true
+            }
 
-			let name1 = obj1.nameForDisplay
-			let name2 = obj2.nameForDisplay
+            guard
+                let obj1 = node1.representedObject as? DisplayNameProvider,
+                let obj2 = node2.representedObject as? DisplayNameProvider else
+            {
+                return false
+            }
 
-			return name1.localizedStandardCompare(name2) == .orderedAscending
-		}
-	}
+            let name1 = obj1.nameForDisplay
+            let name2 = obj2.nameForDisplay
 
-	class func nodesSortedAlphabeticallyWithFoldersAtEnd(_ nodes: [Node]) -> [Node] {
-
-		return nodes.sorted { (node1, node2) -> Bool in
-
-			if node1.canHaveChildNodes != node2.canHaveChildNodes {
-				if node1.canHaveChildNodes {
-					return false
-				}
-				return true
-			}
-
-			guard let obj1 = node1.representedObject as? DisplayNameProvider, let obj2 = node2.representedObject as? DisplayNameProvider else {
-				return false
-			}
-
-			let name1 = obj1.nameForDisplay
-			let name2 = obj2.nameForDisplay
-
-			return name1.localizedStandardCompare(name2) == .orderedAscending
-		}
-	}
+            return name1.localizedStandardCompare(name2) == .orderedAscending
+        }
+    }
 }
-
-

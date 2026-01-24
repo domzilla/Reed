@@ -10,16 +10,14 @@ import Foundation
 import WebKit
 
 final class WrapperScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    // We need to wrap a message handler to prevent a circlular reference
+    private weak var handler: WKScriptMessageHandler?
 
-	// We need to wrap a message handler to prevent a circlular reference
-	private weak var handler: WKScriptMessageHandler?
+    init(_ handler: WKScriptMessageHandler) {
+        self.handler = handler
+    }
 
-	init(_ handler: WKScriptMessageHandler) {
-		self.handler = handler
-	}
-
-	func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-		handler?.userContentController(userContentController, didReceive: message)
-	}
-
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        self.handler?.userContentController(userContentController, didReceive: message)
+    }
 }

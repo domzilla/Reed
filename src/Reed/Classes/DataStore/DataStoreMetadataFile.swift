@@ -11,60 +11,68 @@ import os.log
 import RSCore
 
 final class DataStoreMetadataFile {
-	private let fileURL: URL
-	private let dataStore: Account
+    private let fileURL: URL
+    private let dataStore: Account
 
-	@MainActor private var isDirty = false {
-		didSet {
-			queueSaveToDiskIfNeeded()
-		}
-	}
-	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DataStoreMetadataFile")
+    @MainActor private var isDirty = false {
+        didSet {
+            queueSaveToDiskIfNeeded()
+        }
+    }
 
-	init(filename: String, dataStore: Account) {
-		self.fileURL = URL(fileURLWithPath: filename)
-		self.dataStore = dataStore
-	}
+    private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DataStoreMetadataFile")
 
-	@MainActor func markAsDirty() {
-		isDirty = true
-	}
+    init(filename: String, dataStore: Account) {
+        self.fileURL = URL(fileURLWithPath: filename)
+        self.dataStore = dataStore
+    }
 
-	@MainActor func load() {
-		if let fileData = try? Data(contentsOf: fileURL) {
-			let decoder = PropertyListDecoder()
-			dataStore.metadata = (try? decoder.decode(DataStoreMetadata.self, from: fileData)) ?? DataStoreMetadata()
-		}
-		dataStore.metadata.delegate = dataStore
-	}
+    @MainActor
+    func markAsDirty() {
+        self.isDirty = true
+    }
 
-	@MainActor func save() {
-		guard !dataStore.isDeleted else { return }
+    @MainActor
+    func load() {
+        if let fileData = try? Data(contentsOf: fileURL) {
+            let decoder = PropertyListDecoder()
+            self.dataStore
+                .metadata = (try? decoder.decode(DataStoreMetadata.self, from: fileData)) ?? DataStoreMetadata()
+        }
+        self.dataStore.metadata.delegate = self.dataStore
+    }
 
-		let encoder = PropertyListEncoder()
-		encoder.outputFormat = .binary
+    @MainActor
+    func save() {
+        guard !self.dataStore.isDeleted else { return }
 
-		do {
-			let data = try encoder.encode(dataStore.metadata)
-			try data.write(to: fileURL)
-		} catch let error as NSError {
-			Self.logger.error("DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)")
-		}
-	}
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
 
+        do {
+            let data = try encoder.encode(self.dataStore.metadata)
+            try data.write(to: self.fileURL)
+        } catch let error as NSError {
+            Self.logger
+                .error(
+                    "DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)"
+                )
+        }
+    }
 }
 
-private extension DataStoreMetadataFile {
+extension DataStoreMetadataFile {
+    @MainActor
+    private func queueSaveToDiskIfNeeded() {
+        self.saveQueue.add(self, #selector(self.saveToDiskIfNeeded))
+    }
 
-	@MainActor func queueSaveToDiskIfNeeded() {
-		saveQueue.add(self, #selector(saveToDiskIfNeeded))
-	}
-
-	@MainActor @objc func saveToDiskIfNeeded() {
-		if isDirty {
-			isDirty = false
-			save()
-		}
-	}
+    @MainActor @objc
+    private func saveToDiskIfNeeded() {
+        if self.isDirty {
+            self.isDirty = false
+            self.save()
+        }
+    }
 }

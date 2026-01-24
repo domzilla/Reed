@@ -8,42 +8,46 @@
 
 import Foundation
 
-@MainActor struct ShareDefaultContainer {
+@MainActor
+struct ShareDefaultContainer {
+    static func defaultContainer(containers: ExtensionContainers) -> ExtensionContainer? {
+        if
+            let accountID = ShareAppDefaults.shared.addFeedAccountID,
+            let account = containers.accounts.first(where: { $0.accountID == accountID })
+        {
+            if
+                let folderName = ShareAppDefaults.shared.addFeedFolderName,
+                let folder = account.folders.first(where: { $0.name == folderName })
+            {
+                folder
+            } else {
+                self.substituteContainerIfNeeded(account: account)
+            }
+        } else if let account = containers.accounts.first {
+            self.substituteContainerIfNeeded(account: account)
+        } else {
+            nil
+        }
+    }
 
-	static func defaultContainer(containers: ExtensionContainers) -> ExtensionContainer? {
+    static func saveDefaultContainer(_ container: ExtensionContainer) {
+        ShareAppDefaults.shared.addFeedAccountID = container.accountID
+        if let folder = container as? ExtensionFolder {
+            ShareAppDefaults.shared.addFeedFolderName = folder.name
+        } else {
+            ShareAppDefaults.shared.addFeedFolderName = nil
+        }
+    }
 
-		if let accountID = ShareAppDefaults.shared.addFeedAccountID, let account = containers.accounts.first(where: { $0.accountID == accountID }) {
-			if let folderName = ShareAppDefaults.shared.addFeedFolderName, let folder = account.folders.first(where: { $0.name == folderName }) {
-				return folder
-			} else {
-				return substituteContainerIfNeeded(account: account)
-			}
-		} else if let account = containers.accounts.first {
-			return substituteContainerIfNeeded(account: account)
-		} else {
-			return nil
-		}
-
-	}
-
-	static func saveDefaultContainer(_ container: ExtensionContainer) {
-		ShareAppDefaults.shared.addFeedAccountID = container.accountID
-		if let folder = container as? ExtensionFolder {
-			ShareAppDefaults.shared.addFeedFolderName = folder.name
-		} else {
-			ShareAppDefaults.shared.addFeedFolderName = nil
-		}
-	}
-
-	private static func substituteContainerIfNeeded(account: ExtensionAccount) -> ExtensionContainer? {
-		if !account.disallowFeedInRootFolder {
-			return account
-		} else {
-			if let folder = account.folders.first {
-				return folder
-			} else {
-				return nil
-			}
-		}
-	}
+    private static func substituteContainerIfNeeded(account: ExtensionAccount) -> ExtensionContainer? {
+        if !account.disallowFeedInRootFolder {
+            account
+        } else {
+            if let folder = account.folders.first {
+                folder
+            } else {
+                nil
+            }
+        }
+    }
 }

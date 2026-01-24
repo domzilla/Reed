@@ -62,4 +62,4 @@
 --header ignore
 
 # Exclude files
---exclude .build,.swiftpm,Package.swift
+--exclude .build,.swiftpm,Package.swift,vendor

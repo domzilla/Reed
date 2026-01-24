@@ -10,92 +10,94 @@ import Foundation
 import RSWeb
 
 protocol DataStoreMetadataDelegate: AnyObject {
-	@MainActor func valueDidChange(_ dataStoreMetadata: DataStoreMetadata, key: DataStoreMetadata.CodingKeys)
+    @MainActor
+    func valueDidChange(_ dataStoreMetadata: DataStoreMetadata, key: DataStoreMetadata.CodingKeys)
 }
 
-@MainActor final class DataStoreMetadata: @MainActor Codable {
+@MainActor
+final class DataStoreMetadata: @MainActor Codable {
+    enum CodingKeys: String, CodingKey {
+        case name
+        case isActive
+        case username
+        case conditionalGetInfo
+        case lastArticleFetchStartTime = "lastArticleFetch"
+        case lastArticleFetchEndTime
+        case endpointURL
+        case externalID
+        case performedApril2020RetentionPolicyChange
+    }
 
-	enum CodingKeys: String, CodingKey {
-		case name
-		case isActive
-		case username
-		case conditionalGetInfo
-		case lastArticleFetchStartTime = "lastArticleFetch"
-		case lastArticleFetchEndTime
-		case endpointURL
-		case externalID
-		case performedApril2020RetentionPolicyChange
-	}
+    @MainActor var name: String? {
+        didSet {
+            if self.name != oldValue {
+                self.valueDidChange(.name)
+            }
+        }
+    }
 
-	@MainActor var name: String? {
-		didSet {
-			if name != oldValue {
-				valueDidChange(.name)
-			}
-		}
-	}
+    @MainActor var isActive: Bool = true {
+        didSet {
+            if self.isActive != oldValue {
+                self.valueDidChange(.isActive)
+            }
+        }
+    }
 
-	@MainActor var isActive: Bool = true {
-		didSet {
-			if isActive != oldValue {
-				valueDidChange(.isActive)
-			}
-		}
-	}
+    @MainActor var username: String? {
+        didSet {
+            if self.username != oldValue {
+                self.valueDidChange(.username)
+            }
+        }
+    }
 
-	@MainActor var username: String? {
-		didSet {
-			if username != oldValue {
-				valueDidChange(.username)
-			}
-		}
-	}
+    @MainActor var conditionalGetInfo = [String: HTTPConditionalGetInfo]() {
+        didSet {
+            if self.conditionalGetInfo != oldValue {
+                self.valueDidChange(.conditionalGetInfo)
+            }
+        }
+    }
 
-	@MainActor var conditionalGetInfo = [String: HTTPConditionalGetInfo]() {
-		didSet {
-			if conditionalGetInfo != oldValue {
-				valueDidChange(.conditionalGetInfo)
-			}
-		}
-	}
+    @MainActor var lastArticleFetchStartTime: Date? {
+        didSet {
+            if self.lastArticleFetchStartTime != oldValue {
+                self.valueDidChange(.lastArticleFetchStartTime)
+            }
+        }
+    }
 
-	@MainActor var lastArticleFetchStartTime: Date? {
-		didSet {
-			if lastArticleFetchStartTime != oldValue {
-				valueDidChange(.lastArticleFetchStartTime)
-			}
-		}
-	}
+    @MainActor var lastArticleFetchEndTime: Date? {
+        didSet {
+            if self.lastArticleFetchEndTime != oldValue {
+                self.valueDidChange(.lastArticleFetchEndTime)
+            }
+        }
+    }
 
-	@MainActor var lastArticleFetchEndTime: Date? {
-		didSet {
-			if lastArticleFetchEndTime != oldValue {
-				valueDidChange(.lastArticleFetchEndTime)
-			}
-		}
-	}
+    @MainActor var endpointURL: URL? {
+        didSet {
+            if self.endpointURL != oldValue {
+                self.valueDidChange(.endpointURL)
+            }
+        }
+    }
 
-	@MainActor var endpointURL: URL? {
-		didSet {
-			if endpointURL != oldValue {
-				valueDidChange(.endpointURL)
-			}
-		}
-	}
+    var performedApril2020RetentionPolicyChange: Bool? // No longer used.
 
-	var performedApril2020RetentionPolicyChange: Bool? // No longer used.
+    @MainActor var externalID: String? {
+        didSet {
+            if self.externalID != oldValue {
+                self.valueDidChange(.externalID)
+            }
+        }
+    }
 
-	@MainActor var externalID: String? {
-		didSet {
-			if externalID != oldValue {
-				valueDidChange(.externalID)
-			}
-		}
-	}
+    @MainActor weak var delegate: DataStoreMetadataDelegate?
 
-	@MainActor weak var delegate: DataStoreMetadataDelegate?
-
-	@MainActor func valueDidChange(_ key: CodingKeys) {
-		delegate?.valueDidChange(self, key: key)
-	}
+    @MainActor
+    func valueDidChange(_ key: CodingKeys) {
+        self.delegate?.valueDidChange(self, key: key)
+    }
 }

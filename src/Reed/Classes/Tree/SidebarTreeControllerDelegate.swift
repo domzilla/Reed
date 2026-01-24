@@ -9,121 +9,125 @@
 import Foundation
 import RSTree
 
-@MainActor final class SidebarTreeControllerDelegate: TreeControllerDelegate {
+@MainActor
+final class SidebarTreeControllerDelegate: TreeControllerDelegate {
+    private var filterExceptions = Set<SidebarItemIdentifier>()
+    var isReadFiltered = false
 
-	private var filterExceptions = Set<SidebarItemIdentifier>()
-	var isReadFiltered = false
+    func addFilterException(_ feedID: SidebarItemIdentifier) {
+        self.filterExceptions.insert(feedID)
+    }
 
-	func addFilterException(_ feedID: SidebarItemIdentifier) {
-		filterExceptions.insert(feedID)
-	}
+    func resetFilterExceptions() {
+        self.filterExceptions = Set<SidebarItemIdentifier>()
+    }
 
-	func resetFilterExceptions() {
-		filterExceptions = Set<SidebarItemIdentifier>()
-	}
+    func treeController(treeController _: TreeController, childNodesFor node: Node) -> [Node]? {
+        if node.isRoot {
+            return childNodesForRootNode(node)
+        }
+        if node.representedObject is Container {
+            return childNodesForContainerNode(node)
+        }
+        if node.representedObject is SmartFeedsController {
+            return childNodesForSmartFeeds(node)
+        }
 
-	func treeController(treeController: TreeController, childNodesFor node: Node) -> [Node]? {
-		if node.isRoot {
-			return childNodesForRootNode(node)
-		}
-		if node.representedObject is Container {
-			return childNodesForContainerNode(node)
-		}
-		if node.representedObject is SmartFeedsController {
-			return childNodesForSmartFeeds(node)
-		}
-
-		return nil
-	}
+        return nil
+    }
 }
 
-private extension SidebarTreeControllerDelegate {
+extension SidebarTreeControllerDelegate {
+    private func childNodesForRootNode(_ rootNode: Node) -> [Node]? {
+        var topLevelNodes = [Node]()
 
-	func childNodesForRootNode(_ rootNode: Node) -> [Node]? {
-		var topLevelNodes = [Node]()
+        // Smart Feeds section
+        let smartFeedsNode = rootNode.existingOrNewChildNode(with: SmartFeedsController.shared)
+        smartFeedsNode.canHaveChildNodes = true
+        smartFeedsNode.isGroupItem = true
+        topLevelNodes.append(smartFeedsNode)
 
-		// Smart Feeds section
-		let smartFeedsNode = rootNode.existingOrNewChildNode(with: SmartFeedsController.shared)
-		smartFeedsNode.canHaveChildNodes = true
-		smartFeedsNode.isGroupItem = true
-		topLevelNodes.append(smartFeedsNode)
+        // Feeds section - show feeds directly from the data store (no account grouping)
+        let account = AccountManager.shared.defaultAccount
+        if account.isActive {
+            let feedsNode = rootNode.existingOrNewChildNode(with: account)
+            feedsNode.canHaveChildNodes = true
+            feedsNode.isGroupItem = true
+            topLevelNodes.append(feedsNode)
+        }
 
-		// Feeds section - show feeds directly from the data store (no account grouping)
-		let account = AccountManager.shared.defaultAccount
-		if account.isActive {
-			let feedsNode = rootNode.existingOrNewChildNode(with: account)
-			feedsNode.canHaveChildNodes = true
-			feedsNode.isGroupItem = true
-			topLevelNodes.append(feedsNode)
-		}
+        return topLevelNodes
+    }
 
-		return topLevelNodes
-	}
+    private func childNodesForSmartFeeds(_ parentNode: Node) -> [Node] {
+        SmartFeedsController.shared.smartFeeds.compactMap { feed -> Node? in
+            // All Smart Feeds should remain visible despite the Hide Read Feeds setting
+            return parentNode.existingOrNewChildNode(with: feed as AnyObject)
+        }
+    }
 
-	func childNodesForSmartFeeds(_ parentNode: Node) -> [Node] {
-		return SmartFeedsController.shared.smartFeeds.compactMap { (feed) -> Node? in
-			// All Smart Feeds should remain visible despite the Hide Read Feeds setting
-			return parentNode.existingOrNewChildNode(with: feed as AnyObject)
-		}
-	}
+    private func childNodesForContainerNode(_ containerNode: Node) -> [Node]? {
+        let container = containerNode.representedObject as! Container
 
-	func childNodesForContainerNode(_ containerNode: Node) -> [Node]? {
-		let container = containerNode.representedObject as! Container
+        var children = [AnyObject]()
 
-		var children = [AnyObject]()
+        for feed in container.topLevelFeeds {
+            if
+                let sidebarItemID = feed.sidebarItemID,
+                !(!filterExceptions.contains(sidebarItemID) && isReadFiltered && feed.unreadCount == 0)
+            {
+                children.append(feed)
+            }
+        }
 
-		for feed in container.topLevelFeeds {
-			if let sidebarItemID = feed.sidebarItemID, !(!filterExceptions.contains(sidebarItemID) && isReadFiltered && feed.unreadCount == 0) {
-				children.append(feed)
-			}
-		}
+        if let folders = container.folders {
+            for folder in folders {
+                if
+                    let sidebarItemID = folder.sidebarItemID,
+                    !(!filterExceptions.contains(sidebarItemID) && isReadFiltered && folder.unreadCount == 0)
+                {
+                    children.append(folder)
+                }
+            }
+        }
 
-		if let folders = container.folders {
-			for folder in folders {
-				if let sidebarItemID = folder.sidebarItemID, !(!filterExceptions.contains(sidebarItemID) && isReadFiltered && folder.unreadCount == 0) {
-					children.append(folder)
-				}
-			}
-		}
+        var updatedChildNodes = [Node]()
 
-		var updatedChildNodes = [Node]()
+        for representedObject in children {
+            if let existingNode = containerNode.childNodeRepresentingObject(representedObject) {
+                if !updatedChildNodes.contains(existingNode) {
+                    updatedChildNodes += [existingNode]
+                    continue
+                }
+            }
 
-		children.forEach { (representedObject) in
+            if let newNode = self.createNode(representedObject: representedObject, parent: containerNode) {
+                updatedChildNodes += [newNode]
+            }
+        }
 
-			if let existingNode = containerNode.childNodeRepresentingObject(representedObject) {
-				if !updatedChildNodes.contains(existingNode) {
-					updatedChildNodes += [existingNode]
-					return
-				}
-			}
+        return updatedChildNodes.sortedAlphabeticallyWithFoldersAtEnd()
+    }
 
-			if let newNode = self.createNode(representedObject: representedObject, parent: containerNode) {
-				updatedChildNodes += [newNode]
-			}
-		}
+    private func createNode(representedObject: Any, parent: Node) -> Node? {
+        if let feed = representedObject as? Feed {
+            return self.createNode(feed: feed, parent: parent)
+        }
 
-		return updatedChildNodes.sortedAlphabeticallyWithFoldersAtEnd()
-	}
+        if let folder = representedObject as? Folder {
+            return self.createNode(folder: folder, parent: parent)
+        }
 
-	func createNode(representedObject: Any, parent: Node) -> Node? {
-		if let feed = representedObject as? Feed {
-			return createNode(feed: feed, parent: parent)
-		}
+        return nil
+    }
 
-		if let folder = representedObject as? Folder {
-			return createNode(folder: folder, parent: parent)
-		}
+    private func createNode(feed: Feed, parent: Node) -> Node {
+        parent.createChildNode(feed)
+    }
 
-		return nil
-	}
-
-	func createNode(feed: Feed, parent: Node) -> Node {
-		return parent.createChildNode(feed)
-	}
-
-	func createNode(folder: Folder, parent: Node) -> Node {
-		let node = parent.createChildNode(folder)
-		node.canHaveChildNodes = true
-		return node
-	}
+    private func createNode(folder: Folder, parent: Node) -> Node {
+        let node = parent.createChildNode(folder)
+        node.canHaveChildNodes = true
+        return node
+    }
 }

@@ -9,31 +9,36 @@
 import UIKit
 
 final class TitleActivityItemSource: NSObject, UIActivityItemSource {
+    private let title: String?
 
-	private let title: String?
+    init(title: String?) {
+        self.title = title
+    }
 
-	init(title: String?) {
-		self.title = title
-	}
+    func activityViewControllerPlaceholderItem(_: UIActivityViewController) -> Any {
+        self.title as Any
+    }
 
-	func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-		return title as Any
-	}
+    func activityViewController(
+        _: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    )
+        -> Any?
+    {
+        guard
+            let activityType,
+            let title else
+        {
+            return NSNull()
+        }
 
-	func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-		guard let activityType = activityType,
-			let title = title else {
-				return NSNull()
-		}
-
-		switch activityType.rawValue {
-		case "com.omnigroup.OmniFocus3.iOS.QuickEntry",
-			 "com.culturedcode.ThingsiPhone.ShareExtension",
-			 "com.buffer.buffer.Buffer":
-			return title
-		default:
-			return NSNull()
-		}
-	}
-
+        switch activityType.rawValue {
+        case "com.omnigroup.OmniFocus3.iOS.QuickEntry",
+             "com.culturedcode.ThingsiPhone.ShareExtension",
+             "com.buffer.buffer.Buffer":
+            return title
+        default:
+            return NSNull()
+        }
+    }
 }

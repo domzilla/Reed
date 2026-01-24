@@ -9,54 +9,51 @@
 import Foundation
 import RSParser
 
-public extension Notification.Name {
-	static let feedSettingDidChange = Notification.Name(rawValue: "FeedSettingDidChangeNotification")
-}
-
-public extension Feed {
-
-	static let SettingUserInfoKey = "feedSetting"
-
-	struct SettingKey {
-		public static let homePageURL = "homePageURL"
-		public static let iconURL = "iconURL"
-		public static let faviconURL = "faviconURL"
-		public static let name = "name"
-		public static let editedName = "editedName"
-		public static let authors = "authors"
-		public static let contentHash = "contentHash"
-		public static let conditionalGetInfo = "conditionalGetInfo"
-		public static let cacheControlInfo = "cacheControlInfo"
-	}
+extension Notification.Name {
+    public static let feedSettingDidChange = Notification.Name(rawValue: "FeedSettingDidChangeNotification")
 }
 
 extension Feed {
+    public static let SettingUserInfoKey = "feedSetting"
 
-	@MainActor func takeSettings(from parsedFeed: ParsedFeed) {
-		iconURL = parsedFeed.iconURL
-		faviconURL = parsedFeed.faviconURL
-		homePageURL = parsedFeed.homePageURL
-		name = parsedFeed.title
-		authors = Author.authorsWithParsedAuthors(parsedFeed.authors)
-	}
-
-	func postFeedSettingDidChangeNotification(_ codingKey: FeedMetadata.CodingKeys) {
-		let userInfo = [Feed.SettingUserInfoKey: codingKey.stringValue]
-		NotificationCenter.default.post(name: .feedSettingDidChange, object: self, userInfo: userInfo)
-	}
+    public enum SettingKey {
+        public static let homePageURL = "homePageURL"
+        public static let iconURL = "iconURL"
+        public static let faviconURL = "faviconURL"
+        public static let name = "name"
+        public static let editedName = "editedName"
+        public static let authors = "authors"
+        public static let contentHash = "contentHash"
+        public static let conditionalGetInfo = "conditionalGetInfo"
+        public static let cacheControlInfo = "cacheControlInfo"
+    }
 }
 
-public extension Article {
+extension Feed {
+    @MainActor
+    func takeSettings(from parsedFeed: ParsedFeed) {
+        iconURL = parsedFeed.iconURL
+        faviconURL = parsedFeed.faviconURL
+        homePageURL = parsedFeed.homePageURL
+        name = parsedFeed.title
+        authors = Author.authorsWithParsedAuthors(parsedFeed.authors)
+    }
 
-	@MainActor var dataStore: DataStore? {
-		return DataStoreManager.shared.existingDataStore(dataStoreID: accountID)
-	}
-
-	// Backward compatibility alias
-	@MainActor var account: DataStore? { dataStore }
-
-	@MainActor var feed: Feed? {
-		return dataStore?.existingFeed(withFeedID: feedID)
-	}
+    func postFeedSettingDidChangeNotification(_ codingKey: FeedMetadata.CodingKeys) {
+        let userInfo = [Feed.SettingUserInfoKey: codingKey.stringValue]
+        NotificationCenter.default.post(name: .feedSettingDidChange, object: self, userInfo: userInfo)
+    }
 }
 
+extension Article {
+    @MainActor public var dataStore: DataStore? {
+        DataStoreManager.shared.existingDataStore(dataStoreID: accountID)
+    }
+
+    // Backward compatibility alias
+    @MainActor public var account: DataStore? { self.dataStore }
+
+    @MainActor public var feed: Feed? {
+        self.dataStore?.existingFeed(withFeedID: feedID)
+    }
+}

@@ -10,90 +10,89 @@ import Foundation
 import Synchronization
 
 public final class ArticleStatus: Sendable {
-	public enum Key: String, Sendable {
-		case read
-		case starred
-	}
+    public enum Key: String, Sendable {
+        case read
+        case starred
+    }
 
-	public let articleID: String
-	public let dateArrived: Date
+    public let articleID: String
+    public let dateArrived: Date
 
-	private struct State: Sendable {
-		var read: Bool
-		var starred: Bool
-	}
+    private struct State: Sendable {
+        var read: Bool
+        var starred: Bool
+    }
 
-	private let state: Mutex<State>
+    private let state: Mutex<State>
 
-	nonisolated public var read: Bool {
-		get {
-			state.withLock { $0.read }
-		}
-		set {
-			state.withLock { $0.read = newValue }
-		}
-	}
+    public nonisolated var read: Bool {
+        get {
+            self.state.withLock { $0.read }
+        }
+        set {
+            self.state.withLock { $0.read = newValue }
+        }
+    }
 
-	nonisolated public var starred: Bool {
-		get {
-			state.withLock { $0.starred }
-		}
-		set {
-			state.withLock { $0.starred = newValue }
-		}
-	}
+    public nonisolated var starred: Bool {
+        get {
+            self.state.withLock { $0.starred }
+        }
+        set {
+            self.state.withLock { $0.starred = newValue }
+        }
+    }
 
-	public init(articleID: String, read: Bool, starred: Bool, dateArrived: Date) {
-		self.articleID = articleID
-		self.state = Mutex(State(read: read, starred: starred))
-		self.dateArrived = dateArrived
-	}
+    public init(articleID: String, read: Bool, starred: Bool, dateArrived: Date) {
+        self.articleID = articleID
+        self.state = Mutex(State(read: read, starred: starred))
+        self.dateArrived = dateArrived
+    }
 
-	public convenience init(articleID: String, read: Bool, dateArrived: Date) {
-		self.init(articleID: articleID, read: read, starred: false, dateArrived: dateArrived)
-	}
+    public convenience init(articleID: String, read: Bool, dateArrived: Date) {
+        self.init(articleID: articleID, read: read, starred: false, dateArrived: dateArrived)
+    }
 
-	nonisolated public func boolStatus(forKey key: ArticleStatus.Key) -> Bool {
-		switch key {
-		case .read:
-			return read
-		case .starred:
-			return starred
-		}
-	}
+    public nonisolated func boolStatus(forKey key: ArticleStatus.Key) -> Bool {
+        switch key {
+        case .read:
+            self.read
+        case .starred:
+            self.starred
+        }
+    }
 
-	nonisolated public func setBoolStatus(_ status: Bool, forKey key: ArticleStatus.Key) {
-		switch key {
-		case .read:
-			read = status
-		case .starred:
-			starred = status
-		}
-	}
-
+    public nonisolated func setBoolStatus(_ status: Bool, forKey key: ArticleStatus.Key) {
+        switch key {
+        case .read:
+            self.read = status
+        case .starred:
+            self.starred = status
+        }
+    }
 }
 
 // MARK: - Hashable
+
 extension ArticleStatus: Hashable {
-	nonisolated public func hash(into hasher: inout Hasher) {
-		hasher.combine(articleID)
-	}
+    public nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(self.articleID)
+    }
 
-	nonisolated public static func ==(lhs: ArticleStatus, rhs: ArticleStatus) -> Bool {
-		return lhs.articleID == rhs.articleID && lhs.dateArrived == rhs.dateArrived && lhs.read == rhs.read && lhs.starred == rhs.starred
-	}
+    public nonisolated static func == (lhs: ArticleStatus, rhs: ArticleStatus) -> Bool {
+        lhs.articleID == rhs.articleID && lhs.dateArrived == rhs.dateArrived && lhs.read == rhs.read && lhs
+            .starred == rhs.starred
+    }
 }
 
-public extension Set where Element == ArticleStatus {
-
-	func articleIDs() -> Set<String> {
-		return Set<String>(map { $0.articleID })
-	}
+extension Set<ArticleStatus> {
+    public func articleIDs() -> Set<String> {
+        Set<String>(map(\.articleID))
+    }
 }
 
-public extension Array where Element == ArticleStatus {
-
-	func articleIDs() -> [String] {		
-		return map { $0.articleID }
-	}
+extension [ArticleStatus] {
+    public func articleIDs() -> [String] {
+        map(\.articleID)
+    }
 }

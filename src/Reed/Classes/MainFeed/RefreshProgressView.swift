@@ -1,5 +1,5 @@
 //
-//  RefeshProgressView.swift
+//  RefreshProgressView.swift
 //  NetNewsWire-iOS
 //
 //  Created by Maurice Parker on 10/24/19.
@@ -9,161 +9,173 @@
 import UIKit
 
 final class RefreshProgressView: UIView {
+    let progressView: UIProgressView = {
+        let view = UIProgressView(progressViewStyle: .default)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
-	let progressView: UIProgressView = {
-		let view = UIProgressView(progressViewStyle: .default)
-		view.translatesAutoresizingMaskIntoConstraints = false
-		return view
-	}()
+    let label: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.adjustsFontForContentSizeCategory = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
-	let label: UILabel = {
-		let label = UILabel()
-		label.font = .preferredFont(forTextStyle: .footnote)
-		label.textColor = .secondaryLabel
-		label.textAlignment = .center
-		label.adjustsFontForContentSizeCategory = true
-		label.translatesAutoresizingMaskIntoConstraints = false
-		return label
-	}()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setupViews()
+    }
 
-	override init(frame: CGRect) {
-		super.init(frame: frame)
-		setupViews()
-	}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.setupViews()
+    }
 
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		setupViews()
-	}
+    private func setupViews() {
+        addSubview(self.progressView)
+        addSubview(self.label)
 
-	private func setupViews() {
-		addSubview(progressView)
-		addSubview(label)
+        NSLayoutConstraint.activate([
+            self.progressView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.progressView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            self.progressView.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-		NSLayoutConstraint.activate([
-			progressView.leadingAnchor.constraint(equalTo: leadingAnchor),
-			progressView.trailingAnchor.constraint(equalTo: trailingAnchor),
-			progressView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            self.label.leadingAnchor.constraint(equalTo: leadingAnchor),
+            self.label.trailingAnchor.constraint(equalTo: trailingAnchor),
+            self.label.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
 
-			label.leadingAnchor.constraint(equalTo: leadingAnchor),
-			label.trailingAnchor.constraint(equalTo: trailingAnchor),
-			label.centerYAnchor.constraint(equalTo: centerYAnchor),
-		])
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.progressDidChange(_:)),
+            name: .combinedRefreshProgressDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.contentSizeCategoryDidChange(_:)),
+            name: UIContentSizeCategory.didChangeNotification,
+            object: nil
+        )
+        self.update()
+        scheduleUpdateRefreshLabel()
 
-		NotificationCenter.default.addObserver(self, selector: #selector(progressDidChange(_:)), name: .combinedRefreshProgressDidChange, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(contentSizeCategoryDidChange(_:)), name: UIContentSizeCategory.didChangeNotification, object: nil)
-		update()
-		scheduleUpdateRefreshLabel()
+        isAccessibilityElement = true
+        accessibilityTraits = [.updatesFrequently, .notEnabled]
+    }
 
-		isAccessibilityElement = true
-		accessibilityTraits = [.updatesFrequently, .notEnabled]
-	}
+    func update() {
+        if !AccountManager.shared.combinedRefreshProgress.isComplete {
+            progressChanged(animated: false)
+        } else {
+            updateRefreshLabel()
+        }
+    }
 
-	func update() {
-		if !AccountManager.shared.combinedRefreshProgress.isComplete {
-			progressChanged(animated: false)
-		} else {
-			updateRefreshLabel()
-		}
-	}
+    override func didMoveToSuperview() {
+        progressChanged(animated: false)
+    }
 
-	override func didMoveToSuperview() {
-		progressChanged(animated: false)
-	}
+    @objc
+    func progressDidChange(_: Notification) {
+        progressChanged(animated: true)
+    }
 
-	@objc func progressDidChange(_ note: Notification) {
-		progressChanged(animated: true)
-	}
+    @objc
+    func contentSizeCategoryDidChange(_: Notification) {
+        // This hack is probably necessary because custom views in the toolbar don't get
+        // notifications that the content size changed.
+        self.label.font = UIFont.preferredFont(forTextStyle: .footnote)
+    }
 
-	@objc func contentSizeCategoryDidChange(_ note: Notification) {
-		// This hack is probably necessary because custom views in the toolbar don't get
-		// notifications that the content size changed.
-		label.font = UIFont.preferredFont(forTextStyle: .footnote)
-	}
-
-	deinit {
-		NotificationCenter.default.removeObserver(self)
-	}
-
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 // MARK: Private
 
-private extension RefreshProgressView {
+extension RefreshProgressView {
+    private func progressChanged(animated: Bool) {
+        // Layout may crash if not in the view hierarchy.
+        // https://github.com/Ranchero-Software/NetNewsWire/issues/1764
+        let isInViewHierarchy = self.superview != nil
 
-	func progressChanged(animated: Bool) {
-		// Layout may crash if not in the view hierarchy.
-		// https://github.com/Ranchero-Software/NetNewsWire/issues/1764
-		let isInViewHierarchy = self.superview != nil
+        let progress = AccountManager.shared.combinedRefreshProgress
 
-		let progress = AccountManager.shared.combinedRefreshProgress
+        if progress.isComplete {
+            if isInViewHierarchy {
+                self.progressView.setProgress(1, animated: animated)
+            }
 
-		if progress.isComplete {
-			if isInViewHierarchy {
-				progressView.setProgress(1, animated: animated)
-			}
+            func completeLabel() {
+                // Check that there are no pending downloads.
+                if AccountManager.shared.combinedRefreshProgress.isComplete {
+                    self.updateRefreshLabel()
+                    self.label.isHidden = false
+                    self.progressView.isHidden = true
+                    if self.superview != nil {
+                        self.progressView.setProgress(0, animated: animated)
+                    }
+                }
+            }
 
-			func completeLabel() {
-				// Check that there are no pending downloads.
-				if AccountManager.shared.combinedRefreshProgress.isComplete {
-					self.updateRefreshLabel()
-					self.label.isHidden = false
-					self.progressView.isHidden = true
-					if self.superview != nil {
-						self.progressView.setProgress(0, animated: animated)
-					}
-				}
-			}
+            if animated {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    completeLabel()
+                }
+            } else {
+                completeLabel()
+            }
+        } else {
+            self.label.isHidden = true
+            self.progressView.isHidden = false
+            if isInViewHierarchy {
+                let percent = Float(progress.numberCompleted) / Float(progress.numberOfTasks)
 
-			if animated {
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-					completeLabel()
-				}
-			} else {
-				completeLabel()
-			}
-		} else {
-			label.isHidden = true
-			progressView.isHidden = false
-			if isInViewHierarchy {
-				let percent = Float(progress.numberCompleted) / Float(progress.numberOfTasks)
+                // Don't let the progress bar go backwards unless we need to go back more than 25%
+                if percent > self.progressView.progress || self.progressView.progress - percent > 0.25 {
+                    self.progressView.setProgress(percent, animated: animated)
+                }
+            }
+        }
+    }
 
-				// Don't let the progress bar go backwards unless we need to go back more than 25%
-				if percent > progressView.progress || progressView.progress - percent > 0.25 {
-					progressView.setProgress(percent, animated: animated)
-				}
-			}
-		}
-	}
+    private func updateRefreshLabel() {
+        if let accountLastArticleFetchEndTime = AccountManager.shared.lastArticleFetchEndTime {
+            if Date() > accountLastArticleFetchEndTime.addingTimeInterval(60) {
+                let relativeDateTimeFormatter = RelativeDateTimeFormatter()
+                relativeDateTimeFormatter.dateTimeStyle = .named
+                let refreshed = relativeDateTimeFormatter.localizedString(
+                    for: accountLastArticleFetchEndTime,
+                    relativeTo: Date()
+                )
+                let localizedRefreshText = NSLocalizedString("Updated %@", comment: "Updated")
+                let refreshText = NSString.localizedStringWithFormat(
+                    localizedRefreshText as NSString,
+                    refreshed
+                ) as String
+                self.label.text = refreshText
 
-	func updateRefreshLabel() {
-		if let accountLastArticleFetchEndTime = AccountManager.shared.lastArticleFetchEndTime {
+            } else {
+                self.label.text = NSLocalizedString("Updated Just Now", comment: "Updated Just Now")
+            }
 
-			if Date() > accountLastArticleFetchEndTime.addingTimeInterval(60) {
+        } else {
+            self.label.text = ""
+        }
 
-				let relativeDateTimeFormatter = RelativeDateTimeFormatter()
-				relativeDateTimeFormatter.dateTimeStyle = .named
-				let refreshed = relativeDateTimeFormatter.localizedString(for: accountLastArticleFetchEndTime, relativeTo: Date())
-				let localizedRefreshText = NSLocalizedString("Updated %@", comment: "Updated")
-				let refreshText = NSString.localizedStringWithFormat(localizedRefreshText as NSString, refreshed) as String
-				label.text = refreshText
+        accessibilityLabel = self.label.text
+    }
 
-			} else {
-				label.text = NSLocalizedString("Updated Just Now", comment: "Updated Just Now")
-			}
-
-		} else {
-			label.text = ""
-		}
-
-		accessibilityLabel = label.text
-	}
-
-	func scheduleUpdateRefreshLabel() {
-		DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in
-			self?.updateRefreshLabel()
-			self?.scheduleUpdateRefreshLabel()
-		}
-	}
-
+    private func scheduleUpdateRefreshLabel() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in
+            self?.updateRefreshLabel()
+            self?.scheduleUpdateRefreshLabel()
+        }
+    }
 }

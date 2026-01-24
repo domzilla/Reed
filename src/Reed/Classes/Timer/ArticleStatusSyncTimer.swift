@@ -8,75 +8,81 @@
 
 import Foundation
 
-@MainActor final class ArticleStatusSyncTimer {
-	static let shared = ArticleStatusSyncTimer()
+@MainActor
+final class ArticleStatusSyncTimer {
+    static let shared = ArticleStatusSyncTimer()
 
-	private static let intervalSeconds = Double(120)
+    private static let intervalSeconds = Double(120)
 
-	var shuttingDown = false
+    var shuttingDown = false
 
-	private var internalTimer: Timer?
-	private var lastTimedRefresh: Date?
-	private let launchTime = Date()
+    private var internalTimer: Timer?
+    private var lastTimedRefresh: Date?
+    private let launchTime = Date()
 
-	func fireOldTimer() {
-		if let timer = internalTimer {
-			if timer.fireDate < Date() {
-				timedRefresh(nil)
-			}
-		}
-	}
+    func fireOldTimer() {
+        if let timer = internalTimer {
+            if timer.fireDate < Date() {
+                self.timedRefresh(nil)
+            }
+        }
+    }
 
-	func start() {
-		shuttingDown = false
-	}
+    func start() {
+        self.shuttingDown = false
+    }
 
-	func stop() {
-		shuttingDown = true
-		invalidate()
-	}
+    func stop() {
+        self.shuttingDown = true
+        self.invalidate()
+    }
 
-	func invalidate() {
-		guard let timer = internalTimer else {
-			return
-		}
-		if timer.isValid {
-			timer.invalidate()
-		}
-		internalTimer = nil
-	}
+    func invalidate() {
+        guard let timer = internalTimer else {
+            return
+        }
+        if timer.isValid {
+            timer.invalidate()
+        }
+        self.internalTimer = nil
+    }
 
-	func update() {
+    func update() {
+        guard !self.shuttingDown else {
+            return
+        }
 
-		guard !shuttingDown else {
-			return
-		}
+        let lastRefreshDate = self.lastTimedRefresh ?? self.launchTime
+        var nextRefreshTime = lastRefreshDate.addingTimeInterval(ArticleStatusSyncTimer.intervalSeconds)
+        if nextRefreshTime < Date() {
+            nextRefreshTime = Date().addingTimeInterval(ArticleStatusSyncTimer.intervalSeconds)
+        }
+        if let currentNextFireDate = internalTimer?.fireDate, currentNextFireDate == nextRefreshTime {
+            return
+        }
 
-		let lastRefreshDate = lastTimedRefresh ?? launchTime
-		var nextRefreshTime = lastRefreshDate.addingTimeInterval(ArticleStatusSyncTimer.intervalSeconds)
-		if nextRefreshTime < Date() {
-			nextRefreshTime = Date().addingTimeInterval(ArticleStatusSyncTimer.intervalSeconds)
-		}
-		if let currentNextFireDate = internalTimer?.fireDate, currentNextFireDate == nextRefreshTime {
-			return
-		}
+        self.invalidate()
+        let timer = Timer(
+            fireAt: nextRefreshTime,
+            interval: 0,
+            target: self,
+            selector: #selector(timedRefresh(_:)),
+            userInfo: nil,
+            repeats: false
+        )
+        RunLoop.main.add(timer, forMode: .common)
+        self.internalTimer = timer
+    }
 
-		invalidate()
-		let timer = Timer(fireAt: nextRefreshTime, interval: 0, target: self, selector: #selector(timedRefresh(_:)), userInfo: nil, repeats: false)
-		RunLoop.main.add(timer, forMode: .common)
-		internalTimer = timer
+    @objc
+    func timedRefresh(_: Timer?) {
+        guard !self.shuttingDown else {
+            return
+        }
 
-	}
+        self.lastTimedRefresh = Date()
+        self.update()
 
-	@objc func timedRefresh(_ sender: Timer?) {
-
-		guard !shuttingDown else {
-			return
-		}
-
-		lastTimedRefresh = Date()
-		update()
-
-		AccountManager.shared.syncArticleStatusAllWithoutWaiting()
-	}
+        AccountManager.shared.syncArticleStatusAllWithoutWaiting()
+    }
 }

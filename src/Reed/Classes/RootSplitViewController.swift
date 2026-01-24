@@ -9,160 +9,187 @@
 import UIKit
 
 final class RootSplitViewController: UISplitViewController {
+    var coordinator: SceneCoordinator!
 
-	var coordinator: SceneCoordinator!
+    // MARK: - Initialization
 
-	// MARK: - Initialization
+    init() {
+        super.init(style: .tripleColumn)
+        self.configureDefaults()
+    }
 
-	init() {
-		super.init(style: .tripleColumn)
-		configureDefaults()
-	}
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init() instead")
+    }
 
-	@available(*, unavailable)
-	required init?(coder: NSCoder) {
-		fatalError("Use init() instead")
-	}
+    private func configureDefaults() {
+        preferredDisplayMode = .oneBesideSecondary
+        preferredSplitBehavior = .tile
+        primaryBackgroundStyle = .sidebar
+        presentsWithGesture = true
+        showsSecondaryOnlyButton = true
+    }
 
-	private func configureDefaults() {
-		preferredDisplayMode = .oneBesideSecondary
-		preferredSplitBehavior = .tile
-		primaryBackgroundStyle = .sidebar
-		presentsWithGesture = true
-		showsSecondaryOnlyButton = true
-	}
+    override var prefersStatusBarHidden: Bool {
+        self.coordinator.prefersStatusBarHidden
+    }
 
-	override var prefersStatusBarHidden: Bool {
-		return coordinator.prefersStatusBarHidden
-	}
+    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
+        .slide
+    }
 
-	override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
-		return .slide
-	}
+    override func viewDidAppear(_: Bool) {
+        self.coordinator.resetFocus()
+    }
 
-	override func viewDidAppear(_ animated: Bool) {
-		coordinator.resetFocus()
-	}
+    override func show(_ column: UISplitViewController.Column) {
+        guard !self.coordinator.isNavigationDisabled else { return }
+        super.show(column)
+    }
 
-	override func show(_ column: UISplitViewController.Column) {
-		guard !coordinator.isNavigationDisabled else { return }
-		super.show(column)
-	}
+    // MARK: Keyboard Shortcuts
 
-	// MARK: Keyboard Shortcuts
+    @objc
+    func scrollOrGoToNextUnread(_: Any?) {
+        self.coordinator.scrollOrGoToNextUnread()
+    }
 
-	@objc func scrollOrGoToNextUnread(_ sender: Any?) {
-		coordinator.scrollOrGoToNextUnread()
-	}
+    @objc
+    func scrollUp(_: Any?) {
+        self.coordinator.scrollUp()
+    }
 
-	@objc func scrollUp(_ sender: Any?) {
-		coordinator.scrollUp()
-	}
+    @objc
+    func goToPreviousUnread(_: Any?) {
+        self.coordinator.selectPrevUnread()
+    }
 
-	@objc func goToPreviousUnread(_ sender: Any?) {
-		coordinator.selectPrevUnread()
-	}
+    @objc
+    func nextUnread(_: Any?) {
+        self.coordinator.selectNextUnread()
+    }
 
-	@objc func nextUnread(_ sender: Any?) {
-		coordinator.selectNextUnread()
-	}
+    @objc
+    func markRead(_: Any?) {
+        self.coordinator.markAsReadForCurrentArticle()
+    }
 
-	@objc func markRead(_ sender: Any?) {
-		coordinator.markAsReadForCurrentArticle()
-	}
+    @objc
+    func markUnreadAndGoToNextUnread(_: Any?) {
+        self.coordinator.markAsUnreadForCurrentArticle()
+        self.coordinator.selectNextUnread()
+    }
 
-	@objc func markUnreadAndGoToNextUnread(_ sender: Any?) {
-		coordinator.markAsUnreadForCurrentArticle()
-		coordinator.selectNextUnread()
-	}
+    @objc
+    func markAllAsReadAndGoToNextUnread(_: Any?) {
+        self.coordinator.markAllAsReadInTimeline {
+            self.coordinator.selectNextUnread()
+        }
+    }
 
-	@objc func markAllAsReadAndGoToNextUnread(_ sender: Any?) {
-		coordinator.markAllAsReadInTimeline() {
-			self.coordinator.selectNextUnread()
-		}
-	}
+    @objc
+    func markAboveAsRead(_: Any?) {
+        self.coordinator.markAboveAsRead()
+    }
 
-	@objc func markAboveAsRead(_ sender: Any?) {
-		coordinator.markAboveAsRead()
-	}
+    @objc
+    func markBelowAsRead(_: Any?) {
+        self.coordinator.markBelowAsRead()
+    }
 
-	@objc func markBelowAsRead(_ sender: Any?) {
-		coordinator.markBelowAsRead()
-	}
+    @objc
+    func markUnread(_: Any?) {
+        self.coordinator.markAsUnreadForCurrentArticle()
+    }
 
-	@objc func markUnread(_ sender: Any?) {
-		coordinator.markAsUnreadForCurrentArticle()
-	}
+    @objc
+    func goToPreviousSubscription(_: Any?) {
+        self.coordinator.selectPrevFeed()
+    }
 
-	@objc func goToPreviousSubscription(_ sender: Any?) {
-		coordinator.selectPrevFeed()
-	}
+    @objc
+    func goToNextSubscription(_: Any?) {
+        self.coordinator.selectNextFeed()
+    }
 
-	@objc func goToNextSubscription(_ sender: Any?) {
-		coordinator.selectNextFeed()
-	}
+    @objc
+    func openInBrowser(_: Any?) {
+        self.coordinator.showBrowserForCurrentArticle()
+    }
 
-	@objc func openInBrowser(_ sender: Any?) {
-		coordinator.showBrowserForCurrentArticle()
-	}
+    @objc
+    func openInAppBrowser(_: Any?) {
+        self.coordinator.showInAppBrowser()
+    }
 
-	@objc func openInAppBrowser(_ sender: Any?) {
-		coordinator.showInAppBrowser()
-	}
+    @objc
+    func articleSearch(_: Any?) {
+        self.coordinator.showSearch()
+    }
 
-	@objc func articleSearch(_ sender: Any?) {
-		coordinator.showSearch()
-	}
+    @objc
+    func addNewFeed(_: Any?) {
+        self.coordinator.showAddFeed()
+    }
 
-	@objc func addNewFeed(_ sender: Any?) {
-		coordinator.showAddFeed()
-	}
+    @objc
+    func addNewFolder(_: Any?) {
+        self.coordinator.showAddFolder()
+    }
 
-	@objc func addNewFolder(_ sender: Any?) {
-		coordinator.showAddFolder()
-	}
+    @objc
+    func cleanUp(_: Any?) {
+        self.coordinator.cleanUp(conditional: false)
+    }
 
-	@objc func cleanUp(_ sender: Any?) {
-		coordinator.cleanUp(conditional: false)
-	}
+    @objc
+    func toggleReadFeedsFilter(_: Any?) {
+        self.coordinator.toggleReadFeedsFilter()
+    }
 
-	@objc func toggleReadFeedsFilter(_ sender: Any?) {
-		coordinator.toggleReadFeedsFilter()
-	}
+    @objc
+    func toggleReadArticlesFilter(_: Any?) {
+        self.coordinator.toggleReadArticlesFilter()
+    }
 
-	@objc func toggleReadArticlesFilter(_ sender: Any?) {
-		coordinator.toggleReadArticlesFilter()
-	}
+    @objc
+    func refresh(_: Any?) {
+        appDelegate.manualRefresh(errorHandler: ErrorHandler.present(self))
+    }
 
-	@objc func refresh(_ sender: Any?) {
-		appDelegate.manualRefresh(errorHandler: ErrorHandler.present(self))
-	}
+    @objc
+    func goToToday(_: Any?) {
+        self.coordinator.selectTodayFeed()
+    }
 
-	@objc func goToToday(_ sender: Any?) {
-		coordinator.selectTodayFeed()
-	}
+    @objc
+    func goToAllUnread(_: Any?) {
+        self.coordinator.selectAllUnreadFeed()
+    }
 
-	@objc func goToAllUnread(_ sender: Any?) {
-		coordinator.selectAllUnreadFeed()
-	}
+    @objc
+    func goToStarred(_: Any?) {
+        self.coordinator.selectStarredFeed()
+    }
 
-	@objc func goToStarred(_ sender: Any?) {
-		coordinator.selectStarredFeed()
-	}
+    @objc
+    func goToSettings(_: Any?) {
+        self.coordinator.showSettings()
+    }
 
-	@objc func goToSettings(_ sender: Any?) {
-		coordinator.showSettings()
-	}
+    @objc
+    func toggleRead(_: Any?) {
+        self.coordinator.toggleReadForCurrentArticle()
+    }
 
-	@objc func toggleRead(_ sender: Any?) {
-		coordinator.toggleReadForCurrentArticle()
-	}
+    @objc
+    func toggleStarred(_: Any?) {
+        self.coordinator.toggleStarredForCurrentArticle()
+    }
 
-	@objc func toggleStarred(_ sender: Any?) {
-		coordinator.toggleStarredForCurrentArticle()
-	}
-
-	@objc override func toggleSidebar(_ sender: Any?) {
-		coordinator.toggleSidebar()
-	}
+    @objc
+    override func toggleSidebar(_: Any?) {
+        self.coordinator.toggleSidebar()
+    }
 }

@@ -6,27 +6,26 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import UIKit
 import os
 import RSCore
+import UIKit
 
 struct ErrorHandler: Sendable {
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ErrorHandler")
 
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "ErrorHandler")
+    nonisolated static func present(_ viewController: UIViewController) -> @Sendable (Error) -> Void {
+        { [weak viewController] error in
+            Task { @MainActor in
+                if UIApplication.shared.applicationState == .active {
+                    viewController?.presentError(error)
+                } else {
+                    ErrorHandler.log(error)
+                }
+            }
+        }
+    }
 
-	nonisolated public static func present(_ viewController: UIViewController) -> @Sendable (Error) -> () {
-		return { [weak viewController] error in
-			Task { @MainActor in
-				if UIApplication.shared.applicationState == .active {
-					viewController?.presentError(error)
-				} else {
-					ErrorHandler.log(error)
-				}
-			}
-		}
-	}
-
-	nonisolated public static func log(_ error: Error) {
-		logger.error("\(error.localizedDescription)")
-	}
+    nonisolated static func log(_ error: Error) {
+        self.logger.error("\(error.localizedDescription)")
+    }
 }

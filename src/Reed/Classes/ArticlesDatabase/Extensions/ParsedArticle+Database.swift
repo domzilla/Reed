@@ -10,12 +10,11 @@ import Foundation
 import RSParser
 
 extension ParsedItem {
-
-	var articleID: String {
-		if let s = syncServiceID {
-			return s
-		}
-		// Must be same calculation as for Article.
-		return Article.calculatedArticleID(feedID: feedURL, uniqueID: uniqueID)
-	}
+    var articleID: String {
+        if let s = syncServiceID {
+            return s
+        }
+        // Must be same calculation as for Article.
+        return Article.calculatedArticleID(feedID: feedURL, uniqueID: uniqueID)
+    }
 }

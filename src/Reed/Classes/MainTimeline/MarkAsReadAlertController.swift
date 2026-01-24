@@ -1,5 +1,5 @@
 //
-//  UndoAvailableAlertController.swift
+//  MarkAsReadAlertController.swift
 //  NetNewsWire
 //
 //  Created by Phil Viso on 9/29/19.
@@ -14,48 +14,47 @@ extension CGRect: MarkAsReadAlertControllerSourceType {}
 extension UIView: MarkAsReadAlertControllerSourceType {}
 extension UIBarButtonItem: MarkAsReadAlertControllerSourceType {}
 
+@MainActor
+struct MarkAsReadAlertController {
+    static func confirm(
+        _ controller: UIViewController?,
+        confirmTitle: String,
+        sourceType: some MarkAsReadAlertControllerSourceType,
+        cancelCompletion: (() -> Void)? = nil,
+        completion: @escaping () -> Void
+    ) {
+        guard let controller else {
+            completion()
+            return
+        }
 
-@MainActor struct MarkAsReadAlertController {
+        let title = NSLocalizedString("Mark As Read", comment: "Mark As Read")
+        let cancelTitle = NSLocalizedString("Cancel", comment: "Cancel")
 
-	static func confirm<T>(_ controller: UIViewController?,
-						   confirmTitle: String,
-						   sourceType: T,
-						   cancelCompletion: (() -> Void)? = nil,
-						   completion: @escaping () -> Void) where T: MarkAsReadAlertControllerSourceType {
+        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
 
-		guard let controller = controller else {
-			completion()
-			return
-		}
+        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
+            cancelCompletion?()
+        }
+        let markAction = UIAlertAction(title: confirmTitle, style: .default) { _ in
+            completion()
+        }
 
-		let title = NSLocalizedString("Mark As Read", comment: "Mark As Read")
-		let cancelTitle = NSLocalizedString("Cancel", comment: "Cancel")
+        alertController.addAction(markAction)
+        alertController.addAction(cancelAction)
 
-		let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+        if let barButtonItem = sourceType as? UIBarButtonItem {
+            alertController.popoverPresentationController?.barButtonItem = barButtonItem
+        }
 
-		let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel) { _ in
-			cancelCompletion?()
-		}
-		let markAction = UIAlertAction(title: confirmTitle, style: .default) { _ in
-			completion()
-		}
+        if let rect = sourceType as? CGRect {
+            alertController.popoverPresentationController?.sourceRect = rect
+        }
 
-		alertController.addAction(markAction)
-		alertController.addAction(cancelAction)
+        if let view = sourceType as? UIView {
+            alertController.popoverPresentationController?.sourceView = view
+        }
 
-		if let barButtonItem = sourceType as? UIBarButtonItem {
-			alertController.popoverPresentationController?.barButtonItem = barButtonItem
-		}
-
-		if let rect = sourceType as? CGRect {
-			alertController.popoverPresentationController?.sourceRect = rect
-		}
-
-		if let view = sourceType as? UIView {
-			alertController.popoverPresentationController?.sourceView = view
-		}
-
-		controller.present(alertController, animated: true)
-	}
-
+        controller.present(alertController, animated: true)
+    }
 }

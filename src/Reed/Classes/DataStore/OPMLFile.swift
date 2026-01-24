@@ -11,119 +11,121 @@ import os.log
 import RSCore
 import RSParser
 
-@MainActor final class OPMLFile {
-	private let fileURL: URL
-	private let dataStore: DataStore
+@MainActor
+final class OPMLFile {
+    private let fileURL: URL
+    private let dataStore: DataStore
 
-	private var isDirty = false {
-		didSet {
-			queueSaveToDiskIfNeeded()
-		}
-	}
-	private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
-	private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "OPMLFile")
+    private var isDirty = false {
+        didSet {
+            queueSaveToDiskIfNeeded()
+        }
+    }
 
-	init(filename: String, dataStore: DataStore) {
-		self.fileURL = URL(fileURLWithPath: filename)
-		self.dataStore = dataStore
-	}
+    private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "OPMLFile")
 
-	func markAsDirty() {
-		isDirty = true
-	}
+    init(filename: String, dataStore: DataStore) {
+        self.fileURL = URL(fileURLWithPath: filename)
+        self.dataStore = dataStore
+    }
 
-	func load() {
-		guard let fileData = opmlFileData(), let opmlItems = parsedOPMLItems(fileData: fileData) else {
-			return
-		}
+    func markAsDirty() {
+        self.isDirty = true
+    }
 
-		BatchUpdate.shared.perform {
-			dataStore.loadOPMLItems(opmlItems)
-		}
-	}
+    func load() {
+        guard let fileData = opmlFileData(), let opmlItems = parsedOPMLItems(fileData: fileData) else {
+            return
+        }
 
-	func save() {
-		guard !dataStore.isDeleted else { return }
-		let opmlDocumentString = opmlDocument()
+        BatchUpdate.shared.perform {
+            self.dataStore.loadOPMLItems(opmlItems)
+        }
+    }
 
-		do {
-			try opmlDocumentString.write(to: fileURL, atomically: true, encoding: .utf8)
-		} catch let error as NSError {
-			Self.logger.error("OPML save to disk failed: \(error.localizedDescription)")
-		}
-	}
+    func save() {
+        guard !self.dataStore.isDeleted else { return }
+        let opmlDocumentString = opmlDocument()
+
+        do {
+            try opmlDocumentString.write(to: self.fileURL, atomically: true, encoding: .utf8)
+        } catch let error as NSError {
+            Self.logger.error("OPML save to disk failed: \(error.localizedDescription)")
+        }
+    }
 }
 
-private extension OPMLFile {
+extension OPMLFile {
+    private func queueSaveToDiskIfNeeded() {
+        if Thread.isMainThread {
+            MainActor.assumeIsolated {
+                self.saveQueue.add(self, #selector(self.saveToDiskIfNeeded))
+            }
+        } else {
+            Task { @MainActor in
+                self.saveQueue.add(self, #selector(self.saveToDiskIfNeeded))
+            }
+        }
+    }
 
-	func queueSaveToDiskIfNeeded() {
-		if Thread.isMainThread {
-			MainActor.assumeIsolated {
-				saveQueue.add(self, #selector(saveToDiskIfNeeded))
-			}
-		} else {
-			Task { @MainActor in
-				saveQueue.add(self, #selector(saveToDiskIfNeeded))
-			}
-		}
-	}
+    @objc
+    private func saveToDiskIfNeeded() {
+        if self.isDirty {
+            self.isDirty = false
+            self.save()
+        }
+    }
 
-	@objc func saveToDiskIfNeeded() {
-		if isDirty {
-			isDirty = false
-			save()
-		}
-	}
+    private func opmlFileData() -> Data? {
+        var fileData: Data? = nil
 
-	func opmlFileData() -> Data? {
-		var fileData: Data? = nil
+        do {
+            fileData = try Data(contentsOf: self.fileURL)
+        } catch {
+            Self.logger.error("OPML read from disk failed: \(error.localizedDescription)")
+        }
 
-		do {
-			fileData = try Data(contentsOf: fileURL)
-		} catch {
-			Self.logger.error("OPML read from disk failed: \(error.localizedDescription)")
-		}
+        return fileData
+    }
 
-		return fileData
-	}
+    private func parsedOPMLItems(fileData: Data) -> [RSOPMLItem]? {
+        let parserData = ParserData(url: fileURL.absoluteString, data: fileData)
+        var opmlDocument: RSOPMLDocument?
 
-	func parsedOPMLItems(fileData: Data) -> [RSOPMLItem]? {
-		let parserData = ParserData(url: fileURL.absoluteString, data: fileData)
-		var opmlDocument: RSOPMLDocument?
+        do {
+            opmlDocument = try RSOPMLParser.parseOPML(with: parserData)
+        } catch {
+            Self.logger.error("OPML import failed: \(error.localizedDescription)")
+            return nil
+        }
 
-		do {
-			opmlDocument = try RSOPMLParser.parseOPML(with: parserData)
-		} catch {
-			Self.logger.error("OPML import failed: \(error.localizedDescription)")
-			return nil
-		}
+        return opmlDocument?.children
+    }
 
-		return opmlDocument?.children
-	}
+    private func opmlDocument() -> String {
+        let escapedTitle = self.dataStore.nameForDisplay.escapingSpecialXMLCharacters
+        let openingText =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!-- OPML generated by NetNewsWire -->
+            <opml version="1.1">
+            <head>
+            <title>\(escapedTitle)</title>
+            </head>
+            <body>
 
-	func opmlDocument() -> String {
-		let escapedTitle = dataStore.nameForDisplay.escapingSpecialXMLCharacters
-		let openingText =
-		"""
-		<?xml version="1.0" encoding="UTF-8"?>
-		<!-- OPML generated by NetNewsWire -->
-		<opml version="1.1">
-		<head>
-		<title>\(escapedTitle)</title>
-		</head>
-		<body>
+            """
 
-		"""
+        let middleText = self.dataStore.OPMLString(indentLevel: 0, allowCustomAttributes: true)
 
-		let middleText = dataStore.OPMLString(indentLevel: 0, allowCustomAttributes: true)
+        let closingText =
+            """
+            	</body>
+            </opml>
+            """
 
-		let closingText =
-		"""
-				</body>
-			</opml>
-			"""
-
-		let opml = openingText + middleText + closingText
-		return opml
-	}
+        let opml = openingText + middleText + closingText
+        return opml
+    }
 }

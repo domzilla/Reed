@@ -10,16 +10,16 @@ import Foundation
 import RSParser
 import RSWeb
 
-struct InitialFeedDownloader {
+enum InitialFeedDownloader {
+    @MainActor
+    static func download(_ url: URL) async throws -> (ParsedFeed?, URLResponse?) {
+        let (data, response) = try await Downloader.shared.download(url)
+        guard let data else {
+            return (nil, response)
+        }
 
-	@MainActor static func download(_ url: URL) async throws -> (ParsedFeed?, URLResponse?) {
-		let (data, response) = try await Downloader.shared.download(url)
-		guard let data else {
-			return (nil, response)
-		}
-
-		let parserData = ParserData(url: url.absoluteString, data: data)
-		let parsedFeed = try await FeedParser.parse(parserData)
-		return (parsedFeed, response)
-	}
+        let parserData = ParserData(url: url.absoluteString, data: data)
+        let parsedFeed = try await FeedParser.parse(parserData)
+        return (parsedFeed, response)
+    }
 }

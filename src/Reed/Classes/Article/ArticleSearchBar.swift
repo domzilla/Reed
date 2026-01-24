@@ -8,174 +8,190 @@
 
 import UIKit
 
-@objc @MainActor protocol SearchBarDelegate: NSObjectProtocol {
-	@objc optional func nextWasPressed(_ searchBar: ArticleSearchBar)
-	@objc optional func previousWasPressed(_ searchBar: ArticleSearchBar)
-	@objc optional func doneWasPressed(_ searchBar: ArticleSearchBar)
-	@objc optional func searchBar(_ searchBar: ArticleSearchBar, textDidChange: String)
+@objc @MainActor
+protocol SearchBarDelegate: NSObjectProtocol {
+    @objc
+    optional func nextWasPressed(_ searchBar: ArticleSearchBar)
+    @objc
+    optional func previousWasPressed(_ searchBar: ArticleSearchBar)
+    @objc
+    optional func doneWasPressed(_ searchBar: ArticleSearchBar)
+    @objc
+    optional func searchBar(_ searchBar: ArticleSearchBar, textDidChange: String)
 }
 
+@IBDesignable
+final class ArticleSearchBar: UIStackView {
+    var searchField: UISearchTextField!
+    var nextButton: UIButton!
+    var prevButton: UIButton!
+    var background: UIView!
+    var shouldBeginEditing: Bool = true
 
-@IBDesignable final class ArticleSearchBar: UIStackView {
-	var searchField: UISearchTextField!
-	var nextButton: UIButton!
-	var prevButton: UIButton!
-	var background: UIView!
-	var shouldBeginEditing: Bool = true
+    private weak var resultsLabel: UILabel!
 
-	weak private var resultsLabel: UILabel!
+    var resultsCount: UInt = 0 {
+        didSet {
+            self.updateUI()
+        }
+    }
 
-	var resultsCount: UInt = 0 {
-		didSet {
-			updateUI()
-		}
-	}
-	var selectedResult: UInt = 1 {
-		didSet {
-			updateUI()
-		}
-	}
+    var selectedResult: UInt = 1 {
+        didSet {
+            self.updateUI()
+        }
+    }
 
-	weak var delegate: SearchBarDelegate?
+    weak var delegate: SearchBarDelegate?
 
-	override var keyCommands: [UIKeyCommand]? {
-		return [UIKeyCommand(title: "Exit Find", action: #selector(donePressed(_:)), input: UIKeyCommand.inputEscape)]
-	}
+    override var keyCommands: [UIKeyCommand]? {
+        [UIKeyCommand(title: "Exit Find", action: #selector(donePressed(_:)), input: UIKeyCommand.inputEscape)]
+    }
 
-	override init(frame: CGRect) {
-		super.init(frame: frame)
-		commonInit()
-	}
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonInit()
+    }
 
-	required init(coder: NSCoder) {
-		super.init(coder: coder)
-		commonInit()
-	}
+    required init(coder: NSCoder) {
+        super.init(coder: coder)
+        commonInit()
+    }
 
-	override func didMoveToSuperview() {
-		super.didMoveToSuperview()
-		layer.backgroundColor = UIColor(named: "barBackgroundColor")?.cgColor ?? UIColor.white.cgColor
-		isOpaque = true
-		NotificationCenter.default.addObserver(self, selector: #selector(textDidChange(_:)), name: UITextField.textDidChangeNotification, object: searchField)
-	}
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        layer.backgroundColor = UIColor(named: "barBackgroundColor")?.cgColor ?? UIColor.white.cgColor
+        isOpaque = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(textDidChange(_:)),
+            name: UITextField.textDidChangeNotification,
+            object: self.searchField
+        )
+    }
 
-	private func updateUI() {
-		if resultsCount > 0 {
-			let format = NSLocalizedString("%d of %d", comment: "Results selection and count")
-			resultsLabel.text = String.localizedStringWithFormat(format, selectedResult, resultsCount)
-		} else {
-			resultsLabel.text = NSLocalizedString("No results", comment: "No results")
-		}
+    private func updateUI() {
+        if self.resultsCount > 0 {
+            let format = NSLocalizedString("%d of %d", comment: "Results selection and count")
+            self.resultsLabel.text = String.localizedStringWithFormat(format, self.selectedResult, self.resultsCount)
+        } else {
+            self.resultsLabel.text = NSLocalizedString("No results", comment: "No results")
+        }
 
-		nextButton.isEnabled = selectedResult < resultsCount
-		prevButton.isEnabled = resultsCount > 0 && selectedResult > 1
-	}
+        self.nextButton.isEnabled = self.selectedResult < self.resultsCount
+        self.prevButton.isEnabled = self.resultsCount > 0 && self.selectedResult > 1
+    }
 
-	@discardableResult override func becomeFirstResponder() -> Bool {
-		searchField.becomeFirstResponder()
-	}
+    @discardableResult
+    override func becomeFirstResponder() -> Bool {
+        self.searchField.becomeFirstResponder()
+    }
 
-	@discardableResult override func resignFirstResponder() -> Bool {
-		searchField.resignFirstResponder()
-	}
+    @discardableResult
+    override func resignFirstResponder() -> Bool {
+        self.searchField.resignFirstResponder()
+    }
 
-	override var isFirstResponder: Bool {
-		searchField.isFirstResponder
-	}
+    override var isFirstResponder: Bool {
+        self.searchField.isFirstResponder
+    }
 
-	deinit {
-		NotificationCenter.default.removeObserver(self)
-	}
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
-private extension ArticleSearchBar {
-	func commonInit() {
-		isLayoutMarginsRelativeArrangement = true
-		alignment = .center
-		spacing = 8
-		layoutMargins.left = 8
-		layoutMargins.right = 8
+extension ArticleSearchBar {
+    private func commonInit() {
+        isLayoutMarginsRelativeArrangement = true
+        alignment = .center
+        spacing = 8
+        layoutMargins.left = 8
+        layoutMargins.right = 8
 
-		background = UIView(frame: bounds)
-		background.backgroundColor = .systemGray5
-		background.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-		addSubview(background)
+        self.background = UIView(frame: bounds)
+        self.background.backgroundColor = .systemGray5
+        self.background.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(self.background)
 
-		let doneButton = UIButton()
-		doneButton.setTitle(NSLocalizedString("Done", comment: "Done"), for: .normal)
-		doneButton.setTitleColor(UIColor.label, for: .normal)
-		doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
-		doneButton.isAccessibilityElement = true
-		doneButton.addTarget(self, action: #selector(donePressed), for: .touchUpInside)
-		doneButton.isEnabled = true
-		addArrangedSubview(doneButton)
+        let doneButton = UIButton()
+        doneButton.setTitle(NSLocalizedString("Done", comment: "Done"), for: .normal)
+        doneButton.setTitleColor(UIColor.label, for: .normal)
+        doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
+        doneButton.isAccessibilityElement = true
+        doneButton.addTarget(self, action: #selector(donePressed), for: .touchUpInside)
+        doneButton.isEnabled = true
+        addArrangedSubview(doneButton)
 
-		let resultsLabel = UILabel()
-		searchField = UISearchTextField()
-		searchField.autocapitalizationType = .none
-		searchField.autocorrectionType = .no
-		searchField.returnKeyType = .search
-		searchField.delegate = self
+        let resultsLabel = UILabel()
+        self.searchField = UISearchTextField()
+        self.searchField.autocapitalizationType = .none
+        self.searchField.autocorrectionType = .no
+        self.searchField.returnKeyType = .search
+        self.searchField.delegate = self
 
-		resultsLabel.font = .systemFont(ofSize: UIFont.smallSystemFontSize)
-		resultsLabel.textColor = .secondaryLabel
-		resultsLabel.text = ""
-		resultsLabel.textAlignment = .right
-		resultsLabel.adjustsFontSizeToFitWidth = true
-		searchField.rightView = resultsLabel
-		searchField.rightViewMode = .always
+        resultsLabel.font = .systemFont(ofSize: UIFont.smallSystemFontSize)
+        resultsLabel.textColor = .secondaryLabel
+        resultsLabel.text = ""
+        resultsLabel.textAlignment = .right
+        resultsLabel.adjustsFontSizeToFitWidth = true
+        self.searchField.rightView = resultsLabel
+        self.searchField.rightViewMode = .always
 
-		self.resultsLabel = resultsLabel
-		addArrangedSubview(searchField)
+        self.resultsLabel = resultsLabel
+        addArrangedSubview(self.searchField)
 
-		prevButton = UIButton(type: .system)
-		prevButton.setImage(UIImage(systemName: "chevron.up"), for: .normal)
-		prevButton.accessibilityLabel = "Previous Result"
-		prevButton.isAccessibilityElement = true
-		prevButton.addTarget(self, action: #selector(previousPressed), for: .touchUpInside)
-		addArrangedSubview(prevButton)
+        self.prevButton = UIButton(type: .system)
+        self.prevButton.setImage(UIImage(systemName: "chevron.up"), for: .normal)
+        self.prevButton.accessibilityLabel = "Previous Result"
+        self.prevButton.isAccessibilityElement = true
+        self.prevButton.addTarget(self, action: #selector(previousPressed), for: .touchUpInside)
+        addArrangedSubview(self.prevButton)
 
-		nextButton = UIButton(type: .system)
-		nextButton.setImage(UIImage(systemName: "chevron.down"), for: .normal)
-		nextButton.accessibilityLabel = "Next Result"
-		nextButton.isAccessibilityElement = true
-		nextButton.addTarget(self, action: #selector(nextPressed), for: .touchUpInside)
-		addArrangedSubview(nextButton)
-	}
+        self.nextButton = UIButton(type: .system)
+        self.nextButton.setImage(UIImage(systemName: "chevron.down"), for: .normal)
+        self.nextButton.accessibilityLabel = "Next Result"
+        self.nextButton.isAccessibilityElement = true
+        self.nextButton.addTarget(self, action: #selector(nextPressed), for: .touchUpInside)
+        addArrangedSubview(self.nextButton)
+    }
 }
 
-private extension ArticleSearchBar {
+extension ArticleSearchBar {
+    @objc
+    private func textDidChange(_: Notification) {
+        self.delegate?.searchBar?(self, textDidChange: self.searchField.text ?? "")
 
-	@objc func textDidChange(_ notification: Notification) {
-		delegate?.searchBar?(self, textDidChange: searchField.text ?? "")
+        if self.searchField.text?.isEmpty ?? true {
+            self.searchField.rightViewMode = .never
+        } else {
+            self.searchField.rightViewMode = .always
+        }
+    }
 
-		if searchField.text?.isEmpty ?? true {
-			searchField.rightViewMode = .never
-		} else {
-			searchField.rightViewMode = .always
-		}
-	}
+    @objc
+    private func nextPressed() {
+        self.delegate?.nextWasPressed?(self)
+    }
 
-	@objc func nextPressed() {
-		delegate?.nextWasPressed?(self)
-	}
+    @objc
+    private func previousPressed() {
+        self.delegate?.previousWasPressed?(self)
+    }
 
-	@objc func previousPressed() {
-		delegate?.previousWasPressed?(self)
-	}
-
-	@objc func donePressed(_ _: Any? = nil) {
-		delegate?.doneWasPressed?(self)
-	}
+    @objc
+    private func donePressed(_ _: Any? = nil) {
+        self.delegate?.doneWasPressed?(self)
+    }
 }
 
 extension ArticleSearchBar: UITextFieldDelegate {
-	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		delegate?.nextWasPressed?(self)
-		return false
-	}
+    func textFieldShouldReturn(_: UITextField) -> Bool {
+        self.delegate?.nextWasPressed?(self)
+        return false
+    }
 
-	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-		return shouldBeginEditing
-	}
+    func textFieldShouldBeginEditing(_: UITextField) -> Bool {
+        self.shouldBeginEditing
+    }
 }

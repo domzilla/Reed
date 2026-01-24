@@ -9,18 +9,19 @@
 import Foundation
 @preconcurrency import RSCore
 
-@MainActor struct StarredFeedDelegate: SmartFeedDelegate {
+@MainActor
+struct StarredFeedDelegate: SmartFeedDelegate {
+    var sidebarItemID: SidebarItemIdentifier? {
+        SidebarItemIdentifier.smartFeed(String(describing: StarredFeedDelegate.self))
+    }
 
-	var sidebarItemID: SidebarItemIdentifier? {
-		return SidebarItemIdentifier.smartFeed(String(describing: StarredFeedDelegate.self))
-	}
+    let nameForDisplay = NSLocalizedString("Starred", comment: "Starred pseudo-feed title")
+    let fetchType: FetchType = .starred(nil)
+    var smallIcon: IconImage? {
+        Assets.Images.starredFeed
+    }
 
-	let nameForDisplay = NSLocalizedString("Starred", comment: "Starred pseudo-feed title")
-	let fetchType: FetchType = .starred(nil)
-	var smallIcon: IconImage? {
-		Assets.Images.starredFeed
-	}
-	func fetchUnreadCount(account: Account) async throws -> Int? {
-		try await account.fetchUnreadCountForStarredArticlesAsync()
-	}
+    func fetchUnreadCount(account: Account) async throws -> Int? {
+        try await account.fetchUnreadCountForStarredArticlesAsync()
+    }
 }

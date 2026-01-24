@@ -9,15 +9,13 @@
 import Foundation
 
 final class MainFeedRowIdentifier: NSObject, NSCopying {
+    var indexPath: IndexPath
 
-	var indexPath: IndexPath
+    init(indexPath: IndexPath) {
+        self.indexPath = indexPath
+    }
 
-	init(indexPath: IndexPath) {
-		self.indexPath = indexPath
-	}
-
-	func copy(with zone: NSZone? = nil) -> Any {
-		return self
-	}
-
+    func copy(with _: NSZone? = nil) -> Any {
+        self
+    }
 }

@@ -10,212 +10,218 @@ import Foundation
 import RSCore
 
 public final class Folder: SidebarItem, Renamable, Container, Hashable {
-	nonisolated public let dataStoreID: String
-	public weak var dataStore: DataStore?
+    public nonisolated let dataStoreID: String
+    public weak var dataStore: DataStore?
 
-	public var defaultReadFilterType: ReadFilterType {
-		return .read
-	}
+    public var defaultReadFilterType: ReadFilterType {
+        .read
+    }
 
-	public var containerID: ContainerIdentifier? {
-		ContainerIdentifier.folder(dataStoreID, nameForDisplay)
-	}
+    public var containerID: ContainerIdentifier? {
+        ContainerIdentifier.folder(self.dataStoreID, self.nameForDisplay)
+    }
 
-	public var sidebarItemID: SidebarItemIdentifier? {
-		SidebarItemIdentifier.folder(dataStoreID, nameForDisplay)
-	}
+    public var sidebarItemID: SidebarItemIdentifier? {
+        SidebarItemIdentifier.folder(self.dataStoreID, self.nameForDisplay)
+    }
 
-	public var topLevelFeeds: Set<Feed> = Set<Feed>()
-	public var folders: Set<Folder>? = nil // subfolders are not supported, so this is always nil
+    public var topLevelFeeds: Set<Feed> = .init()
+    public var folders: Set<Folder>? // subfolders are not supported, so this is always nil
 
-	public var name: String? {
-		didSet {
-			postDisplayNameDidChangeNotification()
-		}
-	}
+    public var name: String? {
+        didSet {
+            postDisplayNameDidChangeNotification()
+        }
+    }
 
-	static let untitledName = NSLocalizedString("Untitled ƒ", comment: "Folder name")
-	nonisolated public let folderID: Int // not saved: per-run only
-	public var externalID: String? = nil
-	static var incrementingID = 0
+    static let untitledName = NSLocalizedString("Untitled ƒ", comment: "Folder name")
+    public nonisolated let folderID: Int // not saved: per-run only
+    public var externalID: String?
+    static var incrementingID = 0
 
-	// MARK: - DisplayNameProvider
+    // MARK: - DisplayNameProvider
 
-	public var nameForDisplay: String {
-		return name ?? Folder.untitledName
-	}
+    public var nameForDisplay: String {
+        self.name ?? Folder.untitledName
+    }
 
-	// MARK: - UnreadCountProvider
+    // MARK: - UnreadCountProvider
 
-	public var unreadCount = 0 {
-		didSet {
-			if unreadCount != oldValue {
-				postUnreadCountDidChangeNotification()
-			}
-		}
-	}
+    public var unreadCount = 0 {
+        didSet {
+            if self.unreadCount != oldValue {
+                postUnreadCountDidChangeNotification()
+            }
+        }
+    }
 
-	// MARK: - Renamable
+    // MARK: - Renamable
 
-	public func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
-		guard let dataStore else {
-			return
-		}
-		Task { @MainActor in
-			do {
-				try await dataStore.renameFolder(self, to: name)
-				completion(.success(()))
-			} catch {
-				completion(.failure(error))
-			}
-		}
-	}
+    public func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let dataStore else {
+            return
+        }
+        Task { @MainActor in
+            do {
+                try await dataStore.renameFolder(self, to: name)
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
 
-	// MARK: - Init
+    // MARK: - Init
 
-	init(dataStore: DataStore, name: String?) {
-		self.dataStoreID = dataStore.dataStoreID
-		self.dataStore = dataStore
-		self.name = name
+    init(dataStore: DataStore, name: String?) {
+        self.dataStoreID = dataStore.dataStoreID
+        self.dataStore = dataStore
+        self.name = name
 
-		let folderID = Folder.incrementingID
-		Folder.incrementingID += 1
-		self.folderID = folderID
+        let folderID = Folder.incrementingID
+        Folder.incrementingID += 1
+        self.folderID = folderID
 
-		NotificationCenter.default.addObserver(self, selector: #selector(unreadCountDidChange(_:)), name: .UnreadCountDidChange, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(childrenDidChange(_:)), name: .ChildrenDidChange, object: self)
-	}
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.unreadCountDidChange(_:)),
+            name: .UnreadCountDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.childrenDidChange(_:)),
+            name: .ChildrenDidChange,
+            object: self
+        )
+    }
 
-	// MARK: - Notifications
+    // MARK: - Notifications
 
-	@objc func unreadCountDidChange(_ note: Notification) {
-		if let object = note.object {
-			if objectIsChild(object as AnyObject) {
-				updateUnreadCount()
-			}
-		}
-	}
+    @objc
+    func unreadCountDidChange(_ note: Notification) {
+        if let object = note.object {
+            if self.objectIsChild(object as AnyObject) {
+                updateUnreadCount()
+            }
+        }
+    }
 
-	@objc func childrenDidChange(_ note: Notification) {
-		updateUnreadCount()
-	}
+    @objc
+    func childrenDidChange(_: Notification) {
+        updateUnreadCount()
+    }
 
-	// MARK: Container
+    // MARK: Container
 
-	public func flattenedFeeds() -> Set<Feed> {
-		// Since sub-folders are not supported, it’s always the top-level feeds.
-		return topLevelFeeds
-	}
+    public func flattenedFeeds() -> Set<Feed> {
+        // Since sub-folders are not supported, it’s always the top-level feeds.
+        self.topLevelFeeds
+    }
 
-	public func objectIsChild(_ object: AnyObject) -> Bool {
-		// Folders contain Feed objects only, at least for now.
-		guard let feed = object as? Feed else {
-			return false
-		}
-		return topLevelFeeds.contains(feed)
-	}
+    public func objectIsChild(_ object: AnyObject) -> Bool {
+        // Folders contain Feed objects only, at least for now.
+        guard let feed = object as? Feed else {
+            return false
+        }
+        return self.topLevelFeeds.contains(feed)
+    }
 
-	public func addFeedToTreeAtTopLevel(_ feed: Feed) {
-		topLevelFeeds.insert(feed)
-		postChildrenDidChangeNotification()
-	}
+    public func addFeedToTreeAtTopLevel(_ feed: Feed) {
+        self.topLevelFeeds.insert(feed)
+        postChildrenDidChangeNotification()
+    }
 
-	public func addFeeds(_ feeds: Set<Feed>) {
-		guard !feeds.isEmpty else {
-			return
-		}
-		topLevelFeeds.formUnion(feeds)
-		postChildrenDidChangeNotification()
-	}
+    public func addFeeds(_ feeds: Set<Feed>) {
+        guard !feeds.isEmpty else {
+            return
+        }
+        self.topLevelFeeds.formUnion(feeds)
+        postChildrenDidChangeNotification()
+    }
 
-	public func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
-		topLevelFeeds.remove(feed)
-		postChildrenDidChangeNotification()
-	}
+    public func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
+        self.topLevelFeeds.remove(feed)
+        postChildrenDidChangeNotification()
+    }
 
-	public func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
-		guard !feeds.isEmpty else {
-			return
-		}
-		topLevelFeeds.subtract(feeds)
-		postChildrenDidChangeNotification()
-	}
+    public func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
+        guard !feeds.isEmpty else {
+            return
+        }
+        self.topLevelFeeds.subtract(feeds)
+        postChildrenDidChangeNotification()
+    }
 
-	// MARK: - Hashable
+    // MARK: - Hashable
 
-	nonisolated public func hash(into hasher: inout Hasher) {
-		hasher.combine(folderID)
-	}
+    public nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(self.folderID)
+    }
 
-	// MARK: - Equatable
+    // MARK: - Equatable
 
-	nonisolated static public func ==(lhs: Folder, rhs: Folder) -> Bool {
-		return lhs === rhs
-	}
+    public nonisolated static func == (lhs: Folder, rhs: Folder) -> Bool {
+        lhs === rhs
+    }
 }
 
 // MARK: - Private
 
-private extension Folder {
+extension Folder {
+    private func updateUnreadCount() {
+        var updatedUnreadCount = 0
+        for feed in self.topLevelFeeds {
+            updatedUnreadCount += feed.unreadCount
+        }
+        self.unreadCount = updatedUnreadCount
+    }
 
-	func updateUnreadCount() {
-		var updatedUnreadCount = 0
-		for feed in topLevelFeeds {
-			updatedUnreadCount += feed.unreadCount
-		}
-		unreadCount = updatedUnreadCount
-	}
-
-	func childrenContain(_ feed: Feed) -> Bool {
-		return topLevelFeeds.contains(feed)
-	}
+    private func childrenContain(_ feed: Feed) -> Bool {
+        self.topLevelFeeds.contains(feed)
+    }
 }
 
 // MARK: - OPMLRepresentable
 
 extension Folder: OPMLRepresentable {
+    public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
+        let attrExternalID = if allowCustomAttributes, let externalID {
+            " nnw_externalID=\"\(externalID.escapingSpecialXMLCharacters)\""
+        } else {
+            ""
+        }
 
-	public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
+        let escapedTitle = self.nameForDisplay.escapingSpecialXMLCharacters
+        var s = "<outline text=\"\(escapedTitle)\" title=\"\(escapedTitle)\"\(attrExternalID)>\n"
+        s = s.prepending(tabCount: indentLevel)
 
-		let attrExternalID: String = {
-			if allowCustomAttributes, let externalID = externalID {
-				return " nnw_externalID=\"\(externalID.escapingSpecialXMLCharacters)\""
-			} else {
-				return ""
-			}
-		}()
+        var hasAtLeastOneChild = false
 
-		let escapedTitle = nameForDisplay.escapingSpecialXMLCharacters
-		var s = "<outline text=\"\(escapedTitle)\" title=\"\(escapedTitle)\"\(attrExternalID)>\n"
-		s = s.prepending(tabCount: indentLevel)
+        for feed in self.topLevelFeeds.sorted() {
+            s += feed.OPMLString(indentLevel: indentLevel + 1, allowCustomAttributes: allowCustomAttributes)
+            hasAtLeastOneChild = true
+        }
 
-		var hasAtLeastOneChild = false
+        if !hasAtLeastOneChild {
+            s = "<outline text=\"\(escapedTitle)\" title=\"\(escapedTitle)\"\(attrExternalID)/>\n"
+            s = s.prepending(tabCount: indentLevel)
+            return s
+        }
 
-		for feed in topLevelFeeds.sorted()  {
-			s += feed.OPMLString(indentLevel: indentLevel + 1, allowCustomAttributes: allowCustomAttributes)
-			hasAtLeastOneChild = true
-		}
+        s = s + String(repeating: "\t", count: indentLevel) + "</outline>\n"
 
-		if !hasAtLeastOneChild {
-			s = "<outline text=\"\(escapedTitle)\" title=\"\(escapedTitle)\"\(attrExternalID)/>\n"
-			s = s.prepending(tabCount: indentLevel)
-			return s
-		}
-
-		s = s + String(repeating: "\t", count: indentLevel) + "</outline>\n"
-
-		return s
-	}
+        return s
+    }
 }
 
 // MARK: Set
 
-@MainActor extension Set where Element == Folder {
-
-	func sorted() -> Array<Folder> {
-		return sorted(by: { (folder1, folder2) -> Bool in
-			return folder1.nameForDisplay.localizedStandardCompare(folder2.nameForDisplay) == .orderedAscending
-		})
-	}
-
+@MainActor
+extension Set<Folder> {
+    func sorted() -> [Folder] {
+        self.sorted(by: { folder1, folder2 -> Bool in
+            return folder1.nameForDisplay.localizedStandardCompare(folder2.nameForDisplay) == .orderedAscending
+        })
+    }
 }

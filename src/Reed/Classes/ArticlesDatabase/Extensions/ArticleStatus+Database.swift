@@ -11,24 +11,25 @@ import RSDatabase
 import RSDatabaseObjC
 
 extension ArticleStatus {
+    convenience init(articleID: String, dateArrived: Date, row: FMResultSet) {
+        let read = row.bool(forColumn: DatabaseKey.read)
+        let starred = row.bool(forColumn: DatabaseKey.starred)
 
-	convenience init(articleID: String, dateArrived: Date, row: FMResultSet) {
-		let read = row.bool(forColumn: DatabaseKey.read)
-		let starred = row.bool(forColumn: DatabaseKey.starred)
-
-		self.init(articleID: articleID, read: read, starred: starred, dateArrived: dateArrived)
-	}
-
+        self.init(articleID: articleID, read: read, starred: starred, dateArrived: dateArrived)
+    }
 }
 
 extension ArticleStatus: DatabaseObject {
+    public nonisolated var databaseID: String {
+        articleID
+    }
 
-	nonisolated public var databaseID: String {
-		return articleID
-	}
-
-	nonisolated public func databaseDictionary() -> DatabaseDictionary? {
-		return [DatabaseKey.articleID: articleID, DatabaseKey.read: read, DatabaseKey.starred: starred, DatabaseKey.dateArrived: dateArrived]
-	}
+    public nonisolated func databaseDictionary() -> DatabaseDictionary? {
+        [
+            DatabaseKey.articleID: articleID,
+            DatabaseKey.read: read,
+            DatabaseKey.starred: starred,
+            DatabaseKey.dateArrived: dateArrived,
+        ]
+    }
 }
-

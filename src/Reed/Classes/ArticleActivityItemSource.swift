@@ -9,25 +9,28 @@
 import UIKit
 
 final class ArticleActivityItemSource: NSObject, UIActivityItemSource {
+    private let url: URL
+    private let subject: String?
 
-	private let url: URL
-	private let subject: String?
+    init(url: URL, subject: String?) {
+        self.url = url
+        self.subject = subject
+    }
 
-	init(url: URL, subject: String?) {
-		self.url = url
-		self.subject = subject
-	}
+    func activityViewControllerPlaceholderItem(_: UIActivityViewController) -> Any {
+        self.url
+    }
 
-	func activityViewControllerPlaceholderItem(_ : UIActivityViewController) -> Any {
-		return url
-	}
+    func activityViewController(_: UIActivityViewController, itemForActivityType _: UIActivity.ActivityType?) -> Any? {
+        self.url
+    }
 
-	func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-		return url
-	}
-
-	func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-		return subject ?? ""
-	}
-
+    func activityViewController(
+        _: UIActivityViewController,
+        subjectForActivityType _: UIActivity.ActivityType?
+    )
+        -> String
+    {
+        self.subject ?? ""
+    }
 }

@@ -6,9 +6,8 @@
 //  Copyright © 2017 Ranchero Software. All rights reserved.
 //
 
-import UIKit
 @preconcurrency import RSCore
+import UIKit
 
-@MainActor protocol PseudoFeed: AnyObject, SidebarItem, SmallIconProvider {
-
-}
+@MainActor
+protocol PseudoFeed: AnyObject, SidebarItem, SmallIconProvider {}

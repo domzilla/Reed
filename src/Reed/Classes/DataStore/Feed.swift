@@ -10,321 +10,319 @@ import Foundation
 import RSCore
 import RSWeb
 
-@MainActor public final class Feed: SidebarItem, Renamable, Hashable {
-	nonisolated public let feedID: String
-	nonisolated public let dataStoreID: String
-	nonisolated public let url: String
-	nonisolated public let sidebarItemID: SidebarItemIdentifier?
+@MainActor
+public final class Feed: SidebarItem, Renamable, Hashable {
+    public nonisolated let feedID: String
+    public nonisolated let dataStoreID: String
+    public nonisolated let url: String
+    public nonisolated let sidebarItemID: SidebarItemIdentifier?
 
-	public weak var dataStore: DataStore?
+    public weak var dataStore: DataStore?
 
-	public var defaultReadFilterType: ReadFilterType {
-		.none
-	}
+    public var defaultReadFilterType: ReadFilterType {
+        .none
+    }
 
-	public var homePageURL: String? {
-		get {
-			return metadata.homePageURL
-		}
-		set {
-			if let url = newValue, !url.isEmpty {
-				metadata.homePageURL = url.normalizedURL
-			}
-			else {
-				metadata.homePageURL = nil
-			}
-		}
-	}
-
-	// Note: this is available only if the icon URL was available in the feed.
-	// The icon URL is a JSON-Feed-only feature.
-	// Otherwise we find an icon URL via other means, but we don’t store it
-	// as part of feed metadata.
-	public var iconURL: String? {
-		get {
-			return metadata.iconURL
-		}
-		set {
-			metadata.iconURL = newValue
-		}
-	}
-
-	// Note: this is available only if the favicon URL was available in the feed.
-	// The favicon URL is a JSON-Feed-only feature.
-	// Otherwise we find a favicon URL via other means, but we don’t store it
-	// as part of feed metadata.
-	public var faviconURL: String? {
-		get {
-			return metadata.faviconURL
-		}
-		set {
-			metadata.faviconURL = newValue
-		}
-	}
-
-	@MainActor public var name: String? {
-		didSet {
-			if name != oldValue {
-				postDisplayNameDidChangeNotification()
-			}
-		}
-	}
-
-	public var authors: Set<Author>? {
-		get {
-			if let authorsArray = metadata.authors {
-				return Set(authorsArray)
-			}
-			return nil
-		}
-		set {
-			if let authorsSet = newValue {
-				metadata.authors = Array(authorsSet)
-			}
-			else {
-				metadata.authors = nil
-			}
-		}
-	}
-
-	@MainActor public var editedName: String? {
-		// Don’t let editedName == ""
-		get {
-			guard let s = metadata.editedName, !s.isEmpty else {
-				return nil
-			}
-			return s
-		}
-		set {
-			if newValue != editedName {
-				if let valueToSet = newValue, !valueToSet.isEmpty {
-					metadata.editedName = valueToSet
-				}
-				else {
-					metadata.editedName = nil
-				}
-				postDisplayNameDidChangeNotification()
-			}
-		}
-	}
-
-	public var conditionalGetInfo: HTTPConditionalGetInfo? {
-		get {
-			return metadata.conditionalGetInfo
-		}
-		set {
-			metadata.conditionalGetInfo = newValue
-		}
-	}
-
-	public var conditionalGetInfoDate: Date? {
-		get {
-			return metadata.conditionalGetInfoDate
-		}
-		set {
-			metadata.conditionalGetInfoDate = newValue
-		}
-	}
-
-	public var cacheControlInfo: CacheControlInfo? {
-		get {
-			metadata.cacheControlInfo
-		}
-		set {
-			metadata.cacheControlInfo = newValue
-		}
-	}
-
-	public var contentHash: String? {
-		get {
-			return metadata.contentHash
-		}
-		set {
-			metadata.contentHash = newValue
-		}
-	}
-
-	public var isNotifyAboutNewArticles: Bool? {
-		get {
-			return metadata.isNotifyAboutNewArticles
-		}
-		set {
-			metadata.isNotifyAboutNewArticles = newValue
-		}
-	}
-
-	public var isArticleExtractorAlwaysOn: Bool? {
-		get {
-            metadata.isArticleExtractorAlwaysOn
-		}
-		set {
-			metadata.isArticleExtractorAlwaysOn = newValue
-		}
-	}
-
-	public var externalID: String? {
-		get {
-			return metadata.externalID
-		}
-		set {
-			metadata.externalID = newValue
-		}
-	}
-
-	// Folder Name: Sync Service Relationship ID
-	public var folderRelationship: [String: String]? {
-		get {
-			return metadata.folderRelationship
-		}
-		set {
-			metadata.folderRelationship = newValue
-		}
-	}
-
-	/// Last time an attempt was made to read the feed.
-	/// (Not necessarily a successful attempt.)
-	public var lastCheckDate: Date? {
-		get {
-			metadata.lastCheckDate
-		}
-		set {
-			metadata.lastCheckDate = newValue
-		}
-	}
-	// MARK: - DisplayNameProvider
-
-	public var nameForDisplay: String {
-		if let s = editedName, !s.isEmpty {
-			return s
-		}
-		if let s = name, !s.isEmpty {
-			return s
-		}
-		return NSLocalizedString("Untitled", comment: "Feed name")
-	}
-
-	// MARK: - Renamable
-
-	public func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-		guard let dataStore else {
-			return
-		}
-		Task { @MainActor in
-			do {
-				try await dataStore.renameFeed(self, name: newName)
-				completion(.success(()))
-			} catch {
-				completion(.failure(error))
-			}
-		}
-	}
-
-	// MARK: - UnreadCountProvider
-
-	public var unreadCount: Int {
-		get {
-			return dataStore?.unreadCount(for: self) ?? 0
-		}
-		set {
-			if unreadCount == newValue {
-				return
-			}
-			dataStore?.setUnreadCount(newValue, for: self)
-			postUnreadCountDidChangeNotification()
-		}
-	}
-
-    // MARK: - NotificationDisplayName
-    public var notificationDisplayName: String {
-        if self.url.contains("www.reddit.com") {
-            return NSLocalizedString("Notify about new posts", comment: "notifyNameDisplay / Reddit")
-        } else {
-            return NSLocalizedString("Notify about new articles", comment: "notifyNameDisplay / Default")
+    public var homePageURL: String? {
+        get {
+            self.metadata.homePageURL
+        }
+        set {
+            if let url = newValue, !url.isEmpty {
+                self.metadata.homePageURL = url.normalizedURL
+            } else {
+                self.metadata.homePageURL = nil
+            }
         }
     }
 
-	var metadata: FeedMetadata
+    // Note: this is available only if the icon URL was available in the feed.
+    // The icon URL is a JSON-Feed-only feature.
+    // Otherwise we find an icon URL via other means, but we don’t store it
+    // as part of feed metadata.
+    public var iconURL: String? {
+        get {
+            self.metadata.iconURL
+        }
+        set {
+            self.metadata.iconURL = newValue
+        }
+    }
 
-	// MARK: - Private
+    // Note: this is available only if the favicon URL was available in the feed.
+    // The favicon URL is a JSON-Feed-only feature.
+    // Otherwise we find a favicon URL via other means, but we don’t store it
+    // as part of feed metadata.
+    public var faviconURL: String? {
+        get {
+            self.metadata.faviconURL
+        }
+        set {
+            self.metadata.faviconURL = newValue
+        }
+    }
 
+    @MainActor public var name: String? {
+        didSet {
+            if self.name != oldValue {
+                postDisplayNameDidChangeNotification()
+            }
+        }
+    }
 
-	// MARK: - Init
+    public var authors: Set<Author>? {
+        get {
+            if let authorsArray = metadata.authors {
+                return Set(authorsArray)
+            }
+            return nil
+        }
+        set {
+            if let authorsSet = newValue {
+                self.metadata.authors = Array(authorsSet)
+            } else {
+                self.metadata.authors = nil
+            }
+        }
+    }
 
-	init(dataStore: DataStore, url: String, metadata: FeedMetadata) {
-		let dataStoreID = dataStore.dataStoreID
-		let feedID = metadata.feedID
-		self.dataStoreID = dataStoreID
-		self.dataStore = dataStore
-		self.feedID = feedID
-		self.sidebarItemID = SidebarItemIdentifier.feed(dataStoreID, feedID)
+    @MainActor public var editedName: String? {
+        // Don’t let editedName == ""
+        get {
+            guard let s = metadata.editedName, !s.isEmpty else {
+                return nil
+            }
+            return s
+        }
+        set {
+            if newValue != editedName {
+                if let valueToSet = newValue, !valueToSet.isEmpty {
+                    self.metadata.editedName = valueToSet
+                } else {
+                    self.metadata.editedName = nil
+                }
+                postDisplayNameDidChangeNotification()
+            }
+        }
+    }
 
-		self.url = url
-		self.metadata = metadata
-	}
+    public var conditionalGetInfo: HTTPConditionalGetInfo? {
+        get {
+            self.metadata.conditionalGetInfo
+        }
+        set {
+            self.metadata.conditionalGetInfo = newValue
+        }
+    }
 
-	// MARK: - API
+    public var conditionalGetInfoDate: Date? {
+        get {
+            self.metadata.conditionalGetInfoDate
+        }
+        set {
+            self.metadata.conditionalGetInfoDate = newValue
+        }
+    }
 
-	public func dropConditionalGetInfo() {
-		conditionalGetInfo = nil
-		contentHash = nil
-	}
+    public var cacheControlInfo: CacheControlInfo? {
+        get {
+            self.metadata.cacheControlInfo
+        }
+        set {
+            self.metadata.cacheControlInfo = newValue
+        }
+    }
 
-	// MARK: - Hashable
+    public var contentHash: String? {
+        get {
+            self.metadata.contentHash
+        }
+        set {
+            self.metadata.contentHash = newValue
+        }
+    }
 
-	nonisolated public func hash(into hasher: inout Hasher) {
-		hasher.combine(feedID)
-		hasher.combine(dataStoreID)
-	}
+    public var isNotifyAboutNewArticles: Bool? {
+        get {
+            self.metadata.isNotifyAboutNewArticles
+        }
+        set {
+            self.metadata.isNotifyAboutNewArticles = newValue
+        }
+    }
 
-	// MARK: - Equatable
+    public var isArticleExtractorAlwaysOn: Bool? {
+        get {
+            self.metadata.isArticleExtractorAlwaysOn
+        }
+        set {
+            self.metadata.isArticleExtractorAlwaysOn = newValue
+        }
+    }
 
-	nonisolated public class func ==(lhs: Feed, rhs: Feed) -> Bool {
-		return lhs.feedID == rhs.feedID && lhs.dataStoreID == rhs.dataStoreID
-	}
+    public var externalID: String? {
+        get {
+            self.metadata.externalID
+        }
+        set {
+            self.metadata.externalID = newValue
+        }
+    }
+
+    // Folder Name: Sync Service Relationship ID
+    public var folderRelationship: [String: String]? {
+        get {
+            self.metadata.folderRelationship
+        }
+        set {
+            self.metadata.folderRelationship = newValue
+        }
+    }
+
+    /// Last time an attempt was made to read the feed.
+    /// (Not necessarily a successful attempt.)
+    public var lastCheckDate: Date? {
+        get {
+            self.metadata.lastCheckDate
+        }
+        set {
+            self.metadata.lastCheckDate = newValue
+        }
+    }
+
+    // MARK: - DisplayNameProvider
+
+    public var nameForDisplay: String {
+        if let s = editedName, !s.isEmpty {
+            return s
+        }
+        if let s = name, !s.isEmpty {
+            return s
+        }
+        return NSLocalizedString("Untitled", comment: "Feed name")
+    }
+
+    // MARK: - Renamable
+
+    public func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let dataStore else {
+            return
+        }
+        Task { @MainActor in
+            do {
+                try await dataStore.renameFeed(self, name: newName)
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+
+    // MARK: - UnreadCountProvider
+
+    public var unreadCount: Int {
+        get {
+            self.dataStore?.unreadCount(for: self) ?? 0
+        }
+        set {
+            if unreadCount == newValue {
+                return
+            }
+            self.dataStore?.setUnreadCount(newValue, for: self)
+            postUnreadCountDidChangeNotification()
+        }
+    }
+
+    // MARK: - NotificationDisplayName
+
+    public var notificationDisplayName: String {
+        if self.url.contains("www.reddit.com") {
+            NSLocalizedString("Notify about new posts", comment: "notifyNameDisplay / Reddit")
+        } else {
+            NSLocalizedString("Notify about new articles", comment: "notifyNameDisplay / Default")
+        }
+    }
+
+    var metadata: FeedMetadata
+
+    // MARK: - Private
+
+    // MARK: - Init
+
+    init(dataStore: DataStore, url: String, metadata: FeedMetadata) {
+        let dataStoreID = dataStore.dataStoreID
+        let feedID = metadata.feedID
+        self.dataStoreID = dataStoreID
+        self.dataStore = dataStore
+        self.feedID = feedID
+        self.sidebarItemID = SidebarItemIdentifier.feed(dataStoreID, feedID)
+
+        self.url = url
+        self.metadata = metadata
+    }
+
+    // MARK: - API
+
+    public func dropConditionalGetInfo() {
+        self.conditionalGetInfo = nil
+        self.contentHash = nil
+    }
+
+    // MARK: - Hashable
+
+    public nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(self.feedID)
+        hasher.combine(self.dataStoreID)
+    }
+
+    // MARK: - Equatable
+
+    public nonisolated class func == (lhs: Feed, rhs: Feed) -> Bool {
+        lhs.feedID == rhs.feedID && lhs.dataStoreID == rhs.dataStoreID
+    }
 }
 
 // MARK: - OPMLRepresentable
 
 extension Feed: OPMLRepresentable {
+    public func OPMLString(indentLevel: Int, allowCustomAttributes _: Bool) -> String {
+        // https://github.com/brentsimmons/NetNewsWire/issues/527
+        // Don’t use nameForDisplay because that can result in a feed name "Untitled" written to disk,
+        // which NetNewsWire may take later to be the actual name.
+        var nameToUse = self.editedName
+        if nameToUse == nil {
+            nameToUse = self.name
+        }
+        if nameToUse == nil {
+            nameToUse = ""
+        }
+        let escapedName = nameToUse!.escapingSpecialXMLCharacters
 
-	public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
-		// https://github.com/brentsimmons/NetNewsWire/issues/527
-		// Don’t use nameForDisplay because that can result in a feed name "Untitled" written to disk,
-		// which NetNewsWire may take later to be the actual name.
-		var nameToUse = editedName
-		if nameToUse == nil {
-			nameToUse = name
-		}
-		if nameToUse == nil {
-			nameToUse = ""
-		}
-		let escapedName = nameToUse!.escapingSpecialXMLCharacters
+        var escapedHomePageURL = ""
+        if let homePageURL {
+            escapedHomePageURL = homePageURL.escapingSpecialXMLCharacters
+        }
+        let escapedFeedURL = self.url.escapingSpecialXMLCharacters
 
-		var escapedHomePageURL = ""
-		if let homePageURL = homePageURL {
-			escapedHomePageURL = homePageURL.escapingSpecialXMLCharacters
-		}
-		let escapedFeedURL = url.escapingSpecialXMLCharacters
+        var s = "<outline text=\"\(escapedName)\" title=\"\(escapedName)\" description=\"\" type=\"rss\" version=\"RSS\" htmlUrl=\"\(escapedHomePageURL)\" xmlUrl=\"\(escapedFeedURL)\"/>\n"
+        s = s.prepending(tabCount: indentLevel)
 
-		var s = "<outline text=\"\(escapedName)\" title=\"\(escapedName)\" description=\"\" type=\"rss\" version=\"RSS\" htmlUrl=\"\(escapedHomePageURL)\" xmlUrl=\"\(escapedFeedURL)\"/>\n"
-		s = s.prepending(tabCount: indentLevel)
-
-		return s
-	}
+        return s
+    }
 }
 
-@MainActor extension Set where Element == Feed {
+@MainActor
+extension Set<Feed> {
+    func feedIDs() -> Set<String> {
+        Set<String>(map(\.feedID))
+    }
 
-	func feedIDs() -> Set<String> {
-		return Set<String>(map { $0.feedID })
-	}
-
-	func sorted() -> Array<Feed> {
-		return sorted(by: { (feed1, feed2) -> Bool in
-			if feed1.nameForDisplay.localizedStandardCompare(feed2.nameForDisplay) == .orderedSame {
-				return feed1.url < feed2.url
-			}
-			return feed1.nameForDisplay.localizedStandardCompare(feed2.nameForDisplay) == .orderedAscending
-		})
-	}
+    func sorted() -> [Feed] {
+        self.sorted(by: { feed1, feed2 -> Bool in
+            if feed1.nameForDisplay.localizedStandardCompare(feed2.nameForDisplay) == .orderedSame {
+                return feed1.url < feed2.url
+            }
+            return feed1.nameForDisplay.localizedStandardCompare(feed2.nameForDisplay) == .orderedAscending
+        })
+    }
 }

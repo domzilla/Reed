@@ -8,43 +8,46 @@
 
 import Foundation
 
-@MainActor struct AddFeedDefaultContainer {
+@MainActor
+struct AddFeedDefaultContainer {
+    static var defaultContainer: Container? {
+        if
+            let accountID = AppDefaults.shared.addFeedAccountID,
+            let account = AccountManager.shared.activeAccounts.first(where: { $0.accountID == accountID })
+        {
+            if
+                let folderName = AppDefaults.shared.addFeedFolderName,
+                let folder = account.existingFolder(withDisplayName: folderName)
+            {
+                folder
+            } else {
+                substituteContainerIfNeeded(account: account)
+            }
+        } else if let account = AccountManager.shared.sortedActiveAccounts.first {
+            substituteContainerIfNeeded(account: account)
+        } else {
+            nil
+        }
+    }
 
-	static var defaultContainer: Container? {
+    static func saveDefaultContainer(_ container: Container) {
+        AppDefaults.shared.addFeedAccountID = container.account?.accountID
+        if let folder = container as? Folder {
+            AppDefaults.shared.addFeedFolderName = folder.nameForDisplay
+        } else {
+            AppDefaults.shared.addFeedFolderName = nil
+        }
+    }
 
-		if let accountID = AppDefaults.shared.addFeedAccountID, let account = AccountManager.shared.activeAccounts.first(where: { $0.accountID == accountID }) {
-			if let folderName = AppDefaults.shared.addFeedFolderName, let folder = account.existingFolder(withDisplayName: folderName) {
-				return folder
-			} else {
-				return substituteContainerIfNeeded(account: account)
-			}
-		} else if let account = AccountManager.shared.sortedActiveAccounts.first {
-			return substituteContainerIfNeeded(account: account)
-		} else {
-			return nil
-		}
-
-	}
-
-	static func saveDefaultContainer(_ container: Container) {
-		AppDefaults.shared.addFeedAccountID = container.account?.accountID
-		if let folder = container as? Folder {
-			AppDefaults.shared.addFeedFolderName = folder.nameForDisplay
-		} else {
-			AppDefaults.shared.addFeedFolderName = nil
-		}
-	}
-
-	private static func substituteContainerIfNeeded(account: Account) -> Container? {
-		if !account.behaviors.contains(.disallowFeedInRootFolder) {
-			return account
-		} else {
-			if let folder = account.sortedFolders?.first {
-				return folder
-			} else {
-				return nil
-			}
-		}
-	}
-
+    private static func substituteContainerIfNeeded(account: Account) -> Container? {
+        if !account.behaviors.contains(.disallowFeedInRootFolder) {
+            account
+        } else {
+            if let folder = account.sortedFolders?.first {
+                folder
+            } else {
+                nil
+            }
+        }
+    }
 }

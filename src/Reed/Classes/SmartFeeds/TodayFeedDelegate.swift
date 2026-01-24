@@ -9,19 +9,19 @@
 import Foundation
 @preconcurrency import RSCore
 
-@MainActor struct TodayFeedDelegate: SmartFeedDelegate {
-	var sidebarItemID: SidebarItemIdentifier? {
-		return SidebarItemIdentifier.smartFeed(String(describing: TodayFeedDelegate.self))
-	}
+@MainActor
+struct TodayFeedDelegate: SmartFeedDelegate {
+    var sidebarItemID: SidebarItemIdentifier? {
+        SidebarItemIdentifier.smartFeed(String(describing: TodayFeedDelegate.self))
+    }
 
-	let nameForDisplay = NSLocalizedString("Today", comment: "Today pseudo-feed title")
-	let fetchType = FetchType.today(nil)
-	var smallIcon: IconImage? {
-		Assets.Images.todayFeed
-	}
+    let nameForDisplay = NSLocalizedString("Today", comment: "Today pseudo-feed title")
+    let fetchType = FetchType.today(nil)
+    var smallIcon: IconImage? {
+        Assets.Images.todayFeed
+    }
 
-	func fetchUnreadCount(account: Account) async throws -> Int? {
-		try await account.fetchUnreadCountForTodayAsync()
-	}
+    func fetchUnreadCount(account: Account) async throws -> Int? {
+        try await account.fetchUnreadCountForTodayAsync()
+    }
 }
-

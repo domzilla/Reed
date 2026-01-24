@@ -9,28 +9,27 @@
 import Foundation
 
 public struct SingleArticleFetcher: ArticleFetcher {
+    private let account: Account
+    private let articleID: String
 
-	private let account: Account
-	private let articleID: String
+    public init(account: Account, articleID: String) {
+        self.account = account
+        self.articleID = articleID
+    }
 
-	public init(account: Account, articleID: String) {
-		self.account = account
-		self.articleID = articleID
-	}
+    public func fetchArticles() throws -> Set<Article> {
+        try self.account.fetchArticles(.articleIDs(Set([self.articleID])))
+    }
 
-	public func fetchArticles() throws -> Set<Article> {
-		try account.fetchArticles(.articleIDs(Set([articleID])))
-	}
+    public func fetchArticlesAsync() async throws -> Set<Article> {
+        try await self.account.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+    }
 
-	public func fetchArticlesAsync() async throws -> Set<Article> {
-		try await account.fetchArticlesAsync(.articleIDs(Set([articleID])))
-	}
+    public func fetchUnreadArticles() throws -> Set<Article> {
+        try self.account.fetchArticles(.articleIDs(Set([self.articleID])))
+    }
 
-	public func fetchUnreadArticles() throws -> Set<Article> {
-		try account.fetchArticles(.articleIDs(Set([articleID])))
-	}
-
-	public func fetchUnreadArticlesAsync() async throws -> Set<Article> {
-		try await account.fetchArticlesAsync(.articleIDs(Set([articleID])))
-	}
+    public func fetchUnreadArticlesAsync() async throws -> Set<Article> {
+        try await self.account.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+    }
 }

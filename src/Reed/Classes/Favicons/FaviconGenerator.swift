@@ -9,25 +9,22 @@
 import Foundation
 import RSCore
 
-@MainActor final class FaviconGenerator {
+@MainActor
+final class FaviconGenerator {
+    private static var faviconGeneratorCache = [String: IconImage]() // feedURL: UIImage
 
-	private static var faviconGeneratorCache = [String: IconImage]() // feedURL: UIImage
+    static func favicon(_ feed: Feed) -> IconImage {
+        if let favicon = FaviconGenerator.faviconGeneratorCache[feed.url] {
+            return favicon
+        }
 
-	static func favicon(_ feed: Feed) -> IconImage {
-
-		if let favicon = FaviconGenerator.faviconGeneratorCache[feed.url] {
-			return favicon
-		}
-
-		let colorHash = ColorHash(feed.url)
-		if let favicon = Assets.Images.faviconTemplate.maskWithColor(color: colorHash.color.cgColor) {
-			let iconImage = IconImage(favicon, isBackgroundSuppressed: true)
-			FaviconGenerator.faviconGeneratorCache[feed.url] = iconImage
-			return iconImage
-		} else {
-			return IconImage(Assets.Images.faviconTemplate, isBackgroundSuppressed: true)
-		}
-
-	}
-
+        let colorHash = ColorHash(feed.url)
+        if let favicon = Assets.Images.faviconTemplate.maskWithColor(color: colorHash.color.cgColor) {
+            let iconImage = IconImage(favicon, isBackgroundSuppressed: true)
+            FaviconGenerator.faviconGeneratorCache[feed.url] = iconImage
+            return iconImage
+        } else {
+            return IconImage(Assets.Images.faviconTemplate, isBackgroundSuppressed: true)
+        }
+    }
 }

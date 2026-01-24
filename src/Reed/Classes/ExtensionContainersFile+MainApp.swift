@@ -8,67 +8,76 @@
 import Foundation
 import RSCore
 
-@MainActor extension ExtensionContainersFile {
+@MainActor
+extension ExtensionContainersFile {
+    private static var isActive = false
+    private static var isDirty = false {
+        didSet {
+            queueSaveToDiskIfNeeded()
+        }
+    }
 
-	private static var isActive = false
-	private static var isDirty = false {
-		didSet {
-			queueSaveToDiskIfNeeded()
-		}
-	}
-	private static let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
+    private static let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
 
-	func start() {
-		guard !Self.isActive else {
-			assertionFailure("start() called when already active")
-			return
-		}
-		Self.isActive = true
+    func start() {
+        guard !Self.isActive else {
+            assertionFailure("start() called when already active")
+            return
+        }
+        Self.isActive = true
 
-		if !FileManager.default.fileExists(atPath: Self.filePath) {
-			save()
-		}
+        if !FileManager.default.fileExists(atPath: Self.filePath) {
+            self.save()
+        }
 
-		// Track when feeds/folders change to sync with extension
-		NotificationCenter.default.addObserver(self, selector: #selector(markAsDirty), name: .ChildrenDidChange, object: nil)
-	}
+        // Track when feeds/folders change to sync with extension
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.markAsDirty),
+            name: .ChildrenDidChange,
+            object: nil
+        )
+    }
 
-	@objc private func markAsDirty() {
-		Self.isDirty = true
-	}
+    @objc
+    private func markAsDirty() {
+        Self.isDirty = true
+    }
 
-	private static func queueSaveToDiskIfNeeded() {
-		saveQueue.add(shared, #selector(saveToDiskIfNeeded))
-	}
+    private static func queueSaveToDiskIfNeeded() {
+        self.saveQueue.add(shared, #selector(saveToDiskIfNeeded))
+    }
 
-	@objc private func saveToDiskIfNeeded() {
-		if Self.isDirty {
-			Self.isDirty = false
-			save()
-		}
-	}
+    @objc
+    private func saveToDiskIfNeeded() {
+        if Self.isDirty {
+            Self.isDirty = false
+            self.save()
+        }
+    }
 
-	private func save() {
-		let encoder = PropertyListEncoder()
-		encoder.outputFormat = .binary
+    private func save() {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
 
-		let errorPointer: NSErrorPointer = nil
-		let fileCoordinator = NSFileCoordinator()
-		let fileURL = URL(fileURLWithPath: Self.filePath)
+        let errorPointer: NSErrorPointer = nil
+        let fileCoordinator = NSFileCoordinator()
+        let fileURL = URL(fileURLWithPath: Self.filePath)
 
-		fileCoordinator.coordinate(writingItemAt: fileURL, options: [], error: errorPointer, byAccessor: { writeURL in
-			do {
-				let extensionAccounts = DataStoreManager.shared.sortedActiveDataStores.map { ExtensionAccount(dataStore: $0) }
-				let extensionContainers = ExtensionContainers(accounts: extensionAccounts)
-				let data = try encoder.encode(extensionContainers)
-				try data.write(to: writeURL)
-			} catch let error as NSError {
-				Self.logger.error("Save to disk failed: \(error.localizedDescription)")
-			}
-		})
+        fileCoordinator.coordinate(writingItemAt: fileURL, options: [], error: errorPointer, byAccessor: { writeURL in
+            do {
+                let extensionAccounts = DataStoreManager.shared.sortedActiveDataStores
+                    .map { ExtensionAccount(dataStore: $0) }
+                let extensionContainers = ExtensionContainers(accounts: extensionAccounts)
+                let data = try encoder.encode(extensionContainers)
+                try data.write(to: writeURL)
+            } catch let error as NSError {
+                Self.logger.error("Save to disk failed: \(error.localizedDescription)")
+            }
+        })
 
-		if let error = errorPointer?.pointee {
-			Self.logger.error("Save to disk coordination failed: \(error.localizedDescription)")
-		}
-	}
+        if let error = errorPointer?.pointee {
+            Self.logger.error("Save to disk coordination failed: \(error.localizedDescription)")
+        }
+    }
 }

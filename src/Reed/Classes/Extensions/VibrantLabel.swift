@@ -9,19 +9,17 @@
 import UIKit
 
 final class VibrantLabel: UILabel {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.commonInit()
+    }
 
-	override init(frame: CGRect) {
-		super.init(frame: frame)
-		commonInit()
-	}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.commonInit()
+    }
 
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		commonInit()
-	}
-
-	private func commonInit() {
-		highlightedTextColor = Assets.Colors.vibrantText
-	}
-
+    private func commonInit() {
+        highlightedTextColor = Assets.Colors.vibrantText
+    }
 }

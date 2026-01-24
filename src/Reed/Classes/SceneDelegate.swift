@@ -1,5 +1,5 @@
 //
-//  AppDelegate.swift
+//  SceneDelegate.swift
 //  NetNewsWire
 //
 //  Created by Maurice Parker on 6/28/19.
@@ -10,227 +10,239 @@ import UIKit
 import UserNotifications
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+    var coordinator: SceneCoordinator!
 
-	var window: UIWindow?
-	var coordinator: SceneCoordinator!
+    // UIWindowScene delegate
 
-	// UIWindowScene delegate
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard let windowScene = scene as? UIWindowScene else { return }
 
-	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-		guard let windowScene = scene as? UIWindowScene else { return }
+        // Create window programmatically
+        self.window = UIWindow(windowScene: windowScene)
+        self.window!.tintColor = Assets.Colors.primaryAccent
 
-		// Create window programmatically
-		window = UIWindow(windowScene: windowScene)
-		window!.tintColor = Assets.Colors.primaryAccent
+        // Create the root split view controller
+        let rootViewController = RootSplitViewController()
 
-		// Create the root split view controller
-		let rootViewController = RootSplitViewController()
+        // Create and configure child view controllers
+        let feedViewController = MainFeedCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
+        feedViewController.title = NSLocalizedString("Feeds", comment: "Feeds")
+        let feedNavController = UINavigationController(rootViewController: feedViewController)
 
-		// Create and configure child view controllers
-		let feedViewController = MainFeedCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
-		feedViewController.title = NSLocalizedString("Feeds", comment: "Feeds")
-		let feedNavController = UINavigationController(rootViewController: feedViewController)
+        let timelineViewController = MainTimelineViewController(style: .plain)
+        let timelineNavController = UINavigationController(rootViewController: timelineViewController)
+        timelineNavController.isToolbarHidden = false
 
-		let timelineViewController = MainTimelineViewController(style: .plain)
-		let timelineNavController = UINavigationController(rootViewController: timelineViewController)
-		timelineNavController.isToolbarHidden = false
+        let articleViewController = ArticleViewController()
+        let articleNavController = UINavigationController(rootViewController: articleViewController)
+        articleNavController.isToolbarHidden = false
 
-		let articleViewController = ArticleViewController()
-		let articleNavController = UINavigationController(rootViewController: articleViewController)
-		articleNavController.isToolbarHidden = false
+        // Set the view controllers on the split view controller
+        rootViewController.setViewController(feedNavController, for: .primary)
+        rootViewController.setViewController(timelineNavController, for: .supplementary)
+        rootViewController.setViewController(articleNavController, for: .secondary)
 
-		// Set the view controllers on the split view controller
-		rootViewController.setViewController(feedNavController, for: .primary)
-		rootViewController.setViewController(timelineNavController, for: .supplementary)
-		rootViewController.setViewController(articleNavController, for: .secondary)
+        // Set up coordinator before making window visible (required for prefersStatusBarHidden)
+        self.coordinator = SceneCoordinator(rootSplitViewController: rootViewController)
+        rootViewController.coordinator = self.coordinator
+        rootViewController.delegate = self.coordinator
 
-		// Set up coordinator before making window visible (required for prefersStatusBarHidden)
-		coordinator = SceneCoordinator(rootSplitViewController: rootViewController)
-		rootViewController.coordinator = coordinator
-		rootViewController.delegate = coordinator
+        // Set up window
+        self.window!.rootViewController = rootViewController
+        self.window!.makeKeyAndVisible()
 
-		// Set up window
-		window!.rootViewController = rootViewController
-		window!.makeKeyAndVisible()
+        Task { @MainActor in
+            // Ensure Feeds view shows on iPad — otherwise the UI may be empty.
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                rootViewController.show(.primary)
+            }
+        }
 
-		Task { @MainActor in
-			// Ensure Feeds view shows on iPad — otherwise the UI may be empty.
-			if UIDevice.current.userInterfaceIdiom == .pad {
-				rootViewController.show(.primary)
-			}
-		}
+        self.coordinator.restoreWindowState(activity: session.stateRestorationActivity)
 
-		coordinator.restoreWindowState(activity: session.stateRestorationActivity)
+        updateUserInterfaceStyle()
 
-		updateUserInterfaceStyle()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleUserInterfaceColorPaletteDidUpdate(_:)),
+            name: .userInterfaceColorPaletteDidUpdate,
+            object: AppDefaults.self
+        )
 
-		NotificationCenter.default.addObserver(self, selector: #selector(handleUserInterfaceColorPaletteDidUpdate(_:)), name: .userInterfaceColorPaletteDidUpdate, object: AppDefaults.self)
+        if let _ = connectionOptions.urlContexts.first?.url {
+            self.scene(scene, openURLContexts: connectionOptions.urlContexts)
+            return
+        }
 
-		if let _ = connectionOptions.urlContexts.first?.url  {
-			self.scene(scene, openURLContexts: connectionOptions.urlContexts)
-			return
-		}
+        if let shortcutItem = connectionOptions.shortcutItem {
+            handleShortcutItem(shortcutItem)
+            return
+        }
 
-		if let shortcutItem = connectionOptions.shortcutItem {
-			handleShortcutItem(shortcutItem)
-			return
-		}
+        if let notificationResponse = connectionOptions.notificationResponse {
+            self.coordinator.handle(notificationResponse)
+            return
+        }
 
-		if let notificationResponse = connectionOptions.notificationResponse {
-			coordinator.handle(notificationResponse)
-			return
-		}
+        // Handle activities from external sources (Handoff, Spotlight, Siri Shortcuts).
+        // Skip handling session.stateRestorationActivity since UserDefaults now handles state restoration.
+        if let userActivity = connectionOptions.userActivities.first {
+            self.coordinator.handle(userActivity)
+        }
+    }
 
-		// Handle activities from external sources (Handoff, Spotlight, Siri Shortcuts).
-		// Skip handling session.stateRestorationActivity since UserDefaults now handles state restoration.
-		if let userActivity = connectionOptions.userActivities.first {
-			coordinator.handle(userActivity)
-		}
-	}
+    func windowScene(
+        _: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        appDelegate.resumeDatabaseProcessingIfNecessary()
+        handleShortcutItem(shortcutItem)
+        completionHandler(true)
+    }
 
-	func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
-		appDelegate.resumeDatabaseProcessingIfNecessary()
-		handleShortcutItem(shortcutItem)
-		completionHandler(true)
-	}
+    func scene(_: UIScene, continue userActivity: NSUserActivity) {
+        appDelegate.resumeDatabaseProcessingIfNecessary()
+        self.coordinator.handle(userActivity)
+    }
 
-	func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-		appDelegate.resumeDatabaseProcessingIfNecessary()
-		coordinator.handle(userActivity)
-	}
+    func sceneDidEnterBackground(_: UIScene) {
+        ArticleStringFormatter.emptyCaches()
+        appDelegate.prepareAccountsForBackground()
+    }
 
-	func sceneDidEnterBackground(_ scene: UIScene) {
-		ArticleStringFormatter.emptyCaches()
-		appDelegate.prepareAccountsForBackground()
-	}
+    func sceneWillEnterForeground(_: UIScene) {
+        appDelegate.resumeDatabaseProcessingIfNecessary()
+        appDelegate.prepareAccountsForForeground()
+        self.coordinator.resetFocus()
+    }
 
-	func sceneWillEnterForeground(_ scene: UIScene) {
-		appDelegate.resumeDatabaseProcessingIfNecessary()
-		appDelegate.prepareAccountsForForeground()
-		coordinator.resetFocus()
-	}
+    func stateRestorationActivity(for _: UIScene) -> NSUserActivity? {
+        self.coordinator.stateRestorationActivity
+    }
 
-	func stateRestorationActivity(for scene: UIScene) -> NSUserActivity? {
-		return coordinator.stateRestorationActivity
-	}
+    // API
 
-	// API
+    func handle(_ response: UNNotificationResponse) {
+        appDelegate.resumeDatabaseProcessingIfNecessary()
+        self.coordinator.handle(response)
+    }
 
-	func handle(_ response: UNNotificationResponse) {
-		appDelegate.resumeDatabaseProcessingIfNecessary()
-		coordinator.handle(response)
-	}
+    func suspend() {
+        self.coordinator.suspend()
+    }
 
-	func suspend() {
-		coordinator.suspend()
-	}
+    func cleanUp(conditional: Bool) {
+        self.coordinator.cleanUp(conditional: conditional)
+    }
 
-	func cleanUp(conditional: Bool) {
-		coordinator.cleanUp(conditional: conditional)
-	}
+    // Handle Opening of URLs
 
-	// Handle Opening of URLs
+    func scene(_: UIScene, openURLContexts urlContexts: Set<UIOpenURLContext>) {
+        guard let context = urlContexts.first else { return }
 
-	func scene(_ scene: UIScene, openURLContexts urlContexts: Set<UIOpenURLContext>) {
-		guard let context = urlContexts.first else { return }
+        DispatchQueue.main.async {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.coordinator.dismissIfLaunchingFromExternalAction()
+            }
 
-		DispatchQueue.main.async {
+            let urlString = context.url.absoluteString
 
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-				self.coordinator.dismissIfLaunchingFromExternalAction()
-			}
+            // Handle the feed: and feeds: schemes
+            if urlString.starts(with: "feed:") || urlString.starts(with: "feeds:") {
+                let normalizedURLString = urlString.normalizedURL
+                if normalizedURLString.mayBeURL {
+                    self.coordinator.showAddFeed(initialFeed: normalizedURLString, initialFeedName: nil)
+                }
+            }
 
-			let urlString = context.url.absoluteString
+            // Show Unread View or Article
+            if urlString.contains(WidgetDeepLink.unread.url.absoluteString) {
+                guard let comps = URLComponents(string: urlString) else { return }
+                let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
+                if id != nil {
+                    if AccountManager.shared.isSuspended {
+                        AccountManager.shared.resumeAll()
+                    }
+                    self.coordinator.selectAllUnreadFeed {
+                        self.coordinator.selectArticleInCurrentFeed(id!)
+                    }
+                } else {
+                    self.coordinator.selectAllUnreadFeed()
+                }
+            }
 
-			// Handle the feed: and feeds: schemes
-			if urlString.starts(with: "feed:") || urlString.starts(with: "feeds:") {
-				let normalizedURLString = urlString.normalizedURL
-				if normalizedURLString.mayBeURL {
-					self.coordinator.showAddFeed(initialFeed: normalizedURLString, initialFeedName: nil)
-				}
-			}
+            // Show Today View or Article
+            if urlString.contains(WidgetDeepLink.today.url.absoluteString) {
+                guard let comps = URLComponents(string: urlString) else { return }
+                let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
+                if id != nil {
+                    if AccountManager.shared.isSuspended {
+                        AccountManager.shared.resumeAll()
+                    }
+                    self.coordinator.selectTodayFeed {
+                        self.coordinator.selectArticleInCurrentFeed(id!)
+                    }
+                } else {
+                    self.coordinator.selectTodayFeed()
+                }
+            }
 
-			// Show Unread View or Article
-			if urlString.contains(WidgetDeepLink.unread.url.absoluteString) {
-				guard let comps = URLComponents(string: urlString ) else { return  }
-				let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
-				if id != nil {
-					if AccountManager.shared.isSuspended {
-						AccountManager.shared.resumeAll()
-					}
-					self.coordinator.selectAllUnreadFeed() {
-						self.coordinator.selectArticleInCurrentFeed(id!)
-					}
-				} else {
-					self.coordinator.selectAllUnreadFeed()
-				}
-			}
-
-			// Show Today View or Article
-			if urlString.contains(WidgetDeepLink.today.url.absoluteString) {
-				guard let comps = URLComponents(string: urlString ) else { return  }
-				let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
-				if id != nil {
-					if AccountManager.shared.isSuspended {
-						AccountManager.shared.resumeAll()
-					}
-					self.coordinator.selectTodayFeed() {
-						self.coordinator.selectArticleInCurrentFeed(id!)
-					}
-				} else {
-					self.coordinator.selectTodayFeed()
-				}
-			}
-
-			// Show Starred View or Article
-			if urlString.contains(WidgetDeepLink.starred.url.absoluteString) {
-				guard let comps = URLComponents(string: urlString ) else { return  }
-				let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
-				if id != nil {
-					if AccountManager.shared.isSuspended {
-						AccountManager.shared.resumeAll()
-					}
-					self.coordinator.selectStarredFeed() {
-						self.coordinator.selectArticleInCurrentFeed(id!)
-					}
-				} else {
-					self.coordinator.selectStarredFeed()
-				}
-			}
-		}
-	}
+            // Show Starred View or Article
+            if urlString.contains(WidgetDeepLink.starred.url.absoluteString) {
+                guard let comps = URLComponents(string: urlString) else { return }
+                let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
+                if id != nil {
+                    if AccountManager.shared.isSuspended {
+                        AccountManager.shared.resumeAll()
+                    }
+                    self.coordinator.selectStarredFeed {
+                        self.coordinator.selectArticleInCurrentFeed(id!)
+                    }
+                } else {
+                    self.coordinator.selectStarredFeed()
+                }
+            }
+        }
+    }
 }
 
-private extension SceneDelegate {
+extension SceneDelegate {
+    private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
+        switch shortcutItem.type {
+        case "net.domzilla.reed.FirstUnread":
+            self.coordinator.selectFirstUnreadInAllUnread()
+        case "net.domzilla.reed.ShowSearch":
+            self.coordinator.showSearch()
+        case "net.domzilla.reed.ShowAdd":
+            self.coordinator.showAddFeed()
+        default:
+            break
+        }
+    }
 
-	func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
-		switch shortcutItem.type {
-		case "net.domzilla.reed.FirstUnread":
-			coordinator.selectFirstUnreadInAllUnread()
-		case "net.domzilla.reed.ShowSearch":
-			coordinator.showSearch()
-		case "net.domzilla.reed.ShowAdd":
-			coordinator.showAddFeed()
-		default:
-			break
-		}
-	}
+    @objc
+    private func handleUserInterfaceColorPaletteDidUpdate(_: Notification) {
+        assert(Thread.isMainThread)
+        Task {
+            self.updateUserInterfaceStyle()
+        }
+    }
 
-	@objc func handleUserInterfaceColorPaletteDidUpdate(_ notification: Notification) {
-		assert(Thread.isMainThread)
-		Task {
-			updateUserInterfaceStyle()
-		}
-	}
-
-	@MainActor func updateUserInterfaceStyle() {
-		switch AppDefaults.userInterfaceColorPalette {
-		case .automatic:
-			self.window?.overrideUserInterfaceStyle = .unspecified
-		case .light:
-			self.window?.overrideUserInterfaceStyle = .light
-		case .dark:
-			self.window?.overrideUserInterfaceStyle = .dark
-		}
-	}
+    @MainActor
+    private func updateUserInterfaceStyle() {
+        switch AppDefaults.userInterfaceColorPalette {
+        case .automatic:
+            self.window?.overrideUserInterfaceStyle = .unspecified
+        case .light:
+            self.window?.overrideUserInterfaceStyle = .light
+        case .dark:
+            self.window?.overrideUserInterfaceStyle = .dark
+        }
+    }
 }

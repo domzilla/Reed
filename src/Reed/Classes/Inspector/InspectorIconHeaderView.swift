@@ -9,26 +9,25 @@
 import UIKit
 
 final class InspectorIconHeaderView: UITableViewHeaderFooterView {
+    var iconView = IconView()
 
-	var iconView = IconView()
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
+        self.commonInit()
+    }
 
-	override init(reuseIdentifier: String?) {
-		super.init(reuseIdentifier: reuseIdentifier)
-		commonInit()
-	}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.commonInit()
+    }
 
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
-		commonInit()
-	}
+    func commonInit() {
+        addSubview(self.iconView)
+    }
 
-	func commonInit() {
-		addSubview(iconView)
-	}
-
-	override func layoutSubviews() {
-		let x = (bounds.width - 48.0) / 2
-		let y = (bounds.height - 48.0) / 2
-		iconView.frame = CGRect(x: x, y: y, width: 48.0, height: 48.0)
-	}
+    override func layoutSubviews() {
+        let x = (bounds.width - 48.0) / 2
+        let y = (bounds.height - 48.0) / 2
+        self.iconView.frame = CGRect(x: x, y: y, width: 48.0, height: 48.0)
+    }
 }

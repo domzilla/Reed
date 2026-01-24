@@ -6,254 +6,270 @@
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
 //
 
-import UIKit
 import RSCore
+import UIKit
 
 final class AddFolderViewController: UITableViewController {
+    static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 400.0)
 
-	static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 400.0)
-
-	private var shouldDisplayPicker: Bool {
-		return accounts.count > 1
-	}
-
-	private var accounts: [Account]! {
-		didSet {
-			if let predefinedAccount = accounts.first(where: { $0.accountID == AppDefaults.shared.addFolderAccountID }) {
-				selectedAccount = predefinedAccount
-			} else {
-				selectedAccount = accounts[0]
-			}
-		}
-	}
-
-	private var selectedAccount: Account! {
-		didSet {
-			guard selectedAccount != oldValue else { return }
-			accountLabel.text = selectedAccount.flatMap { ($0 as DisplayNameProvider).nameForDisplay }
-		}
-	}
-
-	// MARK: - UI Elements
-
-	private lazy var addButton: UIBarButtonItem = {
-		let button = UIBarButtonItem(title: NSLocalizedString("Add", comment: "Add"), style: .prominent, target: self, action: #selector(add(_:)))
-		button.isEnabled = false
-		return button
-	}()
-
-	private lazy var nameTextField: UITextField = {
-		let textField = UITextField()
-		textField.placeholder = NSLocalizedString("Name", comment: "Name")
-		textField.autocorrectionType = .no
-		textField.autocapitalizationType = .words
-		textField.returnKeyType = .done
-		textField.clearButtonMode = .whileEditing
-		textField.font = .preferredFont(forTextStyle: .body)
-		textField.adjustsFontForContentSizeCategory = true
-		textField.translatesAutoresizingMaskIntoConstraints = false
-		return textField
-	}()
-
-	private lazy var accountLabel: UILabel = {
-		let label = UILabel()
-		label.font = .preferredFont(forTextStyle: .body)
-		label.adjustsFontForContentSizeCategory = true
-		label.textColor = .secondaryLabel
-		label.translatesAutoresizingMaskIntoConstraints = false
-		return label
-	}()
-
-	private lazy var accountPickerView: UIPickerView = {
-		let picker = UIPickerView()
-		picker.translatesAutoresizingMaskIntoConstraints = false
-		return picker
-	}()
-
-	// MARK: - Initialization
-
-	init() {
-		super.init(style: .insetGrouped)
-	}
-
-	@available(*, unavailable)
-	required init?(coder: NSCoder) {
-		fatalError("Use init()")
-	}
-
-	// MARK: - Lifecycle
-
-	override func viewDidLoad() {
-		super.viewDidLoad()
-
-		title = NSLocalizedString("Add Folder", comment: "Add Folder")
-		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel(_:)))
-		navigationItem.rightBarButtonItem = addButton
-
-		accounts = AccountManager.shared
-			.sortedActiveAccounts
-			.filter { !$0.behaviors.contains(.disallowFolderManagement) }
-
-		nameTextField.delegate = self
-
-		if shouldDisplayPicker {
-			accountPickerView.dataSource = self
-			accountPickerView.delegate = self
-
-			if let index = accounts.firstIndex(of: selectedAccount) {
-				accountPickerView.selectRow(index, inComponent: 0, animated: false)
-			}
-
-		}
-
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "LabelCell")
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "PickerCell")
-
-		NotificationCenter.default.addObserver(self, selector: #selector(textDidChange(_:)), name: UITextField.textDidChangeNotification, object: nameTextField)
-
-		nameTextField.becomeFirstResponder()
+    private var shouldDisplayPicker: Bool {
+        self.accounts.count > 1
     }
 
-	// MARK: - Actions
+    private var accounts: [Account]! {
+        didSet {
+            if
+                let predefinedAccount = accounts
+                    .first(where: { $0.accountID == AppDefaults.shared.addFolderAccountID })
+            {
+                self.selectedAccount = predefinedAccount
+            } else {
+                self.selectedAccount = self.accounts[0]
+            }
+        }
+    }
 
-	private func didSelect(_ account: Account) {
-		AppDefaults.shared.addFolderAccountID = account.accountID
-		selectedAccount = account
-	}
+    private var selectedAccount: Account! {
+        didSet {
+            guard self.selectedAccount != oldValue else { return }
+            self.accountLabel.text = self.selectedAccount.flatMap { ($0 as DisplayNameProvider).nameForDisplay }
+        }
+    }
 
-	@objc func cancel(_ sender: Any) {
-		dismiss(animated: true)
-	}
+    // MARK: - UI Elements
 
-	@objc func add(_ sender: Any) {
-		guard let folderName = nameTextField.text else {
-			return
-		}
+    private lazy var addButton: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            title: NSLocalizedString("Add", comment: "Add"),
+            style: .prominent,
+            target: self,
+            action: #selector(add(_:))
+        )
+        button.isEnabled = false
+        return button
+    }()
 
-		Task { @MainActor in
-			defer {
-				dismiss(animated: true)
-			}
-			do {
-				try await selectedAccount.addFolder(folderName)
-			} catch {
-				presentError(error)
-			}
-		}
-	}
+    private lazy var nameTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = NSLocalizedString("Name", comment: "Name")
+        textField.autocorrectionType = .no
+        textField.autocapitalizationType = .words
+        textField.returnKeyType = .done
+        textField.clearButtonMode = .whileEditing
+        textField.font = .preferredFont(forTextStyle: .body)
+        textField.adjustsFontForContentSizeCategory = true
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
 
-	@objc func textDidChange(_ note: Notification) {
-		addButton.isEnabled = !(nameTextField.text?.isEmpty ?? false)
-	}
+    private lazy var accountLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .secondaryLabel
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
-	// MARK: - Table view data source
+    private lazy var accountPickerView: UIPickerView = {
+        let picker = UIPickerView()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        return picker
+    }()
 
-	override func numberOfSections(in tableView: UITableView) -> Int {
-		return shouldDisplayPicker ? 2 : 1
-	}
+    // MARK: - Initialization
 
-	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		switch section {
-		case 0:
-			return 1
-		case 1:
-			return 2
-		default:
-			return 0
-		}
-	}
+    init() {
+        super.init(style: .insetGrouped)
+    }
 
-	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		switch (indexPath.section, indexPath.row) {
-		case (0, 0):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "TextFieldCell", for: indexPath)
-			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-			cell.selectionStyle = .none
-			cell.contentView.addSubview(nameTextField)
-			NSLayoutConstraint.activate([
-				nameTextField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
-				nameTextField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
-				nameTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
-				nameTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11)
-			])
-			return cell
-		case (1, 0):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
-			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-			cell.selectionStyle = .none
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init()")
+    }
 
-			let titleLabel = UILabel()
-			titleLabel.text = NSLocalizedString("Account", comment: "Account")
-			titleLabel.font = .preferredFont(forTextStyle: .body)
-			titleLabel.adjustsFontForContentSizeCategory = true
-			titleLabel.translatesAutoresizingMaskIntoConstraints = false
+    // MARK: - Lifecycle
 
-			cell.contentView.addSubview(titleLabel)
-			cell.contentView.addSubview(accountLabel)
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-			NSLayoutConstraint.activate([
-				titleLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
-				titleLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-				accountLabel.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
-				accountLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-				titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: accountLabel.leadingAnchor, constant: -8)
-			])
-			return cell
-		case (1, 1):
-			let cell = tableView.dequeueReusableCell(withIdentifier: "PickerCell", for: indexPath)
-			cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-			cell.selectionStyle = .none
-			cell.contentView.addSubview(accountPickerView)
-			NSLayoutConstraint.activate([
-				accountPickerView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
-				accountPickerView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor),
-				accountPickerView.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
-				accountPickerView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
-			])
-			return cell
-		default:
-			fatalError("Unexpected index path")
-		}
-	}
+        title = NSLocalizedString("Add Folder", comment: "Add Folder")
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .cancel,
+            target: self,
+            action: #selector(self.cancel(_:))
+        )
+        navigationItem.rightBarButtonItem = self.addButton
 
-	override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-		switch section {
-		case 0:
-			return NSLocalizedString("Name", comment: "Name")
-		case 1:
-			return NSLocalizedString("Account", comment: "Account")
-		default:
-			return nil
-		}
-	}
+        self.accounts = AccountManager.shared
+            .sortedActiveAccounts
+            .filter { !$0.behaviors.contains(.disallowFolderManagement) }
+
+        self.nameTextField.delegate = self
+
+        if self.shouldDisplayPicker {
+            self.accountPickerView.dataSource = self
+            self.accountPickerView.delegate = self
+
+            if let index = accounts.firstIndex(of: selectedAccount) {
+                self.accountPickerView.selectRow(index, inComponent: 0, animated: false)
+            }
+        }
+
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "LabelCell")
+        self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "PickerCell")
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.textDidChange(_:)),
+            name: UITextField.textDidChangeNotification,
+            object: self.nameTextField
+        )
+
+        self.nameTextField.becomeFirstResponder()
+    }
+
+    // MARK: - Actions
+
+    private func didSelect(_ account: Account) {
+        AppDefaults.shared.addFolderAccountID = account.accountID
+        self.selectedAccount = account
+    }
+
+    @objc
+    func cancel(_: Any) {
+        dismiss(animated: true)
+    }
+
+    @objc
+    func add(_: Any) {
+        guard let folderName = nameTextField.text else {
+            return
+        }
+
+        Task { @MainActor in
+            defer {
+                dismiss(animated: true)
+            }
+            do {
+                try await self.selectedAccount.addFolder(folderName)
+            } catch {
+                presentError(error)
+            }
+        }
+    }
+
+    @objc
+    func textDidChange(_: Notification) {
+        self.addButton.isEnabled = !(self.nameTextField.text?.isEmpty ?? false)
+    }
+
+    // MARK: - Table view data source
+
+    override func numberOfSections(in _: UITableView) -> Int {
+        self.shouldDisplayPicker ? 2 : 1
+    }
+
+    override func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch section {
+        case 0:
+            1
+        case 1:
+            2
+        default:
+            0
+        }
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch (indexPath.section, indexPath.row) {
+        case (0, 0):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "TextFieldCell", for: indexPath)
+            cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+            cell.selectionStyle = .none
+            cell.contentView.addSubview(self.nameTextField)
+            NSLayoutConstraint.activate([
+                self.nameTextField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+                self.nameTextField.trailingAnchor
+                    .constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+                self.nameTextField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 11),
+                self.nameTextField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -11),
+            ])
+            return cell
+        case (1, 0):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
+            cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+            cell.selectionStyle = .none
+
+            let titleLabel = UILabel()
+            titleLabel.text = NSLocalizedString("Account", comment: "Account")
+            titleLabel.font = .preferredFont(forTextStyle: .body)
+            titleLabel.adjustsFontForContentSizeCategory = true
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+            cell.contentView.addSubview(titleLabel)
+            cell.contentView.addSubview(self.accountLabel)
+
+            NSLayoutConstraint.activate([
+                titleLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
+                titleLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                self.accountLabel.trailingAnchor
+                    .constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
+                self.accountLabel.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: self.accountLabel.leadingAnchor, constant: -8),
+            ])
+            return cell
+        case (1, 1):
+            let cell = tableView.dequeueReusableCell(withIdentifier: "PickerCell", for: indexPath)
+            cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+            cell.selectionStyle = .none
+            cell.contentView.addSubview(self.accountPickerView)
+            NSLayoutConstraint.activate([
+                self.accountPickerView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
+                self.accountPickerView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor),
+                self.accountPickerView.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
+                self.accountPickerView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
+            ])
+            return cell
+        default:
+            fatalError("Unexpected index path")
+        }
+    }
+
+    override func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch section {
+        case 0:
+            NSLocalizedString("Name", comment: "Name")
+        case 1:
+            NSLocalizedString("Account", comment: "Account")
+        default:
+            nil
+        }
+    }
 }
 
 extension AddFolderViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in _: UIPickerView) -> Int {
+        1
+    }
 
-	func numberOfComponents(in pickerView: UIPickerView) ->Int {
-		return 1
-	}
+    func pickerView(_: UIPickerView, numberOfRowsInComponent _: Int) -> Int {
+        self.accounts.count
+    }
 
-	func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-		return accounts.count
-	}
+    func pickerView(_: UIPickerView, titleForRow row: Int, forComponent _: Int) -> String? {
+        (self.accounts[row] as DisplayNameProvider).nameForDisplay
+    }
 
-	func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return (accounts[row] as DisplayNameProvider).nameForDisplay
-	}
-
-	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		didSelect(accounts[row])
-	}
-
+    func pickerView(_: UIPickerView, didSelectRow row: Int, inComponent _: Int) {
+        self.didSelect(self.accounts[row])
+    }
 }
 
 extension AddFolderViewController: UITextFieldDelegate {
-
-	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		textField.resignFirstResponder()
-		return true
-	}
-
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 }

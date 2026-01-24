@@ -1,5 +1,5 @@
 //
-//  NSAttributedString+NetNewsWire.swift
+//  NSAttributedString+Extensions.swift
 //  NetNewsWire
 //
 //  Created by Nate Weaver on 2020-04-07.
@@ -14,256 +14,260 @@ private let italicTrait = UIFontDescriptor.SymbolicTraits.traitItalic
 private let monoSpaceTrait = UIFontDescriptor.SymbolicTraits.traitMonoSpace
 
 extension NSAttributedString {
+    /// Adds a font and color to an attributed string.
+    ///
+    /// - Parameters:
+    ///   - baseFont: The font to add.
+    func adding(font baseFont: UIFont) -> NSAttributedString {
+        let mutable = self.mutableCopy() as! NSMutableAttributedString
+        let fullRange = NSRange(location: 0, length: mutable.length)
 
-	/// Adds a font and color to an attributed string.
-	///
-	/// - Parameters:
-	///   - baseFont: The font to add.
-	func adding(font baseFont: UIFont) -> NSAttributedString {
-		let mutable = self.mutableCopy() as! NSMutableAttributedString
-		let fullRange = NSRange(location: 0, length: mutable.length)
+        let size = baseFont.pointSize
+        let baseDescriptor = baseFont.fontDescriptor
+        let baseSymbolicTraits = baseDescriptor.symbolicTraits
 
-		let size = baseFont.pointSize
-		let baseDescriptor = baseFont.fontDescriptor
-		let baseSymbolicTraits = baseDescriptor.symbolicTraits
+        mutable.enumerateAttribute(.font, in: fullRange, options: []) { (
+            font: Any?,
+            range: NSRange,
+            _: UnsafeMutablePointer<ObjCBool>
+        ) in
+            guard let font = font as? UIFont else { return }
 
-		mutable.enumerateAttribute(.font, in: fullRange, options: []) { (font: Any?, range: NSRange, stop: UnsafeMutablePointer<ObjCBool>) in
-			guard let font = font as? UIFont else { return }
+            let currentDescriptor = font.fontDescriptor
+            let symbolicTraits = baseSymbolicTraits.union(currentDescriptor.symbolicTraits)
 
-			let currentDescriptor = font.fontDescriptor
-			let symbolicTraits = baseSymbolicTraits.union(currentDescriptor.symbolicTraits)
+            var descriptor = currentDescriptor.addingAttributes(baseDescriptor.fontAttributes)
 
-			var descriptor = currentDescriptor.addingAttributes(baseDescriptor.fontAttributes)
+            descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
 
-			descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
+            let newFont = UIFont(descriptor: descriptor, size: size)
 
-			let newFont = UIFont(descriptor: descriptor, size: size)
+            mutable.addAttribute(.font, value: newFont as Any, range: range)
+        }
 
-			mutable.addAttribute(.font, value: newFont as Any, range: range)
-		}
+        return mutable.copy() as! NSAttributedString
+    }
 
-		return mutable.copy() as! NSAttributedString
-	}
+    private enum InTag {
+        case none
+        case opening
+        case closing
+    }
 
-	private enum InTag {
-		case none
-		case opening
-		case closing
-	}
+    private enum Style {
+        case bold
+        case italic
+        case superscript
+        case `subscript`
+        case underline
+        case strikethrough
+        case monospace
 
-	private enum Style {
-		case bold
-		case italic
-		case superscript
-		case `subscript`
-		case underline
-		case strikethrough
-		case monospace
+        init?(forTag: String) {
+            switch forTag {
+            case "b", "strong":
+                self = .bold
+            case "i", "em", "cite", "var", "dfn":
+                self = .italic
+            case "sup":
+                self = .superscript
+            case "sub":
+                self = .subscript
+            case "u", "ins":
+                self = .underline
+            case "s", "del":
+                self = .strikethrough
+            case "code", "samp", "tt", "kbd":
+                self = .monospace
+            default:
+                return nil
+            }
+        }
+    }
 
-		init?(forTag: String) {
-			switch forTag {
-				case "b", "strong":
-					self = .bold
-				case "i", "em", "cite", "var", "dfn":
-					self = .italic
-				case "sup":
-					self = .superscript
-				case "sub":
-					self = .subscript
-				case "u", "ins":
-					self = .underline
-				case "s", "del":
-					self = .strikethrough
-				case "code", "samp", "tt", "kbd":
-					self = .monospace
-				default:
-					return nil
-			}
-		}
-	}
+    /// Returns an attributed string initialized from  HTML text containing basic inline stylistic tags.
+    ///
+    /// - Parameters:
+    ///   - html: The HTML text.
+    ///   - locale: The locale used for quotation marks when parsing `<q>` tags.
+    convenience init(html: String, locale: Locale = Locale.current) {
+        let baseFont = UIFont.systemFont(ofSize: UIFont.systemFontSize)
 
-	/// Returns an attributed string initialized from  HTML text containing basic inline stylistic tags.
-	///
-	/// - Parameters:
-	///   - html: The HTML text.
-	///   - locale: The locale used for quotation marks when parsing `<q>` tags.
-	convenience init(html: String, locale: Locale = Locale.current) {
-		let baseFont = UIFont.systemFont(ofSize: UIFont.systemFontSize)
+        var inTag: InTag = .none
+        var tag = ""
+        var currentStyles = CountedSet<Style>()
 
-		var inTag: InTag = .none
-		var tag = ""
-		var currentStyles = CountedSet<Style>()
+        var iterator = html.makeIterator()
 
-		var iterator = html.makeIterator()
+        let result = NSMutableAttributedString()
 
-		let result = NSMutableAttributedString()
+        var attributeRanges = [(range: NSRange, styles: CountedSet<Style>)]()
+        var quoteDepth = 0
 
-		var attributeRanges = [ (range: NSRange, styles: CountedSet<Style>) ]()
-		var quoteDepth = 0
+        while let char = iterator.next() {
+            if char == "<", inTag == .none {
+                tag.removeAll()
 
-		while let char = iterator.next() {
-			if char == "<" && inTag == .none {
-				tag.removeAll()
+                guard let first = iterator.next() else { break }
 
-				guard let first = iterator.next() else { break }
+                if first == "/" {
+                    inTag = .closing
+                } else {
+                    inTag = .opening
+                    tag.append(first)
+                }
+            } else if char == ">", inTag != .none {
+                let lastRange = attributeRanges.last?.range
+                let location = lastRange != nil ? lastRange!.location + lastRange!.length : 0
+                let range = NSRange(location: location, length: result.mutableString.length - location)
 
-				if first == "/" {
-					inTag = .closing
-				} else {
-					inTag = .opening
-					tag.append(first)
-				}
-			} else if char == ">" && inTag != .none {
-				let lastRange = attributeRanges.last?.range
-				let location = lastRange != nil ? lastRange!.location + lastRange!.length : 0
-				let range = NSRange(location: location, length: result.mutableString.length - location)
+                attributeRanges.append((range: range, styles: currentStyles))
 
-				attributeRanges.append( (range: range, styles: currentStyles) )
+                if inTag == .opening {
+                    if tag == "q" {
+                        quoteDepth += 1
+                        let delimiter = quoteDepth % 2 == 1 ? locale.quotationBeginDelimiter : locale
+                            .alternateQuotationBeginDelimiter
+                        result.mutableString.append(delimiter ?? "\"")
+                    }
 
-				if inTag == .opening {
-					if tag == "q" {
-						quoteDepth += 1
-						let delimiter = quoteDepth % 2 == 1 ? locale.quotationBeginDelimiter : locale.alternateQuotationBeginDelimiter
-						result.mutableString.append(delimiter ?? "\"")
-					}
+                    if let style = Style(forTag: tag) {
+                        currentStyles.insert(style)
+                    }
+                } else {
+                    if tag == "q" {
+                        let delimiter = quoteDepth % 2 == 1 ? locale.quotationEndDelimiter : locale
+                            .alternateQuotationEndDelimiter
+                        result.mutableString.append(delimiter ?? "\"")
+                        quoteDepth -= 1
+                    }
 
-					if let style = Style(forTag: tag) {
-						currentStyles.insert(style)
-					}
-				} else {
-					if tag == "q" {
-						let delimiter = quoteDepth % 2 == 1 ? locale.quotationEndDelimiter : locale.alternateQuotationEndDelimiter
-						result.mutableString.append(delimiter ?? "\"")
-						quoteDepth -= 1
-					}
+                    if let style = Style(forTag: tag) {
+                        currentStyles.remove(style)
+                    }
+                }
 
-					if let style = Style(forTag: tag) {
-						currentStyles.remove(style)
-					}
-				}
+                inTag = .none
+            } else if inTag != .none {
+                tag.append(char)
+            } else {
+                if char == "&" {
+                    var entity = "&"
+                    var lastchar: Character? = nil
 
-				inTag = .none
-			} else if inTag != .none {
-				tag.append(char)
-			} else {
-				if char == "&" {
-					var entity = "&"
-					var lastchar: Character? = nil
+                    while let entitychar = iterator.next() {
+                        if entitychar.isWhitespace {
+                            lastchar = entitychar
+                            break
+                        }
 
-					while let entitychar = iterator.next() {
-						if entitychar.isWhitespace {
-							lastchar = entitychar
-							break;
-						}
+                        entity.append(entitychar)
 
-						entity.append(entitychar)
+                        if entitychar == ";" { break }
+                    }
 
-						if (entitychar == ";") { break }
-					}
+                    result.mutableString.append(entity.decodedEntity)
 
+                    if let lastchar { result.mutableString.append(String(lastchar)) }
+                } else {
+                    result.mutableString.append(String(char))
+                }
+            }
+        }
 
-					result.mutableString.append(entity.decodedEntity)
+        result.addAttribute(.font, value: baseFont, range: NSRange(location: 0, length: result.length))
 
-					if let lastchar = lastchar { result.mutableString.append(String(lastchar)) }
-				} else {
-					result.mutableString.append(String(char))
-				}
-			}
-		}
+        for (range, styles) in attributeRanges {
+            if range.location >= result.length { continue }
 
-		result.addAttribute(.font, value: baseFont, range: NSRange(location: 0, length: result.length))
+            let currentFont = result.attribute(.font, at: range.location, effectiveRange: nil) as! UIFont
+            let currentDescriptor = currentFont.fontDescriptor
+            var descriptor = currentDescriptor.copy() as! UIFontDescriptor
 
-		for (range, styles) in attributeRanges {
-			if range.location >= result.length { continue }
+            var symbolicTraits = currentDescriptor.symbolicTraits
 
-			let currentFont = result.attribute(.font, at: range.location, effectiveRange: nil) as! UIFont
-			let currentDescriptor = currentFont.fontDescriptor
-			var descriptor = currentDescriptor.copy() as! UIFontDescriptor
+            if styles.contains(.bold) {
+                let traits: [UIFontDescriptor.TraitKey: Any] = [.weight: UIFont.Weight.bold]
+                let attributes: [UIFontDescriptor.AttributeName: Any] = [.traits: traits]
+                descriptor = descriptor.addingAttributes(attributes)
+                symbolicTraits.insert(boldTrait)
+            }
 
-			var symbolicTraits = currentDescriptor.symbolicTraits
+            if styles.contains(.italic) {
+                symbolicTraits.insert(italicTrait)
+            }
 
-			if styles.contains(.bold) {
-				let traits: [UIFontDescriptor.TraitKey: Any] = [.weight: UIFont.Weight.bold]
-				let attributes: [UIFontDescriptor.AttributeName: Any] = [.traits: traits]
-				descriptor = descriptor.addingAttributes(attributes)
-				symbolicTraits.insert(boldTrait)
-			}
+            if styles.contains(.monospace) {
+                symbolicTraits.insert(monoSpaceTrait)
+            }
 
-			if styles.contains(.italic) {
-				symbolicTraits.insert(italicTrait)
-			}
+            descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
 
-			if styles.contains(.monospace) {
-				symbolicTraits.insert(monoSpaceTrait)
-			}
+            func verticalPositionFeature(forSuperscript: Bool) -> [UIFontDescriptor.FeatureKey: Any] {
+                let features: [UIFontDescriptor.FeatureKey: Any] = [
+                    .type: kVerticalPositionType,
+                    .selector: forSuperscript ? kSuperiorsSelector : kInferiorsSelector,
+                ]
+                return features
+            }
 
-			descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
+            if styles.contains(.superscript) || styles.contains(.subscript) {
+                let features = verticalPositionFeature(forSuperscript: styles.contains(.superscript))
+                let descriptorAttributes: [UIFontDescriptor.AttributeName: Any] = [.featureSettings: [features]]
+                descriptor = descriptor.addingAttributes(descriptorAttributes)
+            }
 
-			func verticalPositionFeature(forSuperscript: Bool) -> [UIFontDescriptor.FeatureKey: Any] {
-				let features: [UIFontDescriptor.FeatureKey: Any] = [.type: kVerticalPositionType, .selector: forSuperscript ? kSuperiorsSelector : kInferiorsSelector]
-				return features
-			}
+            var attributes = [NSAttributedString.Key: Any]()
 
-			if styles.contains(.superscript) || styles.contains(.subscript) {
-				let features = verticalPositionFeature(forSuperscript: styles.contains(.superscript))
-				let descriptorAttributes: [UIFontDescriptor.AttributeName: Any] = [.featureSettings: [features]]
-				descriptor = descriptor.addingAttributes(descriptorAttributes)
-			}
+            attributes[.font] = UIFont(descriptor: descriptor, size: baseFont.pointSize)
 
-			var attributes = [NSAttributedString.Key: Any]()
+            if styles.contains(.strikethrough) {
+                attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+            }
 
-			attributes[.font] = UIFont(descriptor: descriptor, size: baseFont.pointSize)
+            if styles.contains(.underline) {
+                attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+            }
 
-			if styles.contains(.strikethrough) {
-				attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
-			}
+            result.addAttributes(attributes, range: range)
+        }
 
-			if styles.contains(.underline) {
-				attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
-			}
-
-			result.addAttributes(attributes, range: range)
-		}
-
-		self.init(attributedString: result)
-	}
-
+        self.init(attributedString: result)
+    }
 }
 
 /// This is a very, very basic implementation that only covers our needs.
 private struct CountedSet<Element> where Element: Hashable {
-	private var _storage = [Element: Int]()
+    private var _storage = [Element: Int]()
 
-	mutating func insert(_ element: Element) {
-		_storage[element, default: 0] += 1
-	}
+    mutating func insert(_ element: Element) {
+        self._storage[element, default: 0] += 1
+    }
 
-	mutating func remove(_ element: Element) {
-		guard var count = _storage[element] else { return }
+    mutating func remove(_ element: Element) {
+        guard var count = _storage[element] else { return }
 
-		count -= 1
+        count -= 1
 
-		if count == 0 {
-			_storage.removeValue(forKey: element)
-		} else {
-			_storage[element] = count
-		}
-	}
+        if count == 0 {
+            self._storage.removeValue(forKey: element)
+        } else {
+            self._storage[element] = count
+        }
+    }
 
-	func contains(_ element: Element) -> Bool {
-		return _storage[element] != nil
-	}
+    func contains(_ element: Element) -> Bool {
+        self._storage[element] != nil
+    }
 
-	subscript(key: Element) -> Int {
-		get {
-			return _storage[key, default: 0]
-		}
-	}
+    subscript(key: Element) -> Int {
+        self._storage[key, default: 0]
+    }
 }
 
-private extension String {
-	var decodedEntity: String {
-		// It's possible the implementation will change, but for now it just calls this.
-		(self as NSString).rsparser_stringByDecodingHTMLEntities() as String
-	}
+extension String {
+    fileprivate var decodedEntity: String {
+        // It's possible the implementation will change, but for now it just calls this.
+        (self as NSString).rsparser_stringByDecodingHTMLEntities() as String
+    }
 }

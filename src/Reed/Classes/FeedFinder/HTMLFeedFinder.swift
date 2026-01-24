@@ -12,67 +12,75 @@ import RSParser
 private let feedURLWordsToMatch = ["feed", "xml", "rss", "atom", "json"]
 
 final class HTMLFeedFinder {
+    var feedSpecifiers: Set<FeedSpecifier> {
+        Set(self.feedSpecifiersDictionary.values)
+    }
 
-	var feedSpecifiers: Set<FeedSpecifier> {
-		return Set(feedSpecifiersDictionary.values)
-	}
+    private var feedSpecifiersDictionary = [String: FeedSpecifier]()
 
-	private var feedSpecifiersDictionary = [String: FeedSpecifier]()
+    init(parserData: ParserData) {
+        let metadata = RSHTMLMetadataParser.htmlMetadata(with: parserData)
+        var orderFound = 0
 
-	init(parserData: ParserData) {
-		let metadata = RSHTMLMetadataParser.htmlMetadata(with: parserData)
-		var orderFound = 0
+        for oneFeedLink in metadata.feedLinks {
+            if let oneURLString = oneFeedLink.urlString?.normalizedURL {
+                orderFound = orderFound + 1
+                let oneFeedSpecifier = FeedSpecifier(
+                    title: oneFeedLink.title,
+                    urlString: oneURLString,
+                    source: .HTMLHead,
+                    orderFound: orderFound
+                )
+                addFeedSpecifier(oneFeedSpecifier)
+            }
+        }
 
-		for oneFeedLink in metadata.feedLinks {
-			if let oneURLString = oneFeedLink.urlString?.normalizedURL {
-				orderFound = orderFound + 1
-				let oneFeedSpecifier = FeedSpecifier(title: oneFeedLink.title, urlString: oneURLString, source: .HTMLHead, orderFound: orderFound)
-				addFeedSpecifier(oneFeedSpecifier)
-			}
-		}
-
-		let bodyLinks = RSHTMLLinkParser.htmlLinks(with: parserData)
-		for oneBodyLink in bodyLinks {
-			if linkMightBeFeed(oneBodyLink), let normalizedURL = oneBodyLink.urlString?.normalizedURL {
-				orderFound = orderFound + 1
-				let oneFeedSpecifier = FeedSpecifier(title: oneBodyLink.text, urlString: normalizedURL, source: .HTMLLink, orderFound: orderFound)
-				addFeedSpecifier(oneFeedSpecifier)
-			}
-		}
-	}
+        let bodyLinks = RSHTMLLinkParser.htmlLinks(with: parserData)
+        for oneBodyLink in bodyLinks {
+            if linkMightBeFeed(oneBodyLink), let normalizedURL = oneBodyLink.urlString?.normalizedURL {
+                orderFound = orderFound + 1
+                let oneFeedSpecifier = FeedSpecifier(
+                    title: oneBodyLink.text,
+                    urlString: normalizedURL,
+                    source: .HTMLLink,
+                    orderFound: orderFound
+                )
+                addFeedSpecifier(oneFeedSpecifier)
+            }
+        }
+    }
 }
 
-private extension HTMLFeedFinder {
+extension HTMLFeedFinder {
+    private func addFeedSpecifier(_ feedSpecifier: FeedSpecifier) {
+        // If there’s an existing feed specifier, merge the two so that we have the best data. If one has a title and
+        // one doesn’t, use that non-nil title. Use the better source.
 
-	func addFeedSpecifier(_ feedSpecifier: FeedSpecifier) {
-		// If there’s an existing feed specifier, merge the two so that we have the best data. If one has a title and one doesn’t, use that non-nil title. Use the better source.
+        if let existingFeedSpecifier = feedSpecifiersDictionary[feedSpecifier.urlString] {
+            let mergedFeedSpecifier = existingFeedSpecifier.feedSpecifierByMerging(feedSpecifier)
+            self.feedSpecifiersDictionary[feedSpecifier.urlString] = mergedFeedSpecifier
+        } else {
+            self.feedSpecifiersDictionary[feedSpecifier.urlString] = feedSpecifier
+        }
+    }
 
-		if let existingFeedSpecifier = feedSpecifiersDictionary[feedSpecifier.urlString] {
-			let mergedFeedSpecifier = existingFeedSpecifier.feedSpecifierByMerging(feedSpecifier)
-			feedSpecifiersDictionary[feedSpecifier.urlString] = mergedFeedSpecifier
-		}
-		else {
-			feedSpecifiersDictionary[feedSpecifier.urlString] = feedSpecifier
-		}
-	}
+    private func urlStringMightBeFeed(_ urlString: String) -> Bool {
+        let massagedURLString = urlString.replacingOccurrences(of: "buzzfeed", with: "_")
 
-	func urlStringMightBeFeed(_ urlString: String) -> Bool {
-		let massagedURLString = urlString.replacingOccurrences(of: "buzzfeed", with: "_")
+        for oneMatch in feedURLWordsToMatch {
+            let range = (massagedURLString as NSString).range(of: oneMatch, options: .caseInsensitive)
+            if range.length > 0 {
+                return true
+            }
+        }
 
-		for oneMatch in feedURLWordsToMatch {
-			let range = (massagedURLString as NSString).range(of: oneMatch, options: .caseInsensitive)
-			if range.length > 0 {
-				return true
-			}
-		}
+        return false
+    }
 
-		return false
-	}
-
-	func linkMightBeFeed(_ link: RSHTMLLink) -> Bool {
-		if let linkURLString = link.urlString, urlStringMightBeFeed(linkURLString) {
-			return true
-		}
-		return false
-	}
+    private func linkMightBeFeed(_ link: RSHTMLLink) -> Bool {
+        if let linkURLString = link.urlString, urlStringMightBeFeed(linkURLString) {
+            return true
+        }
+        return false
+    }
 }

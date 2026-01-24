@@ -9,37 +9,37 @@
 import Foundation
 @preconcurrency import RSCore
 
-@MainActor final class SmartFeedsController: DisplayNameProvider, ContainerIdentifiable {
-	nonisolated let containerID: ContainerIdentifier? = ContainerIdentifier.smartFeedController
+@MainActor
+final class SmartFeedsController: DisplayNameProvider, ContainerIdentifiable {
+    nonisolated let containerID: ContainerIdentifier? = ContainerIdentifier.smartFeedController
 
-	public static let shared = SmartFeedsController()
-	let nameForDisplay = NSLocalizedString("Smart Feeds", comment: "Smart Feeds group title")
+    static let shared = SmartFeedsController()
+    let nameForDisplay = NSLocalizedString("Smart Feeds", comment: "Smart Feeds group title")
 
-	var smartFeeds = [SidebarItem]()
-	let todayFeed = SmartFeed(delegate: TodayFeedDelegate())
-	let unreadFeed = UnreadFeed()
-	let starredFeed = SmartFeed(delegate: StarredFeedDelegate())
+    var smartFeeds = [SidebarItem]()
+    let todayFeed = SmartFeed(delegate: TodayFeedDelegate())
+    let unreadFeed = UnreadFeed()
+    let starredFeed = SmartFeed(delegate: StarredFeedDelegate())
 
-	private init() {
-		self.smartFeeds = [todayFeed, unreadFeed, starredFeed]
-	}
+    private init() {
+        self.smartFeeds = [self.todayFeed, self.unreadFeed, self.starredFeed]
+    }
 
-	func find(by identifier: SidebarItemIdentifier) -> PseudoFeed? {
-		switch identifier {
-		case .smartFeed(let stringIdentifer):
-			switch stringIdentifer {
-			case String(describing: TodayFeedDelegate.self):
-				return todayFeed
-			case String(describing: UnreadFeed.self):
-				return unreadFeed
-			case String(describing: StarredFeedDelegate.self):
-				return starredFeed
-			default:
-				return nil
-			}
-		default:
-			return nil
-		}
-	}
-
+    func find(by identifier: SidebarItemIdentifier) -> PseudoFeed? {
+        switch identifier {
+        case let .smartFeed(stringIdentifer):
+            switch stringIdentifer {
+            case String(describing: TodayFeedDelegate.self):
+                self.todayFeed
+            case String(describing: UnreadFeed.self):
+                self.unreadFeed
+            case String(describing: StarredFeedDelegate.self):
+                self.starredFeed
+            default:
+                nil
+            }
+        default:
+            nil
+        }
+    }
 }

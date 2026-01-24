@@ -10,32 +10,33 @@ import Foundation
 import os.log
 import RSCore
 
-@MainActor final class CloudKitRemoteNotificationOperation: MainThreadOperation, @unchecked Sendable {
-	private weak var feedsZone: CloudKitFeedsZone?
-	private weak var articlesZone: CloudKitArticlesZone?
-	nonisolated(unsafe) private var userInfo: [AnyHashable : Any]
-	private static let logger = cloudKitLogger
+@MainActor
+final class CloudKitRemoteNotificationOperation: MainThreadOperation, @unchecked Sendable {
+    private weak var feedsZone: CloudKitFeedsZone?
+    private weak var articlesZone: CloudKitArticlesZone?
+    private nonisolated(unsafe) var userInfo: [AnyHashable: Any]
+    private static let logger = cloudKitLogger
 
-	init(feedsZone: CloudKitFeedsZone, articlesZone: CloudKitArticlesZone, userInfo: [AnyHashable : Any]) {
-		self.feedsZone = feedsZone
-		self.articlesZone = articlesZone
-		self.userInfo = userInfo
-		super.init(name: "CloudKitRemoteNotificationOperation")
-	}
+    init(feedsZone: CloudKitFeedsZone, articlesZone: CloudKitArticlesZone, userInfo: [AnyHashable: Any]) {
+        self.feedsZone = feedsZone
+        self.articlesZone = articlesZone
+        self.userInfo = userInfo
+        super.init(name: "CloudKitRemoteNotificationOperation")
+    }
 
-	override func run() {
-		guard let feedsZone, let articlesZone else {
-			didComplete()
-			return
-		}
+    override func run() {
+        guard let feedsZone, let articlesZone else {
+            didComplete()
+            return
+        }
 
-		Task { @MainActor in
-			Self.logger.debug("iCloud: Processing remote notification")
-			await feedsZone.receiveRemoteNotification(userInfo: userInfo)
-			await articlesZone.receiveRemoteNotification(userInfo: self.userInfo)
+        Task { @MainActor in
+            Self.logger.debug("iCloud: Processing remote notification")
+            await feedsZone.receiveRemoteNotification(userInfo: self.userInfo)
+            await articlesZone.receiveRemoteNotification(userInfo: self.userInfo)
 
-			Self.logger.debug("iCloud: Finished processing remote notification")
-			didComplete()
-		}
-	}
+            Self.logger.debug("iCloud: Finished processing remote notification")
+            didComplete()
+        }
+    }
 }

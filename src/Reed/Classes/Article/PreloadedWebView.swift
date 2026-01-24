@@ -10,66 +10,67 @@ import Foundation
 import WebKit
 
 final class PreloadedWebView: WKWebView {
+    private var isReady: Bool = false
+    private var readyCompletion: (() -> Void)?
 
-	private var isReady: Bool = false
-	private var readyCompletion: (() -> Void)?
+    init(articleIconSchemeHandler: ArticleIconSchemeHandler) {
+        let configuration = WebViewConfiguration.configuration(with: articleIconSchemeHandler)
+        super.init(frame: .zero, configuration: configuration)
+        NotificationCenter.default
+            .addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in
+                    self?.userDefaultsDidChange()
+                }
+            }
+    }
 
-	init(articleIconSchemeHandler: ArticleIconSchemeHandler) {
-		let configuration = WebViewConfiguration.configuration(with: articleIconSchemeHandler)
-		super.init(frame: .zero, configuration: configuration)
-		NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
-			Task { @MainActor in
-				self?.userDefaultsDidChange()
-			}
-		}
-	}
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
 
-	required init?(coder: NSCoder) {
-		super.init(coder: coder)
+    func preload() {
+        navigationDelegate = self
+        loadFileURL(ArticleRenderer.blank.url, allowingReadAccessTo: ArticleRenderer.blank.baseURL)
+    }
 
-	}
+    func ready(completion: @escaping () -> Void) {
+        if self.isReady {
+            completeRequest(completion: completion)
+        } else {
+            self.readyCompletion = completion
+        }
+    }
 
-	func preload() {
-		navigationDelegate = self
-		loadFileURL(ArticleRenderer.blank.url, allowingReadAccessTo: ArticleRenderer.blank.baseURL)
-	}
-
-	func ready(completion: @escaping () -> Void) {
-		if isReady {
-			completeRequest(completion: completion)
-		} else {
-			readyCompletion = completion
-		}
-	}
-
-	func userDefaultsDidChange() {
-		if configuration.defaultWebpagePreferences.allowsContentJavaScript != AppDefaults.shared.isArticleContentJavascriptEnabled {
-			configuration.defaultWebpagePreferences.allowsContentJavaScript = AppDefaults.shared.isArticleContentJavascriptEnabled
-			reload()
-		}
-	}
+    func userDefaultsDidChange() {
+        if
+            configuration.defaultWebpagePreferences.allowsContentJavaScript != AppDefaults.shared
+                .isArticleContentJavascriptEnabled
+        {
+            configuration.defaultWebpagePreferences.allowsContentJavaScript = AppDefaults.shared
+                .isArticleContentJavascriptEnabled
+            reload()
+        }
+    }
 }
 
 // MARK: WKScriptMessageHandler
 
 extension PreloadedWebView: WKNavigationDelegate {
-
-	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-		isReady = true
-		if let completion = readyCompletion {
-			completeRequest(completion: completion)
-			readyCompletion = nil
-		}
-	}
+    func webView(_: WKWebView, didFinish _: WKNavigation!) {
+        self.isReady = true
+        if let completion = readyCompletion {
+            completeRequest(completion: completion)
+            self.readyCompletion = nil
+        }
+    }
 }
 
 // MARK: Private
 
-private extension PreloadedWebView {
-
-	func completeRequest(completion: @escaping () -> Void) {
-		isReady = false
-		navigationDelegate = nil
-		completion()
-	}
+extension PreloadedWebView {
+    private func completeRequest(completion: @escaping () -> Void) {
+        self.isReady = false
+        navigationDelegate = nil
+        completion()
+    }
 }
