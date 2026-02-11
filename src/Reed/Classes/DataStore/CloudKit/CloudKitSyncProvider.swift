@@ -104,14 +104,18 @@ final class CloudKitSyncProvider: SyncProvider {
 
     func refreshAll(for dataStore: DataStore) async throws {
         guard self.syncProgress.isComplete else {
+            DZLog(
+                "iCloud: refreshAll BLOCKED — syncProgress not complete (tasks: \(self.syncProgress.progressInfo.numberOfTasks), completed: \(self.syncProgress.progressInfo.numberCompleted), remaining: \(self.syncProgress.progressInfo.numberRemaining))"
+            )
             return
         }
 
         guard NetworkMonitor.shared.isConnected else {
+            DZLog("iCloud: refreshAll skipped — not connected")
             return
         }
 
-        try await standardRefreshAll(for: dataStore)
+        await standardRefreshAll(for: dataStore)
     }
 
     func syncArticleStatus(for dataStore: DataStore) async throws {
@@ -157,7 +161,7 @@ final class CloudKitSyncProvider: SyncProvider {
 
         do {
             try await self.feedsZone.importOPML(rootExternalID: rootExternalID, items: normalizedItems)
-            try? await standardRefreshAll(for: dataStore)
+            await standardRefreshAll(for: dataStore)
         } catch {
             throw error
         }
@@ -586,15 +590,15 @@ final class CloudKitSyncProvider: SyncProvider {
 // MARK: - Private
 
 extension CloudKitSyncProvider {
-    private func initialRefreshAll(for dataStore: DataStore) async throws {
-        try await self.performRefreshAll(for: dataStore, sendArticleStatus: false)
+    private func initialRefreshAll(for dataStore: DataStore) async {
+        await self.performRefreshAll(for: dataStore, sendArticleStatus: false)
     }
 
-    private func standardRefreshAll(for dataStore: DataStore) async throws {
-        try await self.performRefreshAll(for: dataStore, sendArticleStatus: true)
+    private func standardRefreshAll(for dataStore: DataStore) async {
+        await self.performRefreshAll(for: dataStore, sendArticleStatus: true)
     }
 
-    private func performRefreshAll(for dataStore: DataStore, sendArticleStatus: Bool) async throws {
+    private func performRefreshAll(for dataStore: DataStore, sendArticleStatus: Bool) async {
         self.syncProgress.addTasks(3)
 
         // Try CloudKit sync if iCloud is available
@@ -606,21 +610,15 @@ extension CloudKitSyncProvider {
                 try await self.refreshArticleStatus(for: dataStore)
                 self.syncProgress.completeTask()
             } catch {
-                // Handle CloudKit errors gracefully
+                // Handle CloudKit errors gracefully — never block feed refresh
                 self.syncProgress.completeTask()
                 self.syncProgress.completeTask()
 
                 if iCloudAccountMonitor.isRecoverableError(error) {
-                    DZLog("iCloud: Sync skipped due to recoverable error, will retry later")
+                    DZLog("iCloud: Sync skipped due to recoverable error: \(error.localizedDescription)")
                 } else {
+                    DZLog("iCloud: Non-recoverable sync error: \(error)")
                     self.processSyncError(dataStore, error)
-                    // Only throw for non-recoverable errors that aren't auth-related
-                    if
-                        let ckError = (error as? CloudKitError)?.error as? CKError,
-                        ckError.code != .notAuthenticated, ckError.code != .permissionFailure
-                    {
-                        throw error
-                    }
                 }
             }
         } else {
@@ -630,7 +628,7 @@ extension CloudKitSyncProvider {
             DZLog("iCloud: Skipping sync (iCloud not available)")
         }
 
-        // Always refresh local feeds
+        // Always refresh local feeds regardless of CloudKit sync result
         let feeds = dataStore.flattenedFeeds()
         await self.refresher.refreshFeeds(feeds)
 
@@ -1139,7 +1137,7 @@ extension CloudKitSyncProvider {
 
         // If we just upgraded the dataStore, do an initial sync
         if didUpgradeDataStore {
-            try? await self.initialRefreshAll(for: dataStore)
+            await self.initialRefreshAll(for: dataStore)
         }
 
         // Process pending operations in batches

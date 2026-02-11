@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
+- CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
+
 ## [January 2026]
 
 ### Added
