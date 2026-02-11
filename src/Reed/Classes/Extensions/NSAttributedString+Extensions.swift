@@ -1,6 +1,6 @@
 //
 //  NSAttributedString+Extensions.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Nate Weaver on 2020-04-07.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

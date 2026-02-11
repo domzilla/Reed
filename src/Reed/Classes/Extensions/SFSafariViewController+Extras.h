@@ -1,6 +1,6 @@
 //
 //  SFSafariViewControllerExtras.h
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Brent Simmons on 11/29/25.
 //  Copyright © 2025 Ranchero Software. All rights reserved.

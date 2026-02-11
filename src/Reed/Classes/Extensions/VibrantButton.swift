@@ -1,6 +1,6 @@
 //
 //  VibrantButton.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 10/22/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

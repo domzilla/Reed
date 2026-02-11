@@ -1,6 +1,6 @@
 //
 //  SearchTimelineFeedDelegate.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 8/31/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

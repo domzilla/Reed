@@ -1,6 +1,6 @@
 //
 //  ArticleRenderer.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 9/8/15.
 //  Copyright © 2015 Ranchero Software, LLC. All rights reserved.

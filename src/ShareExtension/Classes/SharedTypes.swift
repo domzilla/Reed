@@ -1,6 +1,6 @@
 //
 //  SharedTypes.swift
-//  NetNewsWire iOS Share Extension
+//  Reed
 //
 //  Types shared between the main app and the share extension.
 //  These are duplicated here to avoid complex build configuration.

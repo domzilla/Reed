@@ -1,6 +1,6 @@
 //
 //  UIActivityViewController+Extras.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Martin Hartl on 01/11/20.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  ExtensionContainers+DataStore.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Extensions for ExtensionContainers that use main app types.
 //

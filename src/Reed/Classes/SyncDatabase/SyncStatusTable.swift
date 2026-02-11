@@ -1,6 +1,6 @@
 //
 //  SyncStatusTable.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 5/14/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

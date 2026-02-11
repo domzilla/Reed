@@ -1,6 +1,6 @@
 //
 //  ContextMenuPreviewViewController.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 11/25/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

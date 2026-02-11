@@ -1,6 +1,6 @@
 //
 //  CombinedRefreshProgress.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 10/7/17.
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.

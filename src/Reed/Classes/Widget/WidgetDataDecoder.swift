@@ -1,6 +1,6 @@
 //
 //  WidgetDataDecoder.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Stuart Breckenridge on 18/11/20.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

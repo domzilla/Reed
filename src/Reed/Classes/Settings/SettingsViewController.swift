@@ -1,6 +1,6 @@
 //
 //  SettingsViewController.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 4/24/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.
@@ -39,7 +39,7 @@ final class SettingsViewController: UITableViewController {
         return toggle
     }()
 
-    private lazy var openLinksInNetNewsWireSwitch: UISwitch = {
+    private lazy var openLinksInReedSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchBrowserPreference(_:)), for: .valueChanged)
         return toggle
@@ -108,7 +108,7 @@ final class SettingsViewController: UITableViewController {
         self.refreshClearsReadArticlesSwitch.isOn = AppDefaults.shared.refreshClearsReadArticles
         self.showFullscreenArticlesSwitch.isOn = AppDefaults.shared.articleFullscreenAvailable
         self.enableJavaScriptSwitch.isOn = AppDefaults.shared.isArticleContentJavascriptEnabled
-        self.openLinksInNetNewsWireSwitch.isOn = !AppDefaults.shared.useSystemBrowser
+        self.openLinksInReedSwitch.isOn = !AppDefaults.shared.useSystemBrowser
 
         let buildLabel = NonIntrinsicLabel(frame: CGRect(x: 32.0, y: 0.0, width: 0.0, height: 0.0))
         buildLabel.font = UIFont.systemFont(ofSize: 11.0)
@@ -223,7 +223,7 @@ final class SettingsViewController: UITableViewController {
         case (4, 1):
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
             cell.textLabel?.text = NSLocalizedString("Open Links in App", comment: "Open Links in App")
-            cell.accessoryView = self.openLinksInNetNewsWireSwitch
+            cell.accessoryView = self.openLinksInReedSwitch
             cell.selectionStyle = .none
             return cell
         case (4, 2):
@@ -304,7 +304,7 @@ final class SettingsViewController: UITableViewController {
 
     @objc
     func switchBrowserPreference(_: Any) {
-        AppDefaults.shared.useSystemBrowser = !self.openLinksInNetNewsWireSwitch.isOn
+        AppDefaults.shared.useSystemBrowser = !self.openLinksInReedSwitch.isOn
     }
 
     @objc

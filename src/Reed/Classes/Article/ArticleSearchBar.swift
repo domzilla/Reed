@@ -1,6 +1,6 @@
 //
 //  ArticleSearchBar.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brian Sanders on 5/8/20.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

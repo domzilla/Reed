@@ -1,6 +1,6 @@
 //
 //  RSHTMLMetadata+Extension.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 11/26/17.
 //  Copyright © 2017 Ranchero Software. All rights reserved.

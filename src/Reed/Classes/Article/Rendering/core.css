@@ -21,12 +21,6 @@
     max-height: 1em;
  }
 
-/* Hide the external link at the bottom of Daring Fireball posts */
-
-.x-netnewswire-hide {
-	display: none;
-}
- 
 /*Block ads and junk*/
 
 iframe[src*="feedads"],

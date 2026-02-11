@@ -1,6 +1,6 @@
 //
 //  ExtensionContainersFile+MainApp.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Main app extension for ExtensionContainersFile that handles saving.
 //

@@ -1,6 +1,6 @@
 //
 //  MainFeedRowIdentifier.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 10/20/21.
 //  Copyright © 2021 Ranchero Software. All rights reserved.

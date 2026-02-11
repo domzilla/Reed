@@ -1,6 +1,6 @@
 //
 //  CacheCleaner.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 11/8/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  Feed.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 7/1/17.
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.
@@ -288,7 +288,7 @@ extension Feed: OPMLRepresentable {
     public func OPMLString(indentLevel: Int, allowCustomAttributes _: Bool) -> String {
         // https://github.com/brentsimmons/NetNewsWire/issues/527
         // Don’t use nameForDisplay because that can result in a feed name "Untitled" written to disk,
-        // which NetNewsWire may take later to be the actual name.
+        // which Reed may take later to be the actual name.
         var nameToUse = self.editedName
         if nameToUse == nil {
             nameToUse = self.name

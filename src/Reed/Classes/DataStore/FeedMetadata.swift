@@ -1,6 +1,6 @@
 //
 //  FeedMetadata.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 3/12/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.

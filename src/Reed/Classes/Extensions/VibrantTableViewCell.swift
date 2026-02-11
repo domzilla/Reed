@@ -1,6 +1,6 @@
 //
 //  VibrantTableViewCell.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Jim Correia on 9/2/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

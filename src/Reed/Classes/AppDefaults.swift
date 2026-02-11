@@ -1,6 +1,6 @@
 //
 //  AppDefaults.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 9/22/17.
 //  Copyright © 2017 Ranchero Software. All rights reserved.
@@ -477,7 +477,7 @@ struct StateRestorationInfo {
         )
     }
 
-    // TODO: Delete for NetNewsWire 7.1.
+    // TODO: Delete legacy state restoration migration.
     init(legacyState: NSUserActivity?) {
         if AppDefaults.shared.didMigrateLegacyStateRestorationInfo {
             self.init()

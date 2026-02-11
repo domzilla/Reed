@@ -1,6 +1,6 @@
 //
 //  MainFeedCollectionViewController.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Stuart Breckenridge on 23/06/2025.
 //  Copyright © 2025 Ranchero Software. All rights reserved.

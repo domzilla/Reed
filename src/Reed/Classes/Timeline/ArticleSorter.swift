@@ -1,6 +1,6 @@
 //
 //  ArticleSorter.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Phil Viso on 9/8/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

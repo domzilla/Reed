@@ -1,6 +1,6 @@
 //
 //  ShareAssets.swift
-//  NetNewsWire iOS Share Extension
+//  Reed
 //
 //  Minimal Assets subset for the Share Extension.
 //

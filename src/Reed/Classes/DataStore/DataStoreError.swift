@@ -1,6 +1,6 @@
 //
 //  DataStoreError.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 5/26/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.

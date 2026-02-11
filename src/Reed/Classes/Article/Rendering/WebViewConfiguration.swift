@@ -1,6 +1,6 @@
 //
 //  WebViewConfiguration.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 1/15/25.
 //  Copyright © 2025 Ranchero Software. All rights reserved.

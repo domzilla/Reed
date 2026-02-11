@@ -1,6 +1,6 @@
 //
 //  ShareViewController.swift
-//  NetNewsWire iOS Share Extension
+//  Reed
 //
 //  Created by Maurice Parker on 9/8/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.
@@ -42,7 +42,7 @@ final class ShareViewController: SLComposeServiceViewController, ShareFolderPick
             self.selectedContainer = ShareDefaultContainer.defaultContainer(containers: extensionContainers)
         }
 
-        title = "NetNewsWire"
+        title = "Reed"
         placeholder = "Feed Name (Optional)"
         if let button = navigationController?.navigationBar.topItem?.rightBarButtonItem {
             button.title = "Add Feed"

@@ -1,6 +1,6 @@
 //
 //  ShareAppDefaults.swift
-//  NetNewsWire iOS Share Extension
+//  Reed
 //
 //  Simplified AppDefaults for Share Extension to store last selected container.
 //

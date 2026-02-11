@@ -1,6 +1,6 @@
 //
 //  SidebarTreeControllerDelegate.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 7/24/16.
 //  Copyright © 2016 Ranchero Software, LLC. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  ContainerPath.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 11/4/17.
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.

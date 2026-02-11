@@ -1,6 +1,6 @@
 //
 //  Assets.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 11/18/25.
 //  Copyright © 2025 Ranchero Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  ExtensionFeedAddRequestFile+MainApp.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Main app extension for ExtensionFeedAddRequestFile that handles processing feed add requests.
 //

@@ -1,6 +1,6 @@
 //
 //  MainTimelineDataSource.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 8/30/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

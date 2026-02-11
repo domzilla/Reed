@@ -1,6 +1,6 @@
 //
 //  ShareFolderPickerController.swift
-//  NetNewsWire iOS Share Extension
+//  Reed
 //
 //  Created by Maurice Parker on 9/12/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  IconImageCache.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Brent Simmons on 5/2/21.
 //  Copyright © 2021 Ranchero Software. All rights reserved.

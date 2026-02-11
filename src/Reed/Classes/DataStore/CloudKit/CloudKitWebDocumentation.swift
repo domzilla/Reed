@@ -12,5 +12,6 @@ public enum CloudKitWebDocumentation {
         "iCloud Syncing Limitations & Solutions",
         comment: "iCloud Documentation"
     )
+    // TODO: Replace with Reed-specific help URL
     public static let limitationsAndSolutionsURL = URL(string: "https://netnewswire.com/help/iCloud")!
 }

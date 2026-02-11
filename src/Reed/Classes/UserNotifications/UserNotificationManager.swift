@@ -1,6 +1,6 @@
 //
 //  UserNotificationManager.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 10/2/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

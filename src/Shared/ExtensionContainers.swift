@@ -1,6 +1,6 @@
 //
 //  ExtensionContainers.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 2/10/20.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

@@ -17,8 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
 - CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
 
+### Changed
+- Replaced all NetNewsWire references with Reed throughout codebase (file headers, OPML export comments, Share Extension title, variable names)
+
 ### Removed
 - `OrganizationIdentifier` and `AppGroup` keys from Info.plist (replaced by `AppConstants` and `SharedConstants`)
+- Dead `.x-netnewswire-hide` CSS rule from `core.css` (never wired up in rendering pipeline)
 
 ## [January 2026]
 

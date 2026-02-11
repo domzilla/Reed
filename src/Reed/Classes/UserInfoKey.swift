@@ -1,6 +1,6 @@
 //
 //  UserInfoKey.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 11/14/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

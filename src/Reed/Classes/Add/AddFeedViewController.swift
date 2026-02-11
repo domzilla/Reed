@@ -1,6 +1,6 @@
 //
 //  AddFeedViewController.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Maurice Parker on 4/16/19.
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.

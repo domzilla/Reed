@@ -1,6 +1,6 @@
 //
 //  PreloadedWebView.swift
-//  NetNewsWire-iOS
+//  Reed
 //
 //  Created by Maurice Parker on 2/25/20.
 //  Copyright © 2020 Ranchero Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  SmartFeedDelegate.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Brent Simmons on 6/25/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.

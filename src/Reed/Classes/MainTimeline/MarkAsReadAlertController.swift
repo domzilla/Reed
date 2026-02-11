@@ -1,6 +1,6 @@
 //
 //  MarkAsReadAlertController.swift
-//  NetNewsWire
+//  Reed
 //
 //  Created by Phil Viso on 9/29/19.
 //  Copyright © 2019 Ranchero Software. All rights reserved.
