@@ -26,8 +26,7 @@ public final class iCloudAccountMonitor {
     private let container: CKContainer
 
     private init() {
-        let orgID = Bundle.main.object(forInfoDictionaryKey: "OrganizationIdentifier") as! String
-        self.container = CKContainer(identifier: "iCloud.\(orgID).NetNewsWire")
+        self.container = AppConstants.cloudKitContainer
         self.setupNotificationObserver()
     }
 

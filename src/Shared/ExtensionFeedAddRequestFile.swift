@@ -15,8 +15,8 @@ final class ExtensionFeedAddRequestFile: NSObject, NSFilePresenter, Sendable {
     static let shared = ExtensionFeedAddRequestFile()
 
     static let filePath: String = {
-        let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
-        let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+        let containerURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: SharedConstants.appGroup)
         return containerURL!.appendingPathComponent("extension_feed_add_request.plist").path
     }()
 

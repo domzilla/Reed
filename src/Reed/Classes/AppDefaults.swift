@@ -37,10 +37,7 @@ final class AppDefaults: Sendable {
 
     private init() {}
 
-    nonisolated(unsafe) static let store: UserDefaults = {
-        let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
-        return UserDefaults(suiteName: appGroup)!
-    }()
+    nonisolated(unsafe) static let store: UserDefaults = .init(suiteName: AppConstants.appGroup)!
 
     enum Key {
         static let userInterfaceColorPalette = "userInterfaceColorPalette"

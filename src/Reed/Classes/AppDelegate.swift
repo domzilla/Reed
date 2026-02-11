@@ -253,7 +253,7 @@ extension AppDelegate {
         let unreadTitle = NSLocalizedString("First Unread", comment: "First Unread")
         let unreadIcon = UIApplicationShortcutIcon(systemImageName: "chevron.down.circle")
         let unreadItem = UIApplicationShortcutItem(
-            type: "net.domzilla.reed.FirstUnread",
+            type: AppConstants.shortcutFirstUnread,
             localizedTitle: unreadTitle,
             localizedSubtitle: nil,
             icon: unreadIcon,
@@ -263,7 +263,7 @@ extension AppDelegate {
         let searchTitle = NSLocalizedString("Search", comment: "Search")
         let searchIcon = UIApplicationShortcutIcon(systemImageName: "magnifyingglass")
         let searchItem = UIApplicationShortcutItem(
-            type: "net.domzilla.reed.ShowSearch",
+            type: AppConstants.shortcutShowSearch,
             localizedTitle: searchTitle,
             localizedSubtitle: nil,
             icon: searchIcon,
@@ -273,7 +273,7 @@ extension AppDelegate {
         let addTitle = NSLocalizedString("Add Feed", comment: "Add Feed")
         let addIcon = UIApplicationShortcutIcon(systemImageName: "plus")
         let addItem = UIApplicationShortcutItem(
-            type: "net.domzilla.reed.ShowAdd",
+            type: AppConstants.shortcutShowAdd,
             localizedTitle: addTitle,
             localizedSubtitle: nil,
             icon: addIcon,
@@ -384,7 +384,10 @@ extension AppDelegate {
     /// Register all background tasks.
     private func registerBackgroundTasks() {
         // Register background feed refresh.
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: "net.domzilla.reed.FeedRefresh", using: nil) { task in
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: AppConstants.backgroundFeedRefreshIdentifier,
+            using: nil
+        ) { task in
             self.performBackgroundFeedRefresh(with: task as! BGAppRefreshTask)
         }
     }
@@ -395,7 +398,7 @@ extension AppDelegate {
         // task scheduler can hang indefinitely.
         self.backgroundTaskDispatchQueue.async {
             do {
-                let request = BGAppRefreshTaskRequest(identifier: "net.domzilla.reed.FeedRefresh")
+                let request = BGAppRefreshTaskRequest(identifier: AppConstants.backgroundFeedRefreshIdentifier)
                 request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
                 try BGTaskScheduler.shared.submit(request)
             } catch {

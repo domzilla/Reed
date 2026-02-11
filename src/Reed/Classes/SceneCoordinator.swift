@@ -112,7 +112,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     private let treeController: TreeController
 
     var stateRestorationActivity: NSUserActivity {
-        let activity = NSUserActivity(activityType: "net.domzilla.reed.restoration")
+        let activity = NSUserActivity(activityType: AppConstants.restorationActivityType)
         activity.persistentIdentifier = UUID().uuidString
         return activity
     }

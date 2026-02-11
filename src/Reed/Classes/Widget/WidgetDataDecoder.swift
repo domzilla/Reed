@@ -10,8 +10,8 @@ import Foundation
 
 enum WidgetDataDecoder {
     static func decodeWidgetData() throws -> WidgetData {
-        let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
-        let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+        let containerURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroup)
         let dataURL = containerURL?.appendingPathComponent("widget-data.json")
         if FileManager.default.fileExists(atPath: dataURL!.path) {
             let decodedWidgetData = try JSONDecoder().decode(WidgetData.self, from: Data(contentsOf: dataURL!))

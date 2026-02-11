@@ -10,10 +10,7 @@ import Foundation
 final class ShareAppDefaults: Sendable {
     static let shared = ShareAppDefaults()
 
-    private nonisolated(unsafe) static let store: UserDefaults = {
-        let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
-        return UserDefaults(suiteName: appGroup)!
-    }()
+    private nonisolated(unsafe) static let store: UserDefaults = .init(suiteName: SharedConstants.appGroup)!
 
     private init() {}
 

@@ -6,9 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
+
 ### Fixed
+- CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
+- Widget deep links using `nnw://` scheme instead of `reed://`
+- Open in Browser activity type still referencing `com.rancharo.NetNewsWire-Evergreen`
 - "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
 - CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
+
+### Removed
+- `OrganizationIdentifier` and `AppGroup` keys from Info.plist (replaced by `AppConstants` and `SharedConstants`)
 
 ## [January 2026]
 

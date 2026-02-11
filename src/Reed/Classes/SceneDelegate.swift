@@ -215,11 +215,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 extension SceneDelegate {
     private func handleShortcutItem(_ shortcutItem: UIApplicationShortcutItem) {
         switch shortcutItem.type {
-        case "net.domzilla.reed.FirstUnread":
+        case AppConstants.shortcutFirstUnread:
             self.coordinator.selectFirstUnreadInAllUnread()
-        case "net.domzilla.reed.ShowSearch":
+        case AppConstants.shortcutShowSearch:
             self.coordinator.showSearch()
-        case "net.domzilla.reed.ShowAdd":
+        case AppConstants.shortcutShowAdd:
             self.coordinator.showAddFeed()
         default:
             break

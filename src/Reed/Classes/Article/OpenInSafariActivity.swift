@@ -24,7 +24,7 @@ final class OpenInBrowserActivity: UIActivity {
     }
 
     override nonisolated var activityType: UIActivity.ActivityType? {
-        UIActivity.ActivityType(rawValue: "com.rancharo.NetNewsWire-Evergreen.safari")
+        UIActivity.ActivityType(rawValue: AppConstants.openInBrowserActivityType)
     }
 
     override nonisolated class var activityCategory: UIActivity.Category {

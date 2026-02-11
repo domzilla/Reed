@@ -23,11 +23,10 @@ final class WidgetDataEncoder {
     private let dataURL: URL
 
     init?() {
-        guard let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as? String else {
-            DZLog("WidgetDataEncoder: unable to create appGroup")
-            return nil
-        }
-        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
+        guard
+            let containerURL = FileManager.default
+                .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroup) else
+        {
             DZLog("WidgetDataEncoder: unable to create containerURL")
             return nil
         }

@@ -27,10 +27,7 @@ enum CloudKitSyncProviderError: LocalizedError, Sendable {
 final class CloudKitSyncProvider: SyncProvider {
     private let syncDatabase: SyncDatabase
 
-    private let container: CKContainer = {
-        let orgID = Bundle.main.object(forInfoDictionaryKey: "OrganizationIdentifier") as! String
-        return CKContainer(identifier: "iCloud.\(orgID).NetNewsWire")
-    }()
+    private let container: CKContainer = AppConstants.cloudKitContainer
 
     private let feedsZone: CloudKitFeedsZone
     private let articlesZone: CloudKitArticlesZone

@@ -18,7 +18,7 @@ final class FindInArticleActivity: UIActivity {
     }
 
     override nonisolated var activityType: UIActivity.ActivityType? {
-        UIActivity.ActivityType(rawValue: "net.domzilla.reed.find")
+        UIActivity.ActivityType(rawValue: AppConstants.findInArticleActivityType)
     }
 
     override nonisolated var activityImage: UIImage? {

@@ -15,8 +15,8 @@ final class ExtensionContainersFile {
     static let shared = ExtensionContainersFile()
 
     static var filePath: String = {
-        let appGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroup") as! String
-        let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+        let containerURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: SharedConstants.appGroup)
         return containerURL!.appendingPathComponent("extension_containers.plist").path
     }()
 
