@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
 - Widget deep links using `nnw://` scheme instead of `reed://`
 - Open in Browser activity type still referencing `com.rancharo.NetNewsWire-Evergreen`
+- Assertion crash in `DownloadProgress.completeTasks()` — recursive `selectForProcessing()` called `completeTask()` more times than tasks were added
 - "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
 - CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
 
