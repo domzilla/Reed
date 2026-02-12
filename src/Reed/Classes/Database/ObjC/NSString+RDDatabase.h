@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSString (QSDatabase)
+@interface NSString (RDDatabase)
 
 
 /*Returns @"(?, ?, ?)" -- where number of ? spots is specified by numberOfValues.
