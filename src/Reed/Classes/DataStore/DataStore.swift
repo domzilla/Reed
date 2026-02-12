@@ -396,7 +396,7 @@ final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hash
     }
 
     @MainActor
-    func addOPMLItems(_ items: [RSOPMLItem]) {
+    func addOPMLItems(_ items: [RDOPMLItem]) {
         for item in items {
             if let feedSpecifier = item.feedSpecifier {
                 self.addFeedToTreeAtTopLevel(self.newFeed(with: feedSpecifier))
@@ -414,7 +414,7 @@ final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hash
     }
 
     @MainActor
-    func loadOPMLItems(_ items: [RSOPMLItem]) {
+    func loadOPMLItems(_ items: [RDOPMLItem]) {
         self.addOPMLItems(OPMLNormalizer.normalize(items))
     }
 
@@ -502,7 +502,7 @@ final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hash
     }
 
     @MainActor
-    func newFeed(with opmlFeedSpecifier: RSOPMLFeedSpecifier) -> Feed {
+    func newFeed(with opmlFeedSpecifier: RDOPMLFeedSpecifier) -> Feed {
         let feedURL = opmlFeedSpecifier.feedURL
         let metadata = self.feedMetadata(feedURL: feedURL, feedID: feedURL)
         let feed = Feed(dataStore: self, url: opmlFeedSpecifier.feedURL, metadata: metadata)

@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
 ### Changed
+- Renamed all RS-prefixed (Ranchero Software) identifiers across 123 files — ObjC types/functions/methods use `RD` prefix, Swift types have prefix removed; renamed module folders `RSCore`→`Core`, `RSDatabase`→`Database`, `RSParser`→`Parser`, `RSWeb`→`Web`, `RSTree`→`Tree`
 - Replaced all `os.Logger` usage with `DZFoundation` (`DZLog`) across 5 files — `DownloadSession`, `Downloader`, `RSImage`, `DatabaseQueue`, `HTMLMetadataDownloader`
 - Removed all `#if os(macOS)` conditional compilation paths and `RSImage` typealias across 8 files — app is iOS-only
 - Inlined 11 trivial extension files into their callers — `Calendar+RSCore`, `NotificationCenter+RSCore`, `Bundle+RSCore`, `UIActivityViewController+Extras`, `AddFeedDefaultContainer`, `CacheCleaner`, `UIView+RSCore`, `UICollectionView+RSCore`, `UIPageViewController+RSCore`, `UIFont+RSCore`, `String+RSParser` each had 1–2 call sites and didn't justify separate files

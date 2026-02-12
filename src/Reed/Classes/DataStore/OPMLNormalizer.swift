@@ -9,16 +9,16 @@
 import Foundation
 
 final class OPMLNormalizer {
-    var normalizedOPMLItems = [RSOPMLItem]()
+    var normalizedOPMLItems = [RDOPMLItem]()
 
-    static func normalize(_ items: [RSOPMLItem]) -> [RSOPMLItem] {
+    static func normalize(_ items: [RDOPMLItem]) -> [RDOPMLItem] {
         let opmlNormalizer = OPMLNormalizer()
         opmlNormalizer.normalize(items)
         return opmlNormalizer.normalizedOPMLItems
     }
 
-    private func normalize(_ items: [RSOPMLItem], parentFolder: RSOPMLItem? = nil) {
-        var feedsToAdd = [RSOPMLItem]()
+    private func normalize(_ items: [RDOPMLItem], parentFolder: RDOPMLItem? = nil) {
+        var feedsToAdd = [RDOPMLItem]()
 
         for item in items {
             if let _ = item.feedSpecifier {

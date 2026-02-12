@@ -1,6 +1,6 @@
 //
 //  CloudKitError.swift
-//  RSCore
+//  Core
 //
 //  Created by Maurice Parker on 3/26/20.
 //  Copyright © 2020 Ranchero Software, LLC. All rights reserved.

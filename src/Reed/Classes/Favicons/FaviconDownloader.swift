@@ -333,7 +333,7 @@ extension FaviconDownloader {
     }
 }
 
-extension RSHTMLMetadata {
+extension RDHTMLMetadata {
     fileprivate func usableFaviconURLs() -> [String]? {
         favicons.compactMap { favicon in
             self.shouldAllowFavicon(favicon) ? favicon.urlString : nil
@@ -342,7 +342,7 @@ extension RSHTMLMetadata {
 
     fileprivate static let ignoredTypes = [UTType.svg]
 
-    private func shouldAllowFavicon(_ favicon: RSHTMLMetadataFavicon) -> Bool {
+    private func shouldAllowFavicon(_ favicon: RDHTMLMetadataFavicon) -> Bool {
         // Check mime type.
         if let mimeType = favicon.type, let utType = UTType(mimeType: mimeType) {
             if Self.ignoredTypes.contains(utType) {

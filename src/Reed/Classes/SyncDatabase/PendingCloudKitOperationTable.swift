@@ -61,7 +61,7 @@ struct PendingCloudKitOperationTable: Sendable {
         }
 
         let parameters = ids.map { $0 as AnyObject }
-        let placeholders = NSString.rs_SQLValueList(withPlaceholders: UInt(ids.count))!
+        let placeholders = NSString.rd_SQLValueList(withPlaceholders: UInt(ids.count))!
         let updateSQL = "update \(name) set selected = false where id in \(placeholders)"
         database.executeUpdateInTransaction(updateSQL, withArgumentsIn: parameters)
     }
@@ -72,7 +72,7 @@ struct PendingCloudKitOperationTable: Sendable {
         }
 
         let parameters = ids.map { $0 as AnyObject }
-        let placeholders = NSString.rs_SQLValueList(withPlaceholders: UInt(ids.count))!
+        let placeholders = NSString.rd_SQLValueList(withPlaceholders: UInt(ids.count))!
         let deleteSQL = "delete from \(name) where selected = true and id in \(placeholders)"
         database.executeUpdateInTransaction(deleteSQL, withArgumentsIn: parameters)
     }

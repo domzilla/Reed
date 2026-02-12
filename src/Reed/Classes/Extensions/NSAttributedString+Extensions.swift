@@ -233,6 +233,6 @@ private struct CountedSet<Element> where Element: Hashable {
 extension String {
     fileprivate var decodedEntity: String {
         // It's possible the implementation will change, but for now it just calls this.
-        (self as NSString).rsparser_stringByDecodingHTMLEntities() as String
+        (self as NSString).rdparser_stringByDecodingHTMLEntities() as String
     }
 }

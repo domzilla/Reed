@@ -64,7 +64,7 @@ struct ArticleStringFormatter {
         s = s.replacingOccurrences(of: "\t", with: "")
 
         if !forHTML {
-            s = s.rsparser_stringByDecodingHTMLEntities()
+            s = s.rdparser_stringByDecodingHTMLEntities()
         }
 
         s = s.trimmingWhitespace
@@ -96,7 +96,7 @@ struct ArticleStringFormatter {
         if let cachedBody = summaryCache[key] {
             return cachedBody
         }
-        var s = body.rsparser_stringByDecodingHTMLEntities()
+        var s = body.rdparser_stringByDecodingHTMLEntities()
         s = s.strippingHTML(maxCharacters: 300)
         if s == "Comments" { // Hacker News.
             s = ""

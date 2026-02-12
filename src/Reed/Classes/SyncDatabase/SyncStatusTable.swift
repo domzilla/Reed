@@ -69,7 +69,7 @@ struct SyncStatusTable: Sendable {
         }
 
         let parameters = articleIDs.map { $0 as AnyObject }
-        let placeholders = NSString.rs_SQLValueList(withPlaceholders: UInt(articleIDs.count))!
+        let placeholders = NSString.rd_SQLValueList(withPlaceholders: UInt(articleIDs.count))!
         let updateSQL = "update \(name) set selected = false where articleID in \(placeholders)"
         database.executeUpdateInTransaction(updateSQL, withArgumentsIn: parameters)
     }
@@ -80,7 +80,7 @@ struct SyncStatusTable: Sendable {
         }
 
         let parameters = articleIDs.map { $0 as AnyObject }
-        let placeholders = NSString.rs_SQLValueList(withPlaceholders: UInt(articleIDs.count))!
+        let placeholders = NSString.rd_SQLValueList(withPlaceholders: UInt(articleIDs.count))!
         let deleteSQL = "delete from \(name) where selected = true and articleID in \(placeholders)"
         database.executeUpdateInTransaction(deleteSQL, withArgumentsIn: parameters)
     }

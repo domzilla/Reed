@@ -50,11 +50,11 @@ final class CloudKitFeedsZone: CloudKitZone {
         migrateChangeToken()
     }
 
-    func importOPML(rootExternalID: String, items: [RSOPMLItem]) async throws {
+    func importOPML(rootExternalID: String, items: [RDOPMLItem]) async throws {
         var records = [CKRecord]()
         var feedRecords = [String: CKRecord]()
 
-        func processFeed(feedSpecifier: RSOPMLFeedSpecifier, containerExternalID: String) {
+        func processFeed(feedSpecifier: RDOPMLFeedSpecifier, containerExternalID: String) {
             if
                 let feedRecord = feedRecords[feedSpecifier.feedURL],
                 var containerExternalIDs = feedRecord[CloudKitFeed.Fields.containerExternalIDs] as? [String]
@@ -310,7 +310,7 @@ final class CloudKitFeedsZone: CloudKitZone {
 }
 
 extension CloudKitFeedsZone {
-    private func newFeedCKRecord(feedSpecifier: RSOPMLFeedSpecifier, containerExternalID: String) -> CKRecord {
+    private func newFeedCKRecord(feedSpecifier: RDOPMLFeedSpecifier, containerExternalID: String) -> CKRecord {
         let record = CKRecord(recordType: CloudKitFeed.recordType, recordID: generateRecordID())
         record[CloudKitFeed.Fields.url] = feedSpecifier.feedURL
         if let editedName = feedSpecifier.title {

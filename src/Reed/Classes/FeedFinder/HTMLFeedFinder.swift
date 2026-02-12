@@ -18,7 +18,7 @@ final class HTMLFeedFinder {
     private var feedSpecifiersDictionary = [String: FeedSpecifier]()
 
     init(parserData: ParserData) {
-        let metadata = RSHTMLMetadataParser.htmlMetadata(with: parserData)
+        let metadata = RDHTMLMetadataParser.htmlMetadata(with: parserData)
         var orderFound = 0
 
         for oneFeedLink in metadata.feedLinks {
@@ -34,7 +34,7 @@ final class HTMLFeedFinder {
             }
         }
 
-        let bodyLinks = RSHTMLLinkParser.htmlLinks(with: parserData)
+        let bodyLinks = RDHTMLLinkParser.htmlLinks(with: parserData)
         for oneBodyLink in bodyLinks {
             if linkMightBeFeed(oneBodyLink), let normalizedURL = oneBodyLink.urlString?.normalizedURL {
                 orderFound = orderFound + 1
@@ -76,7 +76,7 @@ extension HTMLFeedFinder {
         return false
     }
 
-    private func linkMightBeFeed(_ link: RSHTMLLink) -> Bool {
+    private func linkMightBeFeed(_ link: RDHTMLLink) -> Bool {
         if let linkURLString = link.urlString, urlStringMightBeFeed(linkURLString) {
             return true
         }
