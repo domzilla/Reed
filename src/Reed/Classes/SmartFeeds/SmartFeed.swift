@@ -18,12 +18,12 @@ final class SmartFeed: PseudoFeed {
     }
 
     var sidebarItemID: SidebarItemIdentifier? {
-        self.delegate.sidebarItemID
+        SidebarItemIdentifier.smartFeed(self.identifier)
     }
 
-    var nameForDisplay: String {
-        self.delegate.nameForDisplay
-    }
+    let nameForDisplay: String
+    let fetchType: FetchType
+    var smallIcon: IconImage?
 
     var unreadCount = 0 {
         didSet {
@@ -33,22 +33,30 @@ final class SmartFeed: PseudoFeed {
         }
     }
 
-    var smallIcon: IconImage? {
-        self.delegate.smallIcon
-    }
-
-    private let delegate: SmartFeedDelegate
+    private let identifier: String
+    private let unreadCountFetcher: (@MainActor (DataStore) async throws -> Int?)?
     private var unreadCounts = [String: Int]()
 
-    init(delegate: SmartFeedDelegate) {
-        self.delegate = delegate
+    init(
+        identifier: String,
+        nameForDisplay: String,
+        fetchType: FetchType,
+        smallIcon: IconImage?,
+        unreadCountFetcher: (@MainActor (DataStore) async throws -> Int?)? = nil
+    ) {
+        self.identifier = identifier
+        self.nameForDisplay = nameForDisplay
+        self.fetchType = fetchType
+        self.smallIcon = smallIcon
+        self.unreadCountFetcher = unreadCountFetcher
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.unreadCountDidChange(_:)),
             name: .UnreadCountDidChange,
             object: nil
         )
-        queueFetchUnreadCounts() // Fetch unread count at startup
+        queueFetchUnreadCounts()
     }
 
     @objc
@@ -62,7 +70,6 @@ final class SmartFeed: PseudoFeed {
     func fetchUnreadCounts() {
         let activeDataStores = DataStoreManager.shared.activeDataStores
 
-        // Remove any data stores that are no longer active or have been deleted
         let activeDataStoreIDs = activeDataStores.map(\.dataStoreID)
         for dataStoreID in self.unreadCounts.keys {
             if !activeDataStoreIDs.contains(dataStoreID) {
@@ -80,23 +87,28 @@ final class SmartFeed: PseudoFeed {
     }
 }
 
+// MARK: - ArticleFetcher
+
 extension SmartFeed: ArticleFetcher {
     func fetchArticles() throws -> Set<Article> {
-        try self.delegate.fetchArticles()
+        try DataStoreManager.shared.fetchArticles(self.fetchType)
     }
 
     func fetchArticlesAsync() async throws -> Set<Article> {
-        try await self.delegate.fetchArticlesAsync()
+        try await DataStoreManager.shared.fetchArticlesAsync(self.fetchType)
     }
 
     func fetchUnreadArticles() throws -> Set<Article> {
-        try self.delegate.fetchUnreadArticles()
+        try self.fetchArticles().unreadArticles()
     }
 
     func fetchUnreadArticlesAsync() async throws -> Set<Article> {
-        try await self.delegate.fetchUnreadArticlesAsync()
+        let articles = try await fetchArticlesAsync()
+        return articles.unreadArticles()
     }
 }
+
+// MARK: - Private
 
 extension SmartFeed {
     private func queueFetchUnreadCounts() {
@@ -105,7 +117,7 @@ extension SmartFeed {
 
     private func fetchUnreadCount(dataStore: DataStore) {
         Task { @MainActor in
-            guard let unreadCount = try? await delegate.fetchUnreadCount(dataStore: dataStore) else {
+            guard let unreadCount = try? await self.unreadCountFetcher?(dataStore) else {
                 return
             }
             self.unreadCounts[dataStore.dataStoreID] = unreadCount

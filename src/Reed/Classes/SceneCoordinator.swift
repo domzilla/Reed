@@ -1091,13 +1091,25 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
         if searchString != self.lastSearchString || searchScope != self.lastSearchScope {
             switch searchScope {
             case .global:
-                setTimelineFeed(SmartFeed(delegate: SearchFeedDelegate(searchString: searchString)), animated: true)
-            case .timeline:
+                let searchPrefix = NSLocalizedString("Search: ", comment: "Search smart feed title prefix")
                 setTimelineFeed(
-                    SmartFeed(delegate: SearchTimelineFeedDelegate(
-                        searchString: searchString,
-                        articleIDs: self.savedSearchArticleIds!
-                    )),
+                    SmartFeed(
+                        identifier: "SearchFeedDelegate",
+                        nameForDisplay: searchPrefix + searchString,
+                        fetchType: .search(searchString),
+                        smallIcon: Assets.Images.searchFeed
+                    ),
+                    animated: true
+                )
+            case .timeline:
+                let searchPrefix = NSLocalizedString("Search: ", comment: "Search smart feed title prefix")
+                setTimelineFeed(
+                    SmartFeed(
+                        identifier: "SearchTimelineFeedDelegate",
+                        nameForDisplay: searchPrefix + searchString,
+                        fetchType: .searchWithArticleIDs(searchString, self.savedSearchArticleIds!),
+                        smallIcon: Assets.Images.searchFeed
+                    ),
                     animated: true
                 )
             }
