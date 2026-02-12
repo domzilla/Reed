@@ -53,7 +53,6 @@ final class DatabaseQueue: Sendable {
     ///
     /// On Mac, suspend() and resume() are no-ops, since there isn’t a need for them.
     func suspend() {
-        #if os(iOS)
         DZLog("DatabaseQueue: suspending")
         self.state.withLock { state in
             guard !state.isSuspended else {
@@ -65,13 +64,11 @@ final class DatabaseQueue: Sendable {
             self.serialDispatchQueue.suspend()
             state.database.close()
         }
-        #endif
     }
 
     /// Open the SQLite database. Allow database calls again.
     /// iOS only — does nothing on macOS.
     func resume() {
-        #if os(iOS)
         DZLog("DatabaseQueue: resuming")
         self.state.withLock { state in
             guard state.isSuspended else {
@@ -83,7 +80,6 @@ final class DatabaseQueue: Sendable {
             openDatabase(state.database)
             self.serialDispatchQueue.resume()
         }
-        #endif
     }
 
     // MARK: - Make Database Calls

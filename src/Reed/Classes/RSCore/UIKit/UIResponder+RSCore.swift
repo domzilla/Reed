@@ -6,8 +6,6 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
-#if os(iOS)
-
 import UIKit
 
 extension UIResponder {
@@ -34,5 +32,3 @@ extension UIResponder {
         UIResponder._currentFirstResponder = self
     }
 }
-
-#endif

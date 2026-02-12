@@ -7,8 +7,6 @@
 //
 // https://stackoverflow.com/a/41248703
 
-#if os(iOS)
-
 import UIKit
 
 final class PoppableGestureRecognizerDelegate: NSObject, UIGestureRecognizerDelegate {
@@ -34,5 +32,3 @@ final class PoppableGestureRecognizerDelegate: NSObject, UIGestureRecognizerDele
         return false
     }
 }
-
-#endif

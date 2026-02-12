@@ -6,8 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-#if os(iOS)
-
 import UIKit
 
 extension UIBarButtonItem {
@@ -20,5 +18,3 @@ extension UIBarButtonItem {
         }
     }
 }
-
-#endif

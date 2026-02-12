@@ -6,8 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-#if os(iOS)
-
 import UIKit
 
 final class NonIntrinsicImageView: UIImageView {
@@ -21,5 +19,3 @@ final class NonIntrinsicLabel: UILabel {
         CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
     }
 }
-
-#endif

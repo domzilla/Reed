@@ -6,8 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-#if os(iOS)
-
 import UIKit
 
 @IBDesignable
@@ -78,5 +76,3 @@ final class InteractiveLabel: UILabel, @preconcurrency UIEditMenuInteractionDele
         return UIMenu(title: "", children: [copyAction])
     }
 }
-
-#endif

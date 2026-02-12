@@ -8,34 +8,19 @@
 
 import DZFoundation
 import Foundation
-
-#if os(macOS)
-import AppKit
-
-typealias RSImage = NSImage
-#endif
-
-#if os(iOS)
 import UIKit
 
-typealias RSImage = UIImage
-#endif
-
-typealias ImageResultBlock = @MainActor (RSImage?) -> Void
+typealias ImageResultBlock = @MainActor (UIImage?) -> Void
 
 private let debugLoggingEnabled = false
 
-extension RSImage {
+extension UIImage {
     /// Create a colored image from the source image using a specified color.
     ///
     /// - Parameter color: The color with which to fill the mask image.
     /// - Returns: A new masked image.
-    func maskWithColor(color: CGColor) -> RSImage? {
-        #if os(macOS)
-        guard let maskImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
-        #else
+    func maskWithColor(color: CGColor) -> UIImage? {
         guard let maskImage = cgImage else { return nil }
-        #endif
 
         let width = size.width
         let height = size.height
@@ -58,18 +43,13 @@ extension RSImage {
         context.fill(bounds)
 
         if let cgImage = context.makeImage() {
-            #if os(macOS)
-            let coloredImage = RSImage(cgImage: cgImage, size: CGSize(width: cgImage.width, height: cgImage.height))
-            #else
-            let coloredImage = RSImage(cgImage: cgImage)
-            #endif
+            let coloredImage = UIImage(cgImage: cgImage)
             return coloredImage
         } else {
             return nil
         }
     }
 
-    #if os(iOS)
     /// Tint an image.
     ///
     /// - Parameter color: The color to use to tint the image.
@@ -90,36 +70,20 @@ extension RSImage {
             return self
         }
     }
-    #endif
-
-    #if os(macOS)
-    /// Returns data as PNG. May be nil in some circumstances.
-    func pngData() -> Data? {
-        guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else {
-            return nil
-        }
-        let bitmapRep = NSBitmapImageRep(cgImage: cgImage)
-        return bitmapRep.representation(using: .png, properties: [:])
-    }
-    #endif
 
     /// Returns a data representation of the image.
-    /// - Returns: Image data. Normally PNG, though in rare cases it might TIFF on macOS.
+    /// - Returns: Image data as PNG.
     func dataRepresentation() -> Data? {
-        #if os(macOS)
-        self.pngData() ?? tiffRepresentation
-        #else
-        return self.pngData()
-        #endif
+        self.pngData()
     }
 
     /// Asynchronously initializes an image from data.
     ///
     /// - Parameters:
     ///   - data: The data object containing the image data.
-    static func image(data: Data) async -> RSImage? {
+    static func image(data: Data) async -> UIImage? {
         await withCheckedContinuation { continuation in
-            RSImage.image(with: data) { image in
+            UIImage.image(with: data) { image in
                 continuation.resume(returning: image)
             }
         }
@@ -132,7 +96,7 @@ extension RSImage {
     ///   - imageResultBlock: The closure to call when the image has been initialized.
     static func image(with data: Data, imageResultBlock: @escaping ImageResultBlock) {
         DispatchQueue.global().async {
-            let image = RSImage(data: data)
+            let image = UIImage(data: data)
             DispatchQueue.main.async {
                 imageResultBlock(image)
             }
@@ -232,9 +196,9 @@ extension RSImage {
 
         // Fallback to creating a thumbnail
         if debugLoggingEnabled {
-            DZLog("RSImage: found no match — calling createThumbnail")
+            DZLog("RSImage: found no match — calling createThumbnail")
         }
-        return RSImage.createThumbnail(imageSource, maxPixelSize: maxPixelSize)
+        return UIImage.createThumbnail(imageSource, maxPixelSize: maxPixelSize)
     }
 
     /// Create a thumbnail from a CGImageSource.

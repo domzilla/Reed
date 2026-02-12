@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os
 
 nonisolated let localeForLowercasing = Locale(identifier: "en_US")
 
@@ -84,11 +83,7 @@ nonisolated extension URLRequest {
 
 nonisolated extension UserAgent {
     static let extendedUserAgent = {
-        #if os(iOS)
         let platform = "iOS"
-        #else
-        let platform = "Mac"
-        #endif
         let version = stringFromInfoPlist("CFBundleShortVersionString") ?? "Unknown"
         let build = stringFromInfoPlist("CFBundleVersion") ?? "Unknown"
 

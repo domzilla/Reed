@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Replaced all `os.Logger` usage with `DZFoundation` (`DZLog`) across 5 files — `DownloadSession`, `Downloader`, `RSImage`, `DatabaseQueue`, `HTMLMetadataDownloader`
+- Removed all `#if os(macOS)` conditional compilation paths and `RSImage` typealias across 8 files — app is iOS-only
 - Inlined 11 trivial extension files into their callers — `Calendar+RSCore`, `NotificationCenter+RSCore`, `Bundle+RSCore`, `UIActivityViewController+Extras`, `AddFeedDefaultContainer`, `CacheCleaner`, `UIView+RSCore`, `UICollectionView+RSCore`, `UIPageViewController+RSCore`, `UIFont+RSCore`, `String+RSParser` each had 1–2 call sites and didn't justify separate files
 - Merged 3 extension file pairs — `UIViewController+RSCore` into `UIViewController+Extras`, `ExtensionContainers+DataStore` into `ExtensionContainersFile+MainApp`, `CGImage+RSCore` into `IconImage.swift`
 - Inlined 8 single-use wrapper types — `RSMarkdown`, `RSSParser`, `AtomParser`, `InitialFeedDownloader`, `JSONUtilities`, `OPMLExporter`, `HTTPMethod`, `RSScreen` were each trivial enums/structs wrapping a single function call, used exactly once
