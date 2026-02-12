@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Converted `MainThreadOperation` subclasses to `async/await` — replaced `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation` with direct async calls; simplified `WebViewProvider` queue management
 - Replaced `FetchRequestOperation` + `FetchRequestQueue` operation-based pattern with `Task`-based cancellation — deleted `FetchRequestOperation` (105 LOC), simplified `FetchRequestQueue` to a single `Task<Void, Never>?` with cancel-and-replace semantics
 - Merged 6 trivially small files into logical neighbors — `PseudoFeed` protocol into `SmartFeed.swift`, `AppNotifications` into `SceneCoordinator.swift`, `SyncConstants` into `SyncStatus.swift`, `DatabaseObject+Database` into `RelatedObjectsMap+Database.swift`, `MainTimelineDataSource` into `MainTimelineViewController.swift`, `ErrorHandler` into `UIViewController+Extras.swift` + inlined at call sites
+- Consolidated `AuthorAvatarDownloader` into `ImageDownloader` — avatar caching, scaling, and notification logic now lives directly in `ImageDownloader`, eliminating the intermediate NotificationCenter hop between the two classes
 
 ### Removed
 - `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary

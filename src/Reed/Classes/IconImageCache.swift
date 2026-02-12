@@ -122,7 +122,7 @@ extension IconImageCache {
         if let iconImage = authorIconImageCache[author] {
             return iconImage
         }
-        if let iconImage = AuthorAvatarDownloader.shared.image(for: author) {
+        if let iconImage = ImageDownloader.shared.avatarImage(for: author) {
             self.authorIconImageCache[author] = iconImage
             return iconImage
         }

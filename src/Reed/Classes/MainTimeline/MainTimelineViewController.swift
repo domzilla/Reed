@@ -186,7 +186,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.avatarDidBecomeAvailable(_:)),
-            name: .AvatarDidBecomeAvailable,
+            name: .avatarDidBecomeAvailable,
             object: nil
         )
         NotificationCenter.default.addObserver(

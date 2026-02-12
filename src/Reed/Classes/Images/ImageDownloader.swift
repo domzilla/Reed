@@ -13,6 +13,7 @@ import RSWeb
 
 extension Notification.Name {
     static let imageDidBecomeAvailable = Notification.Name("ImageDidBecomeAvailableNotification") // UserInfoKey.url
+    static let avatarDidBecomeAvailable = Notification.Name("AvatarDidBecomeAvailableNotification") // UserInfoKey.url
 }
 
 @MainActor
@@ -24,6 +25,11 @@ final class ImageDownloader {
     private var imageCache = [String: Data]() // url: image
     private var urlsInProgress = Set<String>()
     private var badURLs = Set<String>() // That return a 404 or whatever. Just skip them in the future.
+
+    // MARK: Avatar Support
+
+    private var avatarCache = [String: IconImage]() // avatarURL: IconImage
+    private var waitingForAvatarURLs = Set<String>()
 
     init() {
         let folder = AppConfig.cacheSubfolder(named: "Images")
@@ -44,6 +50,24 @@ final class ImageDownloader {
 
         return nil
     }
+
+    func avatarImage(for author: Author) -> IconImage? {
+        guard let avatarURL = author.avatarURL else {
+            return nil
+        }
+
+        if let cachedImage = avatarCache[avatarURL] {
+            return cachedImage
+        }
+
+        if let imageData = image(for: avatarURL) {
+            self.scaleAndCacheAvatar(imageData, avatarURL)
+        } else {
+            self.waitingForAvatarURLs.insert(avatarURL)
+        }
+
+        return nil
+    }
 }
 
 extension ImageDownloader {
@@ -51,6 +75,7 @@ extension ImageDownloader {
         assert(Thread.isMainThread)
         self.imageCache[url] = image
         self.postImageDidBecomeAvailableNotification(url)
+        self.processAvatarIfNeeded(url, image)
     }
 
     private func findImage(_ url: String) async {
@@ -134,5 +159,44 @@ extension ImageDownloader {
     private func postImageDidBecomeAvailableNotification(_ url: String) {
         assert(Thread.isMainThread)
         NotificationCenter.default.post(name: .imageDidBecomeAvailable, object: self, userInfo: [UserInfoKey.url: url])
+    }
+
+    // MARK: Avatar Support
+
+    private func processAvatarIfNeeded(_ url: String, _ imageData: Data) {
+        guard self.waitingForAvatarURLs.contains(url) else {
+            return
+        }
+        self.scaleAndCacheAvatar(imageData, url)
+    }
+
+    private func scaleAndCacheAvatar(_ imageData: Data, _ avatarURL: String) {
+        UIImage.scaledForIcon(imageData) { image in
+            MainActor.assumeIsolated {
+                if let image {
+                    self.handleAvatarDidBecomeAvailable(avatarURL, image)
+                }
+            }
+        }
+    }
+
+    private func handleAvatarDidBecomeAvailable(_ avatarURL: String, _ image: UIImage) {
+        if self.avatarCache[avatarURL] == nil {
+            self.avatarCache[avatarURL] = IconImage(image)
+        }
+        if self.waitingForAvatarURLs.contains(avatarURL) {
+            self.waitingForAvatarURLs.remove(avatarURL)
+            self.postAvatarDidBecomeAvailableNotification(avatarURL)
+        }
+    }
+
+    private func postAvatarDidBecomeAvailableNotification(_ avatarURL: String) {
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: .avatarDidBecomeAvailable,
+                object: self,
+                userInfo: [UserInfoKey.url: avatarURL]
+            )
+        }
     }
 }
