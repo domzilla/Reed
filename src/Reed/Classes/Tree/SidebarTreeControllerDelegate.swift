@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSTree
 
 @MainActor
 final class SidebarTreeControllerDelegate: TreeControllerDelegate {

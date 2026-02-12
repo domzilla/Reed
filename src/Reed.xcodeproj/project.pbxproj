@@ -7,27 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F263544B2F3DF20A00C56D92 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = F263544A2F3DF20A00C56D92 /* Markdown */; };
+		F263544D2F3DF24B00C56D92 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F263544C2F3DF23B00C56D92 /* libxml2.tbd */; };
 		F2C8F2DD2F236942005B39D1 /* Reed Share Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		F2C8F4E92F2373B3005B39D1 /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4E82F2373B3005B39D1 /* RSCore */; };
-		F2C8F4EE2F237402005B39D1 /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4ED2F237402005B39D1 /* RSDatabase */; };
-		F2C8F4F62F23743A005B39D1 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4F52F23743A005B39D1 /* RSParser */; };
-		F2C8F4FB2F23745A005B39D1 /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4FA2F23745A005B39D1 /* RSTree */; };
-		F2C8F4FD2F237525005B39D1 /* RSCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4E82F2373B3005B39D1 /* RSCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F4FF2F237528005B39D1 /* RSDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4ED2F237402005B39D1 /* RSDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5002F23752A005B39D1 /* RSParser in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4F52F23743A005B39D1 /* RSParser */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5012F23752C005B39D1 /* RSTree in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F4FA2F23745A005B39D1 /* RSTree */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5042F237589005B39D1 /* RSCore in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5032F237589005B39D1 /* RSCore */; };
-		F2C8F5052F237589005B39D1 /* RSCore in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5032F237589005B39D1 /* RSCore */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5072F237589005B39D1 /* RSDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5062F237589005B39D1 /* RSDatabase */; };
-		F2C8F5082F237589005B39D1 /* RSDatabase in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5062F237589005B39D1 /* RSDatabase */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F50A2F237589005B39D1 /* RSParser in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5092F237589005B39D1 /* RSParser */; };
-		F2C8F50B2F237589005B39D1 /* RSParser in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5092F237589005B39D1 /* RSParser */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F50D2F237589005B39D1 /* RSTree in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50C2F237589005B39D1 /* RSTree */; };
-		F2C8F50E2F237589005B39D1 /* RSTree in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50C2F237589005B39D1 /* RSTree */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5102F237589005B39D1 /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50F2F237589005B39D1 /* RSWeb */; };
-		F2C8F5112F237589005B39D1 /* RSWeb in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F50F2F237589005B39D1 /* RSWeb */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		F2C8F5162F237659005B39D1 /* RSWeb in Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5152F237659005B39D1 /* RSWeb */; };
-		F2C8F5172F237659005B39D1 /* RSWeb in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2C8F5152F237659005B39D1 /* RSWeb */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		F2D8151C2F251C40003BAD6B /* DZFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F2D8151B2F251C40003BAD6B /* DZFoundation */; };
 		F2D8151E2F251C65003BAD6B /* DZFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F2D8151D2F251C65003BAD6B /* DZFoundation */; };
 		F2D815282F251EF0003BAD6B /* DZFoundation in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F2D8151D2F251C65003BAD6B /* DZFoundation */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -62,12 +44,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				F2C8F5002F23752A005B39D1 /* RSParser in Embed Frameworks */,
 				F2D815292F251EF7003BAD6B /* DZFoundation in Embed Frameworks */,
-				F2C8F4FF2F237528005B39D1 /* RSDatabase in Embed Frameworks */,
-				F2C8F5172F237659005B39D1 /* RSWeb in Embed Frameworks */,
-				F2C8F4FD2F237525005B39D1 /* RSCore in Embed Frameworks */,
-				F2C8F5012F23752C005B39D1 /* RSTree in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -78,12 +55,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				F2C8F50B2F237589005B39D1 /* RSParser in Embed Frameworks */,
 				F2D815282F251EF0003BAD6B /* DZFoundation in Embed Frameworks */,
-				F2C8F5082F237589005B39D1 /* RSDatabase in Embed Frameworks */,
-				F2C8F5112F237589005B39D1 /* RSWeb in Embed Frameworks */,
-				F2C8F5052F237589005B39D1 /* RSCore in Embed Frameworks */,
-				F2C8F50E2F237589005B39D1 /* RSTree in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -91,6 +63,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F263544C2F3DF23B00C56D92 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		F2C8ED662F2276CF005B39D1 /* Reed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F2C8F2D32F236942005B39D1 /* Reed Share Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Reed Share Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -141,12 +114,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F2C8F4F62F23743A005B39D1 /* RSParser in Frameworks */,
+				F263544D2F3DF24B00C56D92 /* libxml2.tbd in Frameworks */,
 				F2D8151C2F251C40003BAD6B /* DZFoundation in Frameworks */,
-				F2C8F4FB2F23745A005B39D1 /* RSTree in Frameworks */,
-				F2C8F5162F237659005B39D1 /* RSWeb in Frameworks */,
-				F2C8F4E92F2373B3005B39D1 /* RSCore in Frameworks */,
-				F2C8F4EE2F237402005B39D1 /* RSDatabase in Frameworks */,
+				F263544B2F3DF20A00C56D92 /* Markdown in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,12 +124,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F2C8F50A2F237589005B39D1 /* RSParser in Frameworks */,
 				F2D8151E2F251C65003BAD6B /* DZFoundation in Frameworks */,
-				F2C8F5072F237589005B39D1 /* RSDatabase in Frameworks */,
-				F2C8F5102F237589005B39D1 /* RSWeb in Frameworks */,
-				F2C8F5042F237589005B39D1 /* RSCore in Frameworks */,
-				F2C8F50D2F237589005B39D1 /* RSTree in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +154,7 @@
 		F2C8F5022F237589005B39D1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F263544C2F3DF23B00C56D92 /* libxml2.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -217,12 +183,8 @@
 			);
 			name = Reed;
 			packageProductDependencies = (
-				F2C8F4E82F2373B3005B39D1 /* RSCore */,
-				F2C8F4ED2F237402005B39D1 /* RSDatabase */,
-				F2C8F4F52F23743A005B39D1 /* RSParser */,
-				F2C8F4FA2F23745A005B39D1 /* RSTree */,
-				F2C8F5152F237659005B39D1 /* RSWeb */,
 				F2D8151B2F251C40003BAD6B /* DZFoundation */,
+				F263544A2F3DF20A00C56D92 /* Markdown */,
 			);
 			productName = Reed;
 			productReference = F2C8ED662F2276CF005B39D1 /* Reed.app */;
@@ -247,11 +209,6 @@
 			);
 			name = "Reed Share Extension";
 			packageProductDependencies = (
-				F2C8F5032F237589005B39D1 /* RSCore */,
-				F2C8F5062F237589005B39D1 /* RSDatabase */,
-				F2C8F5092F237589005B39D1 /* RSParser */,
-				F2C8F50C2F237589005B39D1 /* RSTree */,
-				F2C8F50F2F237589005B39D1 /* RSWeb */,
 				F2D8151D2F251C65003BAD6B /* DZFoundation */,
 			);
 			productName = ShareExtension;
@@ -286,13 +243,8 @@
 			mainGroup = F2C8ED5D2F2276CF005B39D1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */,
-				F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */,
-				F2C8F4F12F23741C005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSMarkdown" */,
-				F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */,
-				F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */,
-				F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */,
 				F2D8151A2F251C09003BAD6B /* XCLocalSwiftPackageReference "../../../../Libraries/DZFoundation" */,
+				F26354492F3DF1F200C56D92 /* XCRemoteSwiftPackageReference "swift-markdown" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F2C8ED672F2276CF005B39D1 /* Products */;
@@ -650,82 +602,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSCore;
-		};
-		F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSDatabase;
-		};
-		F2C8F4F12F23741C005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSMarkdown" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSMarkdown;
-		};
-		F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSParser;
-		};
-		F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSTree;
-		};
-		F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../vendor/NetNewsWire/Modules/RSWeb;
-		};
 		F2D8151A2F251C09003BAD6B /* XCLocalSwiftPackageReference "../../../../Libraries/DZFoundation" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../../../Libraries/DZFoundation;
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		F26354492F3DF1F200C56D92 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-markdown.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.7.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		F2C8F4E82F2373B3005B39D1 /* RSCore */ = {
+		F263544A2F3DF20A00C56D92 /* Markdown */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = RSCore;
-		};
-		F2C8F4ED2F237402005B39D1 /* RSDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RSDatabase;
-		};
-		F2C8F4F52F23743A005B39D1 /* RSParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RSParser;
-		};
-		F2C8F4FA2F23745A005B39D1 /* RSTree */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = RSTree;
-		};
-		F2C8F5032F237589005B39D1 /* RSCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4E72F2373B3005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSCore" */;
-			productName = RSCore;
-		};
-		F2C8F5062F237589005B39D1 /* RSDatabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4EC2F237402005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSDatabase" */;
-			productName = RSDatabase;
-		};
-		F2C8F5092F237589005B39D1 /* RSParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4F42F23743A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSParser" */;
-			productName = RSParser;
-		};
-		F2C8F50C2F237589005B39D1 /* RSTree */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4F92F23745A005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSTree" */;
-			productName = RSTree;
-		};
-		F2C8F50F2F237589005B39D1 /* RSWeb */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */;
-			productName = RSWeb;
-		};
-		F2C8F5152F237659005B39D1 /* RSWeb */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F2C8F4FC2F237478005B39D1 /* XCLocalSwiftPackageReference "../vendor/NetNewsWire/Modules/RSWeb" */;
-			productName = RSWeb;
+			package = F26354492F3DF1F200C56D92 /* XCRemoteSwiftPackageReference "swift-markdown" */;
+			productName = Markdown;
 		};
 		F2D8151B2F251C40003BAD6B /* DZFoundation */ = {
 			isa = XCSwiftPackageProductDependency;

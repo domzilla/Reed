@@ -7,12 +7,11 @@
 //
 
 import Foundation
-import RSDatabase
 
 /// Represents a CloudKit operation that needs to be performed when iCloud becomes available.
-public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
+struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
     /// The types of operations that can be queued.
-    public enum OperationType: String, Sendable {
+    enum OperationType: String, Sendable {
         case createFeed
         case deleteFeed
         case renameFeed
@@ -23,13 +22,13 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
         case renameFolder
     }
 
-    public let id: String
-    public let operationType: OperationType
-    public let payload: Data // JSON-encoded operation parameters
-    public let createdAt: Date
-    public let selected: Bool
+    let id: String
+    let operationType: OperationType
+    let payload: Data // JSON-encoded operation parameters
+    let createdAt: Date
+    let selected: Bool
 
-    public nonisolated init(
+    nonisolated init(
         id: String = UUID().uuidString,
         operationType: OperationType,
         payload: Data,
@@ -43,7 +42,7 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
         self.selected = selected
     }
 
-    public nonisolated func databaseDictionary() -> DatabaseDictionary {
+    nonisolated func databaseDictionary() -> DatabaseDictionary {
         [
             PendingOperationKey.id: self.id,
             PendingOperationKey.operationType: self.operationType.rawValue,
@@ -53,7 +52,7 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
         ]
     }
 
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.id)
     }
 }
@@ -61,15 +60,15 @@ public struct PendingCloudKitOperation: Hashable, Equatable, Sendable {
 // MARK: - Operation Payloads
 
 extension PendingCloudKitOperation {
-    public struct CreateFeedPayload: Codable {
-        public let url: String
-        public let name: String?
-        public let editedName: String?
-        public let homePageURL: String?
-        public let containerExternalID: String
-        public let localFeedID: String // Temporary local ID until CloudKit sync
+    struct CreateFeedPayload: Codable {
+        let url: String
+        let name: String?
+        let editedName: String?
+        let homePageURL: String?
+        let containerExternalID: String
+        let localFeedID: String // Temporary local ID until CloudKit sync
 
-        public init(
+        init(
             url: String,
             name: String?,
             editedName: String?,
@@ -86,71 +85,71 @@ extension PendingCloudKitOperation {
         }
     }
 
-    public struct DeleteFeedPayload: Codable {
-        public let feedExternalID: String
-        public let containerExternalID: String
+    struct DeleteFeedPayload: Codable {
+        let feedExternalID: String
+        let containerExternalID: String
 
-        public init(feedExternalID: String, containerExternalID: String) {
+        init(feedExternalID: String, containerExternalID: String) {
             self.feedExternalID = feedExternalID
             self.containerExternalID = containerExternalID
         }
     }
 
-    public struct RenameFeedPayload: Codable {
-        public let feedExternalID: String
-        public let editedName: String?
+    struct RenameFeedPayload: Codable {
+        let feedExternalID: String
+        let editedName: String?
 
-        public init(feedExternalID: String, editedName: String?) {
+        init(feedExternalID: String, editedName: String?) {
             self.feedExternalID = feedExternalID
             self.editedName = editedName
         }
     }
 
-    public struct MoveFeedPayload: Codable {
-        public let feedExternalID: String
-        public let fromContainerExternalID: String
-        public let toContainerExternalID: String
+    struct MoveFeedPayload: Codable {
+        let feedExternalID: String
+        let fromContainerExternalID: String
+        let toContainerExternalID: String
 
-        public init(feedExternalID: String, fromContainerExternalID: String, toContainerExternalID: String) {
+        init(feedExternalID: String, fromContainerExternalID: String, toContainerExternalID: String) {
             self.feedExternalID = feedExternalID
             self.fromContainerExternalID = fromContainerExternalID
             self.toContainerExternalID = toContainerExternalID
         }
     }
 
-    public struct AddFeedToFolderPayload: Codable {
-        public let feedExternalID: String
-        public let containerExternalID: String
+    struct AddFeedToFolderPayload: Codable {
+        let feedExternalID: String
+        let containerExternalID: String
 
-        public init(feedExternalID: String, containerExternalID: String) {
+        init(feedExternalID: String, containerExternalID: String) {
             self.feedExternalID = feedExternalID
             self.containerExternalID = containerExternalID
         }
     }
 
-    public struct CreateFolderPayload: Codable {
-        public let name: String
-        public let localFolderID: String // Temporary local ID until CloudKit sync
+    struct CreateFolderPayload: Codable {
+        let name: String
+        let localFolderID: String // Temporary local ID until CloudKit sync
 
-        public init(name: String, localFolderID: String) {
+        init(name: String, localFolderID: String) {
             self.name = name
             self.localFolderID = localFolderID
         }
     }
 
-    public struct DeleteFolderPayload: Codable {
-        public let folderExternalID: String
+    struct DeleteFolderPayload: Codable {
+        let folderExternalID: String
 
-        public init(folderExternalID: String) {
+        init(folderExternalID: String) {
             self.folderExternalID = folderExternalID
         }
     }
 
-    public struct RenameFolderPayload: Codable {
-        public let folderExternalID: String
-        public let name: String
+    struct RenameFolderPayload: Codable {
+        let folderExternalID: String
+        let name: String
 
-        public init(folderExternalID: String, name: String) {
+        init(folderExternalID: String, name: String) {
             self.folderExternalID = folderExternalID
             self.name = name
         }

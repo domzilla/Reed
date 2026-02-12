@@ -7,7 +7,6 @@
 //
 
 import Foundation
-@preconcurrency import RSCore
 
 @MainActor
 final class SmartFeedsController: DisplayNameProvider, ContainerIdentifiable {

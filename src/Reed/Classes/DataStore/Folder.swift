@@ -7,47 +7,46 @@
 //
 
 import Foundation
-import RSCore
 
-public final class Folder: SidebarItem, Renamable, Container, Hashable {
-    public nonisolated let dataStoreID: String
-    public weak var dataStore: DataStore?
+final class Folder: SidebarItem, Renamable, Container, Hashable {
+    nonisolated let dataStoreID: String
+    weak var dataStore: DataStore?
 
-    public var defaultReadFilterType: ReadFilterType {
+    var defaultReadFilterType: ReadFilterType {
         .read
     }
 
-    public var containerID: ContainerIdentifier? {
+    var containerID: ContainerIdentifier? {
         ContainerIdentifier.folder(self.dataStoreID, self.nameForDisplay)
     }
 
-    public var sidebarItemID: SidebarItemIdentifier? {
+    var sidebarItemID: SidebarItemIdentifier? {
         SidebarItemIdentifier.folder(self.dataStoreID, self.nameForDisplay)
     }
 
-    public var topLevelFeeds: Set<Feed> = .init()
-    public var folders: Set<Folder>? // subfolders are not supported, so this is always nil
+    var topLevelFeeds: Set<Feed> = .init()
+    var folders: Set<Folder>? // subfolders are not supported, so this is always nil
 
-    public var name: String? {
+    var name: String? {
         didSet {
             postDisplayNameDidChangeNotification()
         }
     }
 
     static let untitledName = NSLocalizedString("Untitled ƒ", comment: "Folder name")
-    public nonisolated let folderID: Int // not saved: per-run only
-    public var externalID: String?
+    nonisolated let folderID: Int // not saved: per-run only
+    var externalID: String?
     static var incrementingID = 0
 
     // MARK: - DisplayNameProvider
 
-    public var nameForDisplay: String {
+    var nameForDisplay: String {
         self.name ?? Folder.untitledName
     }
 
     // MARK: - UnreadCountProvider
 
-    public var unreadCount = 0 {
+    var unreadCount = 0 {
         didSet {
             if self.unreadCount != oldValue {
                 postUnreadCountDidChangeNotification()
@@ -57,7 +56,7 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 
     // MARK: - Renamable
 
-    public func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let dataStore else {
             return
         }
@@ -114,12 +113,12 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 
     // MARK: Container
 
-    public func flattenedFeeds() -> Set<Feed> {
+    func flattenedFeeds() -> Set<Feed> {
         // Since sub-folders are not supported, it’s always the top-level feeds.
         self.topLevelFeeds
     }
 
-    public func objectIsChild(_ object: AnyObject) -> Bool {
+    func objectIsChild(_ object: AnyObject) -> Bool {
         // Folders contain Feed objects only, at least for now.
         guard let feed = object as? Feed else {
             return false
@@ -127,12 +126,12 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
         return self.topLevelFeeds.contains(feed)
     }
 
-    public func addFeedToTreeAtTopLevel(_ feed: Feed) {
+    func addFeedToTreeAtTopLevel(_ feed: Feed) {
         self.topLevelFeeds.insert(feed)
         postChildrenDidChangeNotification()
     }
 
-    public func addFeeds(_ feeds: Set<Feed>) {
+    func addFeeds(_ feeds: Set<Feed>) {
         guard !feeds.isEmpty else {
             return
         }
@@ -140,12 +139,12 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
         postChildrenDidChangeNotification()
     }
 
-    public func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
+    func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
         self.topLevelFeeds.remove(feed)
         postChildrenDidChangeNotification()
     }
 
-    public func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
+    func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
         guard !feeds.isEmpty else {
             return
         }
@@ -155,13 +154,13 @@ public final class Folder: SidebarItem, Renamable, Container, Hashable {
 
     // MARK: - Hashable
 
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.folderID)
     }
 
     // MARK: - Equatable
 
-    public nonisolated static func == (lhs: Folder, rhs: Folder) -> Bool {
+    nonisolated static func == (lhs: Folder, rhs: Folder) -> Bool {
         lhs === rhs
     }
 }
@@ -185,7 +184,7 @@ extension Folder {
 // MARK: - OPMLRepresentable
 
 extension Folder: OPMLRepresentable {
-    public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
+    func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
         let attrExternalID = if allowCustomAttributes, let externalID {
             " nnw_externalID=\"\(externalID.escapingSpecialXMLCharacters)\""
         } else {

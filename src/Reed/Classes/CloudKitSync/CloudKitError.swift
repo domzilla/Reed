@@ -10,14 +10,14 @@
 import CloudKit
 import Foundation
 
-public final class CloudKitError: LocalizedError, Sendable {
-    public let error: Error
+final class CloudKitError: LocalizedError, Sendable {
+    let error: Error
 
-    public init(_ error: Error) {
+    init(_ error: Error) {
         self.error = error
     }
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         guard let ckError = error as? CKError else {
             return self.error.localizedDescription
         }

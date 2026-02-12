@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSParser
 
 extension ParsedItem {
     var articleID: String {

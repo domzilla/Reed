@@ -7,10 +7,6 @@
 //
 
 import Foundation
-import RSCore
-import RSDatabase
-import RSDatabaseObjC
-import RSParser
 import Synchronization
 
 final class ArticlesTable: DatabaseTable, Sendable {

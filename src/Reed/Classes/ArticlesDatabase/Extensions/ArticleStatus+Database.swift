@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
 
 extension ArticleStatus {
     convenience init(articleID: String, dateArrived: Date, row: FMResultSet) {
@@ -20,11 +18,11 @@ extension ArticleStatus {
 }
 
 extension ArticleStatus: DatabaseObject {
-    public nonisolated var databaseID: String {
+    nonisolated var databaseID: String {
         articleID
     }
 
-    public nonisolated func databaseDictionary() -> DatabaseDictionary? {
+    nonisolated func databaseDictionary() -> DatabaseDictionary? {
         [
             DatabaseKey.articleID: articleID,
             DatabaseKey.read: read,

@@ -7,16 +7,15 @@
 //
 
 import Foundation
-import RSCore
 
-public nonisolated enum ReadFilterType: Sendable {
+nonisolated enum ReadFilterType: Sendable {
     case read
     case none
     case alwaysRead
 }
 
 @MainActor
-public protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvider,
+protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvider,
     UnreadCountProvider
 {
     @MainActor var dataStore: DataStore? { get }
@@ -25,7 +24,7 @@ public protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNam
 
 @MainActor
 extension SidebarItem {
-    public func readFiltered(readFilterEnabledTable: [SidebarItemIdentifier: Bool]) -> Bool {
+    func readFiltered(readFilterEnabledTable: [SidebarItemIdentifier: Bool]) -> Bool {
         guard defaultReadFilterType != .alwaysRead else {
             return true
         }

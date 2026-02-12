@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSCore
-import RSTree
 
 final class DeleteCommand: UndoableCommand {
     let treeController: TreeController?

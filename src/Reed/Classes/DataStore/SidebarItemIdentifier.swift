@@ -9,11 +9,11 @@
 import Foundation
 
 @MainActor
-public protocol SidebarItemIdentifiable {
+protocol SidebarItemIdentifiable {
     var sidebarItemID: SidebarItemIdentifier? { get }
 }
 
-public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable, Sendable {
+enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable, Sendable {
     case smartFeed(String) // String is a unique identifier
     case script(String) // String is a unique identifier
     case feed(String, String) // dataStoreID, feedID
@@ -48,7 +48,7 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
         }
     }
 
-    public var description: String {
+    var description: String {
         switch self {
         case let .smartFeed(id):
             "(typeName): \(id)"
@@ -61,7 +61,7 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
         }
     }
 
-    public var userInfo: [String: String] {
+    var userInfo: [String: String] {
         var d = [Key.typeName: self.typeName]
 
         switch self {
@@ -80,7 +80,7 @@ public enum SidebarItemIdentifier: CustomStringConvertible, Hashable, Equatable,
         return d
     }
 
-    public init?(userInfo: [String: String]) {
+    init?(userInfo: [String: String]) {
         guard let type = userInfo[Key.typeName] else {
             return nil
         }

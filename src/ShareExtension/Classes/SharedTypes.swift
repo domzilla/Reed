@@ -10,12 +10,12 @@ import Foundation
 
 // MARK: - ContainerIdentifier
 
-public enum ContainerIdentifier: Hashable, Equatable, Sendable {
+enum ContainerIdentifier: Hashable, Equatable, Sendable {
     case smartFeedController
     case dataStore(String) // dataStoreID
     case folder(String, String) // dataStoreID, folderName
 
-    public var userInfo: [AnyHashable: AnyHashable] {
+    var userInfo: [AnyHashable: AnyHashable] {
         switch self {
         case .smartFeedController:
             [
@@ -35,7 +35,7 @@ public enum ContainerIdentifier: Hashable, Equatable, Sendable {
         }
     }
 
-    public init?(userInfo: [AnyHashable: AnyHashable]) {
+    init?(userInfo: [AnyHashable: AnyHashable]) {
         guard let type = userInfo["type"] as? String else { return nil }
 
         switch type {
@@ -62,7 +62,7 @@ extension ContainerIdentifier: Encodable {
         case folderName
     }
 
-    public func encode(to encoder: Encoder) throws {
+    func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .smartFeedController:
@@ -86,7 +86,7 @@ extension ContainerIdentifier: Decodable {
         case folderName
     }
 
-    public init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DecodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
 

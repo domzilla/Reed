@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
 
 extension [DatabaseObject] {
     func asAuthors() -> Set<Author>? {

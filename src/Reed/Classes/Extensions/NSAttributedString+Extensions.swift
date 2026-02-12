@@ -6,7 +6,6 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
-import RSParser
 import UIKit
 
 private let boldTrait = UIFontDescriptor.SymbolicTraits.traitBold

@@ -8,7 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
 
 @MainActor
 final class FeedMetadataFile {

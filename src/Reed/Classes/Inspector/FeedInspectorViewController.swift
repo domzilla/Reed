@@ -6,7 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import RSCore
 import SafariServices
 import UIKit
 import UserNotifications

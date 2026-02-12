@@ -8,7 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
 import UIKit
 import WidgetKit
 

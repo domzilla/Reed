@@ -7,7 +7,6 @@
 //
 
 import CoreServices
-import RSCore
 import UIKit
 import UniformTypeIdentifiers
 

@@ -7,9 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
-import RSParser
 
 extension Article {
     convenience init?(accountID: String, row: FMResultSet, status: ArticleStatus) {
@@ -226,7 +223,7 @@ extension Article {
 }
 
 extension Article: DatabaseObject {
-    public nonisolated func databaseDictionary() -> DatabaseDictionary? {
+    nonisolated func databaseDictionary() -> DatabaseDictionary? {
         var d = DatabaseDictionary()
 
         d[DatabaseKey.articleID] = articleID
@@ -266,11 +263,11 @@ extension Article: DatabaseObject {
         return d
     }
 
-    public nonisolated var databaseID: String {
+    nonisolated var databaseID: String {
         articleID
     }
 
-    public nonisolated func relatedObjectsWithName(_ name: String) -> [DatabaseObject]? {
+    nonisolated func relatedObjectsWithName(_ name: String) -> [DatabaseObject]? {
         switch name {
         case RelationshipName.authors:
             self.databaseObjectArray(with: authors)

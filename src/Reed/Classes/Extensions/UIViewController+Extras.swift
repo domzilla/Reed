@@ -7,7 +7,6 @@
 //
 
 import DZFoundation
-import RSCore
 import UIKit
 
 extension UIViewController {

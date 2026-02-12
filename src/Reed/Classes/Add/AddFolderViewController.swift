@@ -6,7 +6,6 @@
 //  Copyright © 2019 Ranchero Software, LLC. All rights reserved.
 //
 
-import RSCore
 import UIKit
 
 final class AddFolderViewController: UITableViewController {

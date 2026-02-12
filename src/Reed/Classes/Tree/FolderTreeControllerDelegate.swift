@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSCore
-import RSTree
 
 @MainActor
 final class FolderTreeControllerDelegate: TreeControllerDelegate {

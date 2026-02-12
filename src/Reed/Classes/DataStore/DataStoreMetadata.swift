@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSWeb
 
 protocol DataStoreMetadataDelegate: AnyObject {
     @MainActor

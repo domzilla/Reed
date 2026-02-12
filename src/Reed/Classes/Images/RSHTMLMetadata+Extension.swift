@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSParser
 
 extension RSHTMLMetadata {
     func largestOpenGraphImageURL() -> String? {

@@ -7,7 +7,6 @@
 //
 
 import Foundation
-@preconcurrency import RSCore
 
 // This just shows the global unread count, which appDelegate already has. Easy.
 

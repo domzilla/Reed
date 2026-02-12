@@ -8,14 +8,14 @@
 
 import Foundation
 
-public struct Author: Codable, Sendable {
-    public let authorID: String // calculated
-    public let name: String?
-    public let url: String?
-    public let avatarURL: String?
-    public let emailAddress: String?
+struct Author: Codable, Sendable {
+    let authorID: String // calculated
+    let name: String?
+    let url: String?
+    let avatarURL: String?
+    let emailAddress: String?
 
-    public init?(authorID: String?, name: String?, url: String?, avatarURL: String?, emailAddress: String?) {
+    init?(authorID: String?, name: String?, url: String?, avatarURL: String?, emailAddress: String?) {
         if name == nil, url == nil, emailAddress == nil {
             return nil
         }
@@ -35,7 +35,7 @@ public struct Author: Codable, Sendable {
         }
     }
 
-    public nonisolated static func authorsWithJSON(_ jsonString: String) -> Set<Author>? {
+    nonisolated static func authorsWithJSON(_ jsonString: String) -> Set<Author>? {
         // This is JSON stored in the database, not the JSON Feed version of an author.
         guard let data = jsonString.data(using: .utf8) else {
             return nil
@@ -55,11 +55,11 @@ public struct Author: Codable, Sendable {
 // MARK: - Hashable
 
 extension Author: Hashable {
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.authorID)
     }
 
-    public nonisolated static func == (lhs: Author, rhs: Author) -> Bool {
+    nonisolated static func == (lhs: Author, rhs: Author) -> Bool {
         // The authorID is a calculation based on all the properties,
         // and so it's a quick shortcut to determine equality.
         lhs.authorID == rhs.authorID
@@ -67,7 +67,7 @@ extension Author: Hashable {
 }
 
 extension Set<Author> {
-    public nonisolated func json() -> String? {
+    nonisolated func json() -> String? {
         let encoder = JSONEncoder()
         do {
             let jsonData = try encoder.encode(Array(self))

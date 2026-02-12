@@ -8,8 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSParser
 
 @MainActor
 final class OPMLFile {

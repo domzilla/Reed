@@ -7,7 +7,6 @@
 //
 
 import Foundation
-@preconcurrency import RSCore
 import UIKit
 
 @MainActor

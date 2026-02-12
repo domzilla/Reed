@@ -8,8 +8,6 @@
 
 import CloudKit
 import Foundation
-import RSCore
-import RSWeb
 
 final class CloudKitFeedsZoneDelegate: CloudKitZoneDelegate {
     private typealias UnclaimedFeed = (

@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
 
 // article->authors is a many-to-many relationship.
 // There’s a lookup table relating authorID and articleID.

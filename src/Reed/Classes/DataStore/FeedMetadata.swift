@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSWeb
 
 protocol FeedMetadataDelegate: AnyObject {
     @MainActor

@@ -7,7 +7,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
 
 @MainActor
 extension ExtensionContainersFile {

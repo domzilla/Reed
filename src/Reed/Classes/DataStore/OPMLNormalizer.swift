@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSParser
 
 final class OPMLNormalizer {
     var normalizedOPMLItems = [RSOPMLItem]()

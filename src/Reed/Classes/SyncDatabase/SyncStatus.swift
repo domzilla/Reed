@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
 
 struct SyncDatabaseKey: Sendable {
     static let articleID = "articleID"
@@ -16,14 +15,14 @@ struct SyncDatabaseKey: Sendable {
     static let selected = "selected"
 }
 
-public struct SyncStatus: Sendable {
-    public enum Key: String, Sendable {
+struct SyncStatus: Sendable {
+    enum Key: String, Sendable {
         case read
         case starred
         case deleted
         case new
 
-        public init(_ articleStatusKey: ArticleStatus.Key) {
+        init(_ articleStatusKey: ArticleStatus.Key) {
             switch articleStatusKey {
             case .read:
                 self = Self.read
@@ -33,19 +32,19 @@ public struct SyncStatus: Sendable {
         }
     }
 
-    public let articleID: String
-    public let key: SyncStatus.Key
-    public let flag: Bool
-    public let selected: Bool
+    let articleID: String
+    let key: SyncStatus.Key
+    let flag: Bool
+    let selected: Bool
 
-    public init(articleID: String, key: SyncStatus.Key, flag: Bool, selected: Bool = false) {
+    init(articleID: String, key: SyncStatus.Key, flag: Bool, selected: Bool = false) {
         self.articleID = articleID
         self.key = key
         self.flag = flag
         self.selected = selected
     }
 
-    public nonisolated func databaseDictionary() -> DatabaseDictionary {
+    nonisolated func databaseDictionary() -> DatabaseDictionary {
         [
             SyncDatabaseKey.articleID: self.articleID,
             SyncDatabaseKey.key: self.key.rawValue,
@@ -58,12 +57,12 @@ public struct SyncStatus: Sendable {
 // MARK: - Hashable
 
 extension SyncStatus: Hashable {
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.articleID)
         hasher.combine(self.key)
     }
 
-    public nonisolated static func == (lhs: SyncStatus, rhs: SyncStatus) -> Bool {
+    nonisolated static func == (lhs: SyncStatus, rhs: SyncStatus) -> Bool {
         lhs.articleID == rhs.articleID && lhs.key == rhs.key
     }
 }

@@ -8,24 +8,20 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSDatabase
-import RSParser
-import RSWeb
 import UIKit
 
 // Main thread only.
 
 extension Notification.Name {
-    public static let DataStoreRefreshDidBegin = Notification.Name(rawValue: "DataStoreRefreshDidBegin")
-    public static let DataStoreRefreshDidFinish = Notification.Name(rawValue: "DataStoreRefreshDidFinish")
-    public static let DataStoreRefreshProgressDidChange = Notification
+    static let DataStoreRefreshDidBegin = Notification.Name(rawValue: "DataStoreRefreshDidBegin")
+    static let DataStoreRefreshDidFinish = Notification.Name(rawValue: "DataStoreRefreshDidFinish")
+    static let DataStoreRefreshProgressDidChange = Notification
         .Name(rawValue: "DataStoreRefreshProgressDidChange")
-    public static let DataStoreDidDownloadArticles = Notification.Name(rawValue: "DataStoreDidDownloadArticles")
-    public static let StatusesDidChange = Notification.Name(rawValue: "StatusesDidChange")
+    static let DataStoreDidDownloadArticles = Notification.Name(rawValue: "DataStoreDidDownloadArticles")
+    static let StatusesDidChange = Notification.Name(rawValue: "StatusesDidChange")
 }
 
-public enum FetchType {
+enum FetchType {
     case starred(_: Int? = nil)
     case unread(_: Int? = nil)
     case today(_: Int? = nil)
@@ -39,10 +35,10 @@ public enum FetchType {
 /// The single data store for all feeds, folders, and articles.
 /// Syncs automatically via CloudKit when available.
 @MainActor
-public final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
+final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
     // MARK: - Singleton
 
-    public static var shared: DataStore = {
+    static var shared: DataStore = {
         let dataStoresFolder = AppConfig.dataSubfolder(named: "DataStores").path
         let iCloudIdentifier = "iCloud"
         let iCloudFolder = (dataStoresFolder as NSString).appendingPathComponent(iCloudIdentifier)
@@ -61,42 +57,42 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     // MARK: - Manager State
 
-    public var isSuspended = false
-    public let combinedRefreshProgress = CombinedRefreshProgress()
+    var isSuspended = false
+    let combinedRefreshProgress = CombinedRefreshProgress()
 
-    public typealias ErrorHandlerCallback = @Sendable (Error) -> Void
-    public enum UserInfoKey {
-        public static let dataStore = "dataStore"
-        public static let newArticles = "newArticles" // DataStoreDidDownloadArticles
-        public static let updatedArticles = "updatedArticles" // DataStoreDidDownloadArticles
-        public static let statuses = "statuses" // StatusesDidChange
-        public static let articles = "articles" // StatusesDidChange
-        public static let articleIDs = "articleIDs" // StatusesDidChange
-        public static let statusKey = "statusKey" // StatusesDidChange
-        public static let statusFlag = "statusFlag" // StatusesDidChange
-        public static let feeds = "feeds" // DataStoreDidDownloadArticles, StatusesDidChange
-        public static let syncErrors = "syncErrors"
+    typealias ErrorHandlerCallback = @Sendable (Error) -> Void
+    enum UserInfoKey {
+        static let dataStore = "dataStore"
+        static let newArticles = "newArticles" // DataStoreDidDownloadArticles
+        static let updatedArticles = "updatedArticles" // DataStoreDidDownloadArticles
+        static let statuses = "statuses" // StatusesDidChange
+        static let articles = "articles" // StatusesDidChange
+        static let articleIDs = "articleIDs" // StatusesDidChange
+        static let statusKey = "statusKey" // StatusesDidChange
+        static let statusFlag = "statusFlag" // StatusesDidChange
+        static let feeds = "feeds" // DataStoreDidDownloadArticles, StatusesDidChange
+        static let syncErrors = "syncErrors"
     }
 
-    public var isDeleted = false
+    var isDeleted = false
 
-    public var containerID: ContainerIdentifier? {
+    var containerID: ContainerIdentifier? {
         ContainerIdentifier.dataStore(self.dataStoreID)
     }
 
-    public var dataStore: DataStore? {
+    var dataStore: DataStore? {
         self
     }
 
-    public nonisolated let dataStoreID: String
-    public var nameForDisplay: String {
+    nonisolated let dataStoreID: String
+    var nameForDisplay: String {
         guard let name, !name.isEmpty else {
             return self.defaultName
         }
         return name
     }
 
-    @MainActor public var name: String? {
+    @MainActor var name: String? {
         get {
             self.metadata.name
         }
@@ -111,9 +107,9 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public let defaultName: String
+    let defaultName: String
 
-    @MainActor public var isActive: Bool {
+    @MainActor var isActive: Bool {
         get {
             self.metadata.isActive
         }
@@ -124,10 +120,10 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public var topLevelFeeds = Set<Feed>()
-    public var folders: Set<Folder>? = Set<Folder>()
+    var topLevelFeeds = Set<Feed>()
+    var folders: Set<Folder>? = Set<Folder>()
 
-    @MainActor public var externalID: String? {
+    @MainActor var externalID: String? {
         get {
             self.metadata.externalID
         }
@@ -136,7 +132,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    @MainActor public var sortedFolders: [Folder]? {
+    @MainActor var sortedFolders: [Folder]? {
         if let folders {
             return Array(folders)
                 .sorted(by: { $0.nameForDisplay.caseInsensitiveCompare($1.nameForDisplay) == .orderedAscending })
@@ -176,7 +172,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    @MainActor public var endpointURL: URL? {
+    @MainActor var endpointURL: URL? {
         get {
             self.metadata.endpointURL
         }
@@ -224,7 +220,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     typealias FeedMetadataDictionary = [String: FeedMetadata]
     var feedMetadata = FeedMetadataDictionary()
 
-    public var unreadCount = 0 {
+    var unreadCount = 0 {
         didSet {
             if self.unreadCount != oldValue {
                 postUnreadCountDidChangeNotification()
@@ -314,32 +310,32 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public func receiveRemoteNotification(userInfo: [AnyHashable: Any]) async {
+    func receiveRemoteNotification(userInfo: [AnyHashable: Any]) async {
         await self.syncProvider.receiveRemoteNotification(for: self, userInfo: userInfo)
     }
 
     // MARK: - Refreshing
 
     @MainActor
-    public func refreshAll() async throws {
+    func refreshAll() async throws {
         try await self.syncProvider.refreshAll(for: self)
     }
 
     // MARK: - Syncing Article Status
 
     @MainActor
-    public func sendArticleStatus() async throws {
+    func sendArticleStatus() async throws {
         try await self.syncProvider.sendArticleStatus(for: self)
     }
 
     @MainActor
-    public func syncArticleStatus() async throws {
+    func syncArticleStatus() async throws {
         try await self.syncProvider.syncArticleStatus(for: self)
     }
 
     // MARK: - OPML
 
-    public func importOPML(_ opmlFile: URL, completion: @escaping (Result<Void, Error>) -> Void) {
+    func importOPML(_ opmlFile: URL, completion: @escaping (Result<Void, Error>) -> Void) {
         guard !self.syncProvider.isOPMLImportInProgress else {
             completion(.failure(DataStoreError.opmlImportInProgress))
             return
@@ -361,12 +357,12 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     // MARK: - Suspend/Resume
 
     @MainActor
-    public func suspendNetwork() {
+    func suspendNetwork() {
         self.syncProvider.suspendNetwork()
     }
 
     @MainActor
-    public func suspendDatabase() {
+    func suspendDatabase() {
         self.database.cancelAndSuspend()
         self.save()
     }
@@ -374,19 +370,19 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     /// Re-open the SQLite database and allow database calls.
     /// Call this *before* calling resume.
     @MainActor
-    public func resumeDatabaseAndDelegate() {
+    func resumeDatabaseAndDelegate() {
         self.database.resume()
         self.syncProvider.resume()
     }
 
     /// Reload OPML, etc.
-    public func resume() {
+    func resume() {
         _fetchAllUnreadCounts()
     }
 
     // MARK: - Data
 
-    public func save() {
+    func save() {
         MainActor.assumeIsolated {
             self.metadataFile.save()
             self.feedMetadataFile.save()
@@ -395,7 +391,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     }
 
     @MainActor
-    public func prepareForDeletion() {
+    func prepareForDeletion() {
         self.syncProvider.dataStoreWillBeDeleted(self)
     }
 
@@ -422,7 +418,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         self.addOPMLItems(OPMLNormalizer.normalize(items))
     }
 
-    public func markArticles(
+    func markArticles(
         _ articles: Set<Article>,
         statusKey: ArticleStatus.Key,
         flag: Bool,
@@ -451,7 +447,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         return self.existingFolder(withExternalID: externalID)
     }
 
-    public func existingContainers(withFeed feed: Feed) -> [Container] {
+    func existingContainers(withFeed feed: Feed) -> [Container] {
         var containers = [Container]()
         if self.topLevelFeeds.contains(feed) {
             containers.append(self)
@@ -486,7 +482,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     }
 
     @MainActor
-    public func ensureFolder(withFolderNames folderNames: [String]) -> Folder? {
+    func ensureFolder(withFolderNames folderNames: [String]) -> Folder? {
         // TODO: support subfolders, maybe, some day.
         // Since we don't, just take the last name and make sure there's a Folder.
 
@@ -497,11 +493,11 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     }
 
     @MainActor
-    public func existingFolder(withDisplayName displayName: String) -> Folder? {
+    func existingFolder(withDisplayName displayName: String) -> Folder? {
         self.folders?.first(where: { $0.nameForDisplay == displayName })
     }
 
-    public func existingFolder(withExternalID externalID: String) -> Folder? {
+    func existingFolder(withExternalID externalID: String) -> Folder? {
         self.folders?.first(where: { $0.externalID == externalID })
     }
 
@@ -523,7 +519,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         try await self.syncProvider.addFeed(dataStore: self, feed: feed, container: container)
     }
 
-    public func addFeed(_ feed: Feed, to container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
+    func addFeed(_ feed: Feed, to container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
             do {
                 try await self.syncProvider.addFeed(dataStore: self, feed: feed, container: container)
@@ -534,7 +530,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public func createFeed(
+    func createFeed(
         url: String,
         name: String?,
         container: Container,
@@ -566,7 +562,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         return feed
     }
 
-    public func removeFeed(
+    func removeFeed(
         _ feed: Feed,
         from container: Container,
         completion: @escaping (Result<Void, Error>) -> Void
@@ -581,7 +577,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public func moveFeed(
+    func moveFeed(
         _ feed: Feed,
         from: Container,
         to: Container,
@@ -603,11 +599,11 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     }
 
     @MainActor
-    public func renameFeed(_ feed: Feed, name: String) async throws {
+    func renameFeed(_ feed: Feed, name: String) async throws {
         try await self.syncProvider.renameFeed(for: self, with: feed, to: name)
     }
 
-    public func restoreFeed(_ feed: Feed, container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
+    func restoreFeed(_ feed: Feed, container: Container, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
             do {
                 try await self.syncProvider.restoreFeed(for: self, feed: feed, container: container)
@@ -620,11 +616,11 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     @discardableResult
     @MainActor
-    public func addFolder(_ name: String) async throws -> Folder {
+    func addFolder(_ name: String) async throws -> Folder {
         try await self.syncProvider.createFolder(for: self, name: name)
     }
 
-    public func removeFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
+    func removeFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
             do {
                 try await self.syncProvider.removeFolder(for: self, with: folder)
@@ -635,11 +631,11 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public func renameFolder(_ folder: Folder, to name: String) async throws {
+    func renameFolder(_ folder: Folder, to name: String) async throws {
         try await self.syncProvider.renameFolder(for: self, with: folder, to: name)
     }
 
-    public func restoreFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
+    func restoreFolder(_ folder: Folder, completion: @escaping (Result<Void, Error>) -> Void) {
         Task { @MainActor in
             do {
                 try await self.syncProvider.restoreFolder(for: self, folder: folder)
@@ -660,14 +656,14 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         self.structureDidChange()
     }
 
-    public func updateUnreadCounts(feeds: Set<Feed>) {
+    func updateUnreadCounts(feeds: Set<Feed>) {
         _fetchUnreadCounts(feeds: feeds)
     }
 
     // MARK: - Fetching Articles
 
     @MainActor
-    public func fetchArticles(_ fetchType: FetchType) throws -> Set<Article> {
+    func fetchArticles(_ fetchType: FetchType) throws -> Set<Article> {
         switch fetchType {
         case let .starred(limit):
             try _fetchStarredArticles(limit: limit)
@@ -693,7 +689,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
     }
 
     @MainActor
-    public func fetchArticlesAsync(_ fetchType: FetchType) async throws -> Set<Article> {
+    func fetchArticlesAsync(_ fetchType: FetchType) async throws -> Set<Article> {
         switch fetchType {
         case let .starred(limit):
             try await _fetchStarredArticlesAsync(limit: limit)
@@ -718,30 +714,30 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         }
     }
 
-    public func fetchUnreadCountForStarredArticlesAsync() async throws -> Int? {
+    func fetchUnreadCountForStarredArticlesAsync() async throws -> Int? {
         try await self.database.fetchUnreadCountForStarredArticlesAsync(feedIDs: self.flattenedFeedsIDs)
     }
 
-    public func fetchCountForStarredArticles() throws -> Int {
+    func fetchCountForStarredArticles() throws -> Int {
         try self.database.fetchStarredArticlesCount(feedIDs: self.flattenedFeedsIDs)
     }
 
-    public func fetchUnreadCountForTodayAsync() async throws -> Int {
+    func fetchUnreadCountForTodayAsync() async throws -> Int {
         try await self.database.fetchUnreadCountForTodayAsync(feedIDs: self.flattenedFeedsIDs)
     }
 
-    public func fetchUnreadArticleIDsAsync() async throws -> Set<String> {
+    func fetchUnreadArticleIDsAsync() async throws -> Set<String> {
         try await self.database.fetchUnreadArticleIDsAsync()
     }
 
-    public func fetchStarredArticleIDsAsync() async throws -> Set<String> {
+    func fetchStarredArticleIDsAsync() async throws -> Set<String> {
         try await self.database.fetchStarredArticleIDsAsync()
     }
 
     /// Fetch articleIDs for articles that we should have, but don't. These articles are either (starred) or (newer than
     /// the article cutoff date).
     @MainActor
-    public func fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync() async throws
+    func fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync() async throws
         -> Set<String>
     {
         try await self.database.fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync()
@@ -749,15 +745,15 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     // MARK: - Unread Counts
 
-    public func unreadCount(for feed: Feed) -> Int {
+    func unreadCount(for feed: Feed) -> Int {
         self.unreadCounts[feed.feedID] ?? 0
     }
 
-    public func setUnreadCount(_ unreadCount: Int, for feed: Feed) {
+    func setUnreadCount(_ unreadCount: Int, for feed: Feed) {
         self.unreadCounts[feed.feedID] = unreadCount
     }
 
-    public func structureDidChange() {
+    func structureDidChange() {
         // Feeds were added or deleted. Or folders added or deleted.
         // Or feeds inside folders were added or deleted.
         self.opmlFile.markAsDirty()
@@ -907,7 +903,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     // MARK: - Container
 
-    public func flattenedFeeds() -> Set<Feed> {
+    func flattenedFeeds() -> Set<Feed> {
         assert(Thread.isMainThread)
         if self.flattenedFeedsNeedUpdate {
             updateFlattenedFeeds()
@@ -915,13 +911,13 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         return self._flattenedFeeds
     }
 
-    public func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
+    func removeFeedFromTreeAtTopLevel(_ feed: Feed) {
         self.topLevelFeeds.remove(feed)
         self.structureDidChange()
         postChildrenDidChangeNotification()
     }
 
-    public func removeAllInstancesOfFeedFromTreeAtAllLevels(_ feed: Feed) {
+    func removeAllInstancesOfFeedFromTreeAtAllLevels(_ feed: Feed) {
         self.topLevelFeeds.remove(feed)
 
         if let folders {
@@ -934,7 +930,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         postChildrenDidChangeNotification()
     }
 
-    public func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
+    func removeFeedsFromTreeAtTopLevel(_ feeds: Set<Feed>) {
         guard !feeds.isEmpty else {
             return
         }
@@ -943,7 +939,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         postChildrenDidChangeNotification()
     }
 
-    public func addFeedToTreeAtTopLevel(_ feed: Feed) {
+    func addFeedToTreeAtTopLevel(_ feed: Feed) {
         self.topLevelFeeds.insert(feed)
         self.structureDidChange()
         postChildrenDidChangeNotification()
@@ -964,7 +960,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     // MARK: - Debug
 
-    public func debugDropConditionalGetInfo() {
+    func debugDropConditionalGetInfo() {
         #if DEBUG
         for feed in self.flattenedFeeds() {
             feed.dropConditionalGetInfo()
@@ -972,7 +968,7 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
         #endif
     }
 
-    public func debugRunSearch() {
+    func debugRunSearch() {
         #if DEBUG
         let t1 = Date()
         let articles = try! _fetchArticlesMatching(searchString: "Brent NetNewsWire")
@@ -1031,13 +1027,13 @@ public final class DataStore: DisplayNameProvider, UnreadCountProvider, Containe
 
     // MARK: - Hashable
 
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.dataStoreID)
     }
 
     // MARK: - Equatable
 
-    public nonisolated class func == (lhs: DataStore, rhs: DataStore) -> Bool {
+    nonisolated class func == (lhs: DataStore, rhs: DataStore) -> Bool {
         lhs === rhs
     }
 }
@@ -1443,11 +1439,11 @@ extension DataStore {
 // MARK: - Container Overrides
 
 extension DataStore {
-    public func existingFeed(withFeedID feedID: String) -> Feed? {
+    func existingFeed(withFeedID feedID: String) -> Feed? {
         self.idToFeedDictionary[feedID]
     }
 
-    public func existingFeed(withExternalID externalID: String) -> Feed? {
+    func existingFeed(withExternalID externalID: String) -> Feed? {
         self.externalIDToFeedDictionary[externalID]
     }
 }
@@ -1455,7 +1451,7 @@ extension DataStore {
 // MARK: - OPMLRepresentable
 
 extension DataStore: OPMLRepresentable {
-    public func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
+    func OPMLString(indentLevel: Int, allowCustomAttributes: Bool) -> String {
         var s = ""
         for feed in self.topLevelFeeds.sorted() {
             s += feed.OPMLString(indentLevel: indentLevel + 1, allowCustomAttributes: allowCustomAttributes)
@@ -1471,16 +1467,16 @@ extension DataStore: OPMLRepresentable {
 
 extension DataStore {
     /// Returns the single data store in an array (backward compat)
-    public var activeDataStores: [DataStore] {
+    var activeDataStores: [DataStore] {
         self.isActive ? [self] : []
     }
 
     /// Returns the single data store in an array (backward compat)
-    public var sortedActiveDataStores: [DataStore] {
+    var sortedActiveDataStores: [DataStore] {
         self.activeDataStores
     }
 
-    public var lastArticleFetchEndTime: Date? {
+    var lastArticleFetchEndTime: Date? {
         self.metadata.lastArticleFetchEndTime
     }
 
@@ -1497,7 +1493,7 @@ extension DataStore {
     }
 
     /// Start listening for unread count changes. Called once from AppDelegate.
-    public func startManager() {
+    func startManager() {
         guard !self.isManagerActive else {
             assertionFailure("startManager called when already active")
             return
@@ -1510,11 +1506,11 @@ extension DataStore {
         }
     }
 
-    public func existingDataStore(dataStoreID: String) -> DataStore? {
+    func existingDataStore(dataStoreID: String) -> DataStore? {
         dataStoreID == self.dataStoreID ? self : nil
     }
 
-    public func existingContainer(with containerID: ContainerIdentifier) -> Container? {
+    func existingContainer(with containerID: ContainerIdentifier) -> Container? {
         switch containerID {
         case let .dataStore(dataStoreID):
             self.existingDataStore(dataStoreID: dataStoreID)
@@ -1525,7 +1521,7 @@ extension DataStore {
         }
     }
 
-    public func existingFeed(with sidebarItemID: SidebarItemIdentifier) -> SidebarItem? {
+    func existingFeed(with sidebarItemID: SidebarItemIdentifier) -> SidebarItem? {
         switch sidebarItemID {
         case let .folder(_, folderName):
             self.existingFolder(with: folderName)
@@ -1536,25 +1532,25 @@ extension DataStore {
         }
     }
 
-    public func suspendAll() {
+    func suspendAll() {
         self.isSuspended = true
         self.suspendNetwork()
         self.suspendDatabase()
     }
 
-    public func resumeAll() {
+    func resumeAll() {
         self.isSuspended = false
         self.resumeDatabaseAndDelegate()
         self.resume()
     }
 
-    public func refreshAllWithoutWaiting(errorHandler: ErrorHandlerCallback? = nil) {
+    func refreshAllWithoutWaiting(errorHandler: ErrorHandlerCallback? = nil) {
         Task { @MainActor in
             await self.refreshAllManaged(errorHandler: errorHandler)
         }
     }
 
-    public func refreshAllManaged(errorHandler: ErrorHandlerCallback? = nil) async {
+    func refreshAllManaged(errorHandler: ErrorHandlerCallback? = nil) async {
         guard NetworkMonitor.shared.isConnected else {
             DZLog("DataStore: skipping refreshAll — not connected to internet.")
             return
@@ -1574,23 +1570,23 @@ extension DataStore {
         }
     }
 
-    public func sendArticleStatusAll() async {
+    func sendArticleStatusAll() async {
         guard self.isActive else { return }
         try? await self.sendArticleStatus()
     }
 
-    public func syncArticleStatusAllWithoutWaiting() {
+    func syncArticleStatusAllWithoutWaiting() {
         Task { @MainActor in
             await self.syncArticleStatusAll()
         }
     }
 
-    public func syncArticleStatusAll() async {
+    func syncArticleStatusAll() async {
         guard self.isActive else { return }
         try? await self.syncArticleStatus()
     }
 
-    public func fetchArticle(dataStoreID: String, articleID: String) -> Article? {
+    func fetchArticle(dataStoreID: String, articleID: String) -> Article? {
         precondition(Thread.isMainThread)
 
         guard self.existingDataStore(dataStoreID: dataStoreID) != nil else {
@@ -1605,7 +1601,7 @@ extension DataStore {
         }
     }
 
-    public func anyDataStoreHasFeedWithURL(_ urlString: String) -> Bool {
+    func anyDataStoreHasFeedWithURL(_ urlString: String) -> Bool {
         guard self.isActive else { return false }
         return self.existingFeed(withURL: urlString) != nil
     }

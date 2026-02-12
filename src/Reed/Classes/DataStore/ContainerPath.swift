@@ -12,7 +12,7 @@ import Foundation
 // Mainly used with deleting objects and undo/redo.
 // Especially redo. The idea is to put something back in the right place.
 
-public struct ContainerPath {
+struct ContainerPath {
     private weak var dataStore: DataStore?
     private let names: [String] // empty if top-level of data store
     private let folderID: Int? // nil if top-level
@@ -21,7 +21,7 @@ public struct ContainerPath {
     // folders should be from top-level down, as in ["Cats", "Tabbies"]
 
     @MainActor
-    public init(dataStore: DataStore, folders: [Folder]) {
+    init(dataStore: DataStore, folders: [Folder]) {
         self.dataStore = dataStore
         self.names = folders.map(\.nameForDisplay)
         self.isTopLevel = folders.isEmpty
@@ -30,7 +30,7 @@ public struct ContainerPath {
     }
 
     @MainActor
-    public func resolveContainer() -> Container? {
+    func resolveContainer() -> Container? {
         // The only time it should fail is if the data store no longer exists.
         // Otherwise the worst-case scenario is that it will create Folders if needed.
 

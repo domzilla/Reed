@@ -7,8 +7,6 @@
 //
 
 import MobileCoreServices
-import RSCore
-import RSTree
 import Social
 import Synchronization
 import UIKit
@@ -131,7 +129,8 @@ final class ShareViewController: SLComposeServiceViewController, ShareFolderPick
         }
 
         var name: String? = nil
-        if !contentText.mayBeURL {
+        let textLooksLikeURL = !contentText.isEmpty && contentText.contains(".") && URL(string: contentText) != nil
+        if !textLooksLikeURL {
             name = contentText.isEmpty ? nil : contentText
         }
 

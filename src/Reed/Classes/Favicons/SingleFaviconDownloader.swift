@@ -8,8 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSWeb
 
 // The image may be on disk already. If not, download it.
 // Post .DidLoadFavicon notification once it's in memory.

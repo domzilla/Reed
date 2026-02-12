@@ -6,7 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import RSCore
 import SafariServices
 import UIKit
 import WebKit
@@ -484,8 +483,8 @@ final class ArticleViewController: UIViewController {
 // MARK: Find in Article
 
 extension Notification.Name {
-    public static let FindInArticle = Notification.Name("FindInArticle")
-    public static let EndFindInArticle = Notification.Name("EndFindInArticle")
+    static let FindInArticle = Notification.Name("FindInArticle")
+    static let EndFindInArticle = Notification.Name("EndFindInArticle")
 }
 
 extension ArticleViewController: SearchBarDelegate {

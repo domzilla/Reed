@@ -11,17 +11,17 @@ import DZFoundation
 import Foundation
 
 extension Notification.Name {
-    public static let iCloudAccountStatusDidChange = Notification.Name(rawValue: "iCloudAccountStatusDidChange")
+    static let iCloudAccountStatusDidChange = Notification.Name(rawValue: "iCloudAccountStatusDidChange")
 }
 
 /// Monitors iCloud account availability and posts notifications when status changes.
 /// The app uses this to determine whether CloudKit sync is available.
 @MainActor
-public final class iCloudAccountMonitor {
-    public static let shared = iCloudAccountMonitor()
+final class iCloudAccountMonitor {
+    static let shared = iCloudAccountMonitor()
 
-    public private(set) var isAvailable: Bool = false
-    public private(set) var accountStatus: CKAccountStatus = .couldNotDetermine
+    private(set) var isAvailable: Bool = false
+    private(set) var accountStatus: CKAccountStatus = .couldNotDetermine
 
     private let container: CKContainer
 
@@ -31,14 +31,14 @@ public final class iCloudAccountMonitor {
     }
 
     /// Start monitoring iCloud account status. Call this at app launch.
-    public func start() {
+    func start() {
         Task {
             await self.checkAccountStatus()
         }
     }
 
     /// Check current iCloud account status.
-    public func checkAccountStatus() async {
+    func checkAccountStatus() async {
         do {
             let status = try await container.accountStatus()
             self.updateStatus(status)
@@ -50,7 +50,7 @@ public final class iCloudAccountMonitor {
     }
 
     /// Returns true if the given error is a recoverable iCloud error that should be queued.
-    public static func isRecoverableError(_ error: Error) -> Bool {
+    static func isRecoverableError(_ error: Error) -> Bool {
         guard let ckError = error as? CKError else {
             // Check if it's wrapped in CloudKitError
             if

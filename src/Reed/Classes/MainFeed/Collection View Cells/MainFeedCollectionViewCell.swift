@@ -6,8 +6,6 @@
 //  Copyright © 2025 Ranchero Software. All rights reserved.
 //
 
-import RSCore
-import RSTree
 import UIKit
 
 class MainFeedCollectionViewCell: UICollectionViewCell {

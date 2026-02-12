@@ -8,8 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSWeb
 
 extension Notification.Name {
     static let imageDidBecomeAvailable = Notification.Name("ImageDidBecomeAvailableNotification") // UserInfoKey.url

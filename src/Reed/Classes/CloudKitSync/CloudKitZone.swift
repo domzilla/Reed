@@ -8,14 +8,13 @@
 
 import CloudKit
 import DZFoundation
-import RSCore
 
-public enum CloudKitZoneError: LocalizedError, Sendable {
+enum CloudKitZoneError: LocalizedError, Sendable {
     case userDeletedZone
     case corruptAccount
     case unknown
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .userDeletedZone:
             NSLocalizedString(
@@ -43,14 +42,14 @@ private struct CloudKitZoneCaptures<Success>: @unchecked Sendable {
     let completion: (Result<Success, Error>) -> Void
 }
 
-public protocol CloudKitZoneDelegate: AnyObject {
+protocol CloudKitZoneDelegate: AnyObject {
     func cloudKitDidModify(changed: [CKRecord], deleted: [CloudKitRecordKey]) async throws
 }
 
-public typealias CloudKitRecordKey = (recordType: CKRecord.RecordType, recordID: CKRecord.ID)
+typealias CloudKitRecordKey = (recordType: CKRecord.RecordType, recordID: CKRecord.ID)
 
 @MainActor
-public protocol CloudKitZone: AnyObject {
+protocol CloudKitZone: AnyObject {
     static var qualityOfService: QualityOfService { get }
 
     var zoneID: CKRecordZone.ID { get }
@@ -74,19 +73,19 @@ public protocol CloudKitZone: AnyObject {
 
 extension CloudKitZone {
     // .userInitiated is too aggressive on iOS and can lead the UI slowing down and appearing to block.
-    public static var qualityOfService: QualityOfService {
+    static var qualityOfService: QualityOfService {
         .default
     }
 
-    public var oldChangeTokenKey: String {
+    var oldChangeTokenKey: String {
         "cloudkit.server.token.\(zoneID.zoneName)"
     }
 
-    public var changeTokenKey: String {
+    var changeTokenKey: String {
         "cloudkit.server.token.\(zoneID.zoneName).\(zoneID.ownerName)"
     }
 
-    public var changeToken: CKServerChangeToken? {
+    var changeToken: CKServerChangeToken? {
         get {
             guard let tokenData = UserDefaults.standard.object(forKey: changeTokenKey) as? Data else { return nil }
             return try? NSKeyedUnarchiver.unarchivedObject(ofClass: CKServerChangeToken.self, from: tokenData)
@@ -106,7 +105,7 @@ extension CloudKitZone {
     }
 
     /// Moves the change token to the new key name.  This can eventually be removed.
-    public func migrateChangeToken() {
+    func migrateChangeToken() {
         if
             let tokenData = UserDefaults.standard.object(forKey: oldChangeTokenKey) as? Data,
             let oldChangeToken = try? NSKeyedUnarchiver.unarchivedObject(
@@ -120,22 +119,22 @@ extension CloudKitZone {
     }
 
     /// Reset the change token used to determine what point in time we are doing changes fetches
-    public func resetChangeToken() {
+    func resetChangeToken() {
         self.changeToken = nil
     }
 
-    public func generateRecordID() -> CKRecord.ID {
+    func generateRecordID() -> CKRecord.ID {
         CKRecord.ID(recordName: UUID().uuidString, zoneID: zoneID)
     }
 
-    public func retryIfPossible(after: Double, block: @escaping @MainActor () -> Void) {
+    func retryIfPossible(after: Double, block: @escaping @MainActor () -> Void) {
         let delayTime = DispatchTime.now() + after
         DispatchQueue.main.asyncAfter(deadline: delayTime) {
             block()
         }
     }
 
-    public func receiveRemoteNotification(userInfo: [AnyHashable: Any]) async {
+    func receiveRemoteNotification(userInfo: [AnyHashable: Any]) async {
         let note = CKRecordZoneNotification(fromRemoteNotificationDictionary: userInfo)
         guard note?.recordZoneID?.zoneName == zoneID.zoneName else {
             return
@@ -149,7 +148,7 @@ extension CloudKitZone {
     }
 
     /// Creates the zone record
-    public func createZoneRecord(completion: @escaping @MainActor (Result<Void, Error>) -> Void) {
+    func createZoneRecord(completion: @escaping @MainActor (Result<Void, Error>) -> Void) {
         guard let database else {
             Task { @MainActor in
                 completion(.failure(CloudKitZoneError.unknown))
@@ -169,7 +168,7 @@ extension CloudKitZone {
     }
 
     /// Subscribes to zone changes
-    public func subscribeToZoneChanges() {
+    func subscribeToZoneChanges() {
         let subscription = CKRecordZoneSubscription(zoneID: zoneID, subscriptionID: zoneID.zoneName)
 
         let info = CKSubscription.NotificationInfo()
@@ -186,7 +185,7 @@ extension CloudKitZone {
     }
 
     /// Issue a CKQuery and return the resulting CKRecords.
-    public func query(
+    func query(
         _ ckQuery: CKQuery,
         desiredKeys: [String]? = nil,
         completion: @escaping (Result<[CKRecord], Error>) -> Void
@@ -264,7 +263,7 @@ extension CloudKitZone {
     }
 
     /// Query CKRecords using a CKQuery Cursor
-    public func query(
+    func query(
         cursor: CKQueryOperation.Cursor,
         desiredKeys: [String]? = nil,
         carriedRecords: [CKRecord],
@@ -353,7 +352,7 @@ extension CloudKitZone {
     }
 
     /// Fetch a CKRecord by using its externalID
-    public func fetch(externalID: String?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+    func fetch(externalID: String?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         guard let externalID else {
             completion(.failure(CloudKitZoneError.corruptAccount))
             return
@@ -410,17 +409,17 @@ extension CloudKitZone {
     }
 
     /// Save the CKRecord
-    public func save(_ record: CKRecord, completion: @escaping (Result<Void, Error>) -> Void) {
+    func save(_ record: CKRecord, completion: @escaping (Result<Void, Error>) -> Void) {
         self.modify(recordsToSave: [record], recordIDsToDelete: [], completion: completion)
     }
 
     /// Save the CKRecords
-    public func save(_ records: [CKRecord], completion: @escaping (Result<Void, Error>) -> Void) {
+    func save(_ records: [CKRecord], completion: @escaping (Result<Void, Error>) -> Void) {
         self.modify(recordsToSave: records, recordIDsToDelete: [], completion: completion)
     }
 
     /// Saves or modifies the records as long as they are unchanged relative to the local version
-    public func saveIfNew(_ records: [CKRecord], completion: @escaping (Result<Void, Error>) -> Void) {
+    func saveIfNew(_ records: [CKRecord], completion: @escaping (Result<Void, Error>) -> Void) {
         let op = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: [CKRecord.ID]())
         op.savePolicy = .ifServerRecordUnchanged
         op.isAtomic = false
@@ -497,7 +496,7 @@ extension CloudKitZone {
     }
 
     /// Save the CKSubscription
-    public func save(_ subscription: CKSubscription, completion: @escaping (Result<CKSubscription, Error>) -> Void) {
+    func save(_ subscription: CKSubscription, completion: @escaping (Result<CKSubscription, Error>) -> Void) {
         // Wrapper to safely transfer non-Sendable values in @Sendable closure
         let captures = CloudKitZoneCaptures(zone: self, completion: completion)
 
@@ -539,7 +538,7 @@ extension CloudKitZone {
     }
 
     /// Delete CKRecords using a CKQuery
-    public func delete(ckQuery: CKQuery, completion: @escaping (Result<Void, Error>) -> Void) {
+    func delete(ckQuery: CKQuery, completion: @escaping (Result<Void, Error>) -> Void) {
         var records = [CKRecord]()
 
         let op = CKQueryOperation(query: ckQuery)
@@ -582,7 +581,7 @@ extension CloudKitZone {
     }
 
     /// Delete CKRecords using a CKQuery
-    public func delete(
+    func delete(
         cursor: CKQueryOperation.Cursor,
         carriedRecords: [CKRecord],
         completion: @escaping (Result<Void, Error>) -> Void
@@ -624,17 +623,17 @@ extension CloudKitZone {
     }
 
     /// Delete a CKRecord using its recordID
-    public func delete(recordID: CKRecord.ID, completion: @escaping (Result<Void, Error>) -> Void) {
+    func delete(recordID: CKRecord.ID, completion: @escaping (Result<Void, Error>) -> Void) {
         self.modify(recordsToSave: [], recordIDsToDelete: [recordID], completion: completion)
     }
 
     /// Delete CKRecords
-    public func delete(recordIDs: [CKRecord.ID], completion: @escaping (Result<Void, Error>) -> Void) {
+    func delete(recordIDs: [CKRecord.ID], completion: @escaping (Result<Void, Error>) -> Void) {
         self.modify(recordsToSave: [], recordIDsToDelete: recordIDs, completion: completion)
     }
 
     /// Delete a CKRecord using its externalID
-    public func delete(externalID: String?, completion: @escaping (Result<Void, Error>) -> Void) {
+    func delete(externalID: String?, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let externalID else {
             completion(.failure(CloudKitZoneError.corruptAccount))
             return
@@ -645,7 +644,7 @@ extension CloudKitZone {
     }
 
     /// Delete a CKSubscription
-    public func delete(subscriptionID: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func delete(subscriptionID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         // Wrapper to safely transfer non-Sendable values in @Sendable closure
         let captures = CloudKitZoneCaptures(zone: self, completion: completion)
 
@@ -676,7 +675,7 @@ extension CloudKitZone {
     }
 
     /// Modify and delete the supplied CKRecords and CKRecord.IDs
-    public func modify(
+    func modify(
         recordsToSave: [CKRecord],
         recordIDsToDelete: [CKRecord.ID],
         completion: @escaping (Result<Void, Error>) -> Void
@@ -804,7 +803,7 @@ extension CloudKitZone {
     }
 
     /// Fetch all the changes in the CKZone since the last time we checked
-    public func fetchChangesInZone(completion: @escaping (Result<Void, Error>) -> Void) {
+    func fetchChangesInZone(completion: @escaping (Result<Void, Error>) -> Void) {
         var savedChangeToken = self.changeToken
 
         var changedRecords = [CKRecord]()
@@ -910,7 +909,7 @@ extension CloudKitZone {
 
     // MARK: - Async Wrappers
 
-    public func createZoneRecord() async throws {
+    func createZoneRecord() async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.createZoneRecord { result in
                 continuation.resume(with: result)
@@ -918,7 +917,7 @@ extension CloudKitZone {
         }
     }
 
-    public func query(_ ckQuery: CKQuery, desiredKeys: [String]? = nil) async throws -> [CKRecord] {
+    func query(_ ckQuery: CKQuery, desiredKeys: [String]? = nil) async throws -> [CKRecord] {
         try await withCheckedThrowingContinuation { continuation in
             self.query(ckQuery, desiredKeys: desiredKeys) { result in
                 continuation.resume(with: result)
@@ -926,7 +925,7 @@ extension CloudKitZone {
         }
     }
 
-    public func fetch(externalID: String?) async throws -> CKRecord {
+    func fetch(externalID: String?) async throws -> CKRecord {
         try await withCheckedThrowingContinuation { continuation in
             self.fetch(externalID: externalID) { result in
                 continuation.resume(with: result)
@@ -934,7 +933,7 @@ extension CloudKitZone {
         }
     }
 
-    public func save(_ record: CKRecord) async throws {
+    func save(_ record: CKRecord) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.save(record) { result in
                 continuation.resume(with: result)
@@ -942,7 +941,7 @@ extension CloudKitZone {
         }
     }
 
-    public func save(_ records: [CKRecord]) async throws {
+    func save(_ records: [CKRecord]) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.save(records) { result in
                 continuation.resume(with: result)
@@ -950,7 +949,7 @@ extension CloudKitZone {
         }
     }
 
-    public func saveIfNew(_ records: [CKRecord]) async throws {
+    func saveIfNew(_ records: [CKRecord]) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.saveIfNew(records) { result in
                 continuation.resume(with: result)
@@ -958,7 +957,7 @@ extension CloudKitZone {
         }
     }
 
-    public func save(_ subscription: CKSubscription) async throws -> CKSubscription {
+    func save(_ subscription: CKSubscription) async throws -> CKSubscription {
         try await withCheckedThrowingContinuation { continuation in
             self.save(subscription) { result in
                 continuation.resume(with: result)
@@ -966,7 +965,7 @@ extension CloudKitZone {
         }
     }
 
-    public func delete(ckQuery: CKQuery) async throws {
+    func delete(ckQuery: CKQuery) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.delete(ckQuery: ckQuery) { result in
                 continuation.resume(with: result)
@@ -974,7 +973,7 @@ extension CloudKitZone {
         }
     }
 
-    public func delete(recordID: CKRecord.ID) async throws {
+    func delete(recordID: CKRecord.ID) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.delete(recordID: recordID) { result in
                 continuation.resume(with: result)
@@ -982,7 +981,7 @@ extension CloudKitZone {
         }
     }
 
-    public func delete(recordIDs: [CKRecord.ID]) async throws {
+    func delete(recordIDs: [CKRecord.ID]) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.delete(recordIDs: recordIDs) { result in
                 continuation.resume(with: result)
@@ -990,7 +989,7 @@ extension CloudKitZone {
         }
     }
 
-    public func delete(externalID: String?) async throws {
+    func delete(externalID: String?) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.delete(externalID: externalID) { result in
                 continuation.resume(with: result)
@@ -998,7 +997,7 @@ extension CloudKitZone {
         }
     }
 
-    public func delete(subscriptionID: String) async throws {
+    func delete(subscriptionID: String) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.delete(subscriptionID: subscriptionID) { result in
                 continuation.resume(with: result)
@@ -1006,7 +1005,7 @@ extension CloudKitZone {
         }
     }
 
-    public func modify(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecord.ID]) async throws {
+    func modify(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecord.ID]) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.modify(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete) { result in
                 continuation.resume(with: result)
@@ -1014,7 +1013,7 @@ extension CloudKitZone {
         }
     }
 
-    public func fetchChangesInZone() async throws {
+    func fetchChangesInZone() async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             self.fetchChangesInZone { result in
                 continuation.resume(with: result)

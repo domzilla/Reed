@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
 
 struct PendingCloudKitOperationTable: Sendable {
     static let name = "pendingCloudKitOperations"

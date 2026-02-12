@@ -7,9 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
-import RSParser
 
 // MARK: - DatabaseObject
 
@@ -34,7 +31,7 @@ extension Author {
         )
     }
 
-    public static func authorsWithParsedAuthors(_ parsedAuthors: Set<ParsedAuthor>?) -> Set<Author>? {
+    static func authorsWithParsedAuthors(_ parsedAuthors: Set<ParsedAuthor>?) -> Set<Author>? {
         guard let parsedAuthors else {
             return nil
         }
@@ -45,11 +42,11 @@ extension Author {
 }
 
 extension Author: DatabaseObject {
-    public nonisolated var databaseID: String {
+    nonisolated var databaseID: String {
         authorID
     }
 
-    public nonisolated func databaseDictionary() -> DatabaseDictionary? {
+    nonisolated func databaseDictionary() -> DatabaseDictionary? {
         var d: DatabaseDictionary = [DatabaseKey.authorID: authorID]
         if let name {
             d[DatabaseKey.name] = name

@@ -8,7 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSCore
 
 final class DataStoreMetadataFile {
     private let fileURL: URL

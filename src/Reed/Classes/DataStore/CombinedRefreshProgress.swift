@@ -7,20 +7,19 @@
 //
 
 import Foundation
-import RSWeb
 
 extension Notification.Name {
-    public static let combinedRefreshProgressDidChange = Notification.Name("combinedRefreshProgressDidChange")
+    static let combinedRefreshProgressDidChange = Notification.Name("combinedRefreshProgressDidChange")
 }
 
 /// Combine the refresh progress of data stores into one place,
 /// for use by refresh status view and so on.
-public final class CombinedRefreshProgress {
-    public private(set) var numberOfTasks = 0
-    public private(set) var numberRemaining = 0
-    public private(set) var numberCompleted = 0
+final class CombinedRefreshProgress {
+    private(set) var numberOfTasks = 0
+    private(set) var numberRemaining = 0
+    private(set) var numberCompleted = 0
 
-    public var isComplete: Bool {
+    var isComplete: Bool {
         !self.isStarted || self.numberRemaining < 1
     }
 

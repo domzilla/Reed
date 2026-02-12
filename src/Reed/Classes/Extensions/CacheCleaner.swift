@@ -8,7 +8,6 @@
 
 import DZFoundation
 import Foundation
-import RSWeb
 
 enum CacheCleaner {
     static func purgeIfNecessary() {

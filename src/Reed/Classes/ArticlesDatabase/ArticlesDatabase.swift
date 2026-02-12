@@ -8,27 +8,24 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSDatabase
-import RSParser
 
 // This file is the entirety of the public API for ArticlesDatabase.framework.
 // Everything else is implementation.
 
-public typealias UnreadCountDictionary = [String: Int] // feedID: unreadCount
+typealias UnreadCountDictionary = [String: Int] // feedID: unreadCount
 
-public struct ArticleChanges: Sendable {
-    public let new: Set<Article>?
-    public let updated: Set<Article>?
-    public let deleted: Set<Article>?
+struct ArticleChanges: Sendable {
+    let new: Set<Article>?
+    let updated: Set<Article>?
+    let deleted: Set<Article>?
 
-    public init() {
+    init() {
         self.new = Set<Article>()
         self.updated = Set<Article>()
         self.deleted = Set<Article>()
     }
 
-    public init(new: Set<Article>?, updated: Set<Article>?, deleted: Set<Article>?) {
+    init(new: Set<Article>?, updated: Set<Article>?, deleted: Set<Article>?) {
         self.new = new
         self.updated = updated
         self.deleted = deleted
@@ -36,8 +33,8 @@ public struct ArticleChanges: Sendable {
 }
 
 @MainActor
-public final class ArticlesDatabase: Sendable {
-    public enum RetentionStyle: Sendable {
+final class ArticlesDatabase: Sendable {
+    enum RetentionStyle: Sendable {
         case feedBased // Local storage: article retention is defined by contents of feed
         case syncSystem // Feedbin, Feedly, etc.: article retention is defined by external system
     }
@@ -48,7 +45,7 @@ public final class ArticlesDatabase: Sendable {
     private let retentionStyle: RetentionStyle
     private let accountID: String
 
-    public init(databaseFilePath: String, accountID: String, retentionStyle: RetentionStyle) {
+    init(databaseFilePath: String, accountID: String, retentionStyle: RetentionStyle) {
         DZLog("Articles Database init \(accountID)")
 
         let queue = DatabaseQueue(databasePath: databaseFilePath)
@@ -87,47 +84,47 @@ public final class ArticlesDatabase: Sendable {
 
     // MARK: - Fetching Articles
 
-    public func fetchArticles(feedID: String) throws -> Set<Article> {
+    func fetchArticles(feedID: String) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(feedID)
     }
 
-    public func fetchArticles(feedIDs: Set<String>) throws -> Set<Article> {
+    func fetchArticles(feedIDs: Set<String>) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(feedIDs)
     }
 
-    public func fetchArticles(articleIDs: Set<String>) throws -> Set<Article> {
+    func fetchArticles(articleIDs: Set<String>) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticles(articleIDs: articleIDs)
     }
 
-    public func fetchUnreadArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
+    func fetchUnreadArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchUnreadArticles(feedIDs, limit)
     }
 
-    public func fetchTodayArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
+    func fetchTodayArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticlesSince(feedIDs, todayCutoffDate(), limit)
     }
 
-    public func fetchStarredArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
+    func fetchStarredArticles(feedIDs: Set<String>, limit: Int? = nil) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchStarredArticles(feedIDs, limit)
     }
 
-    public func fetchStarredArticlesCount(feedIDs: Set<String>) throws -> Int {
+    func fetchStarredArticlesCount(feedIDs: Set<String>) throws -> Int {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchStarredArticlesCount(feedIDs)
     }
 
-    public func fetchArticlesMatching(searchString: String, feedIDs: Set<String>) throws -> Set<Article> {
+    func fetchArticlesMatching(searchString: String, feedIDs: Set<String>) throws -> Set<Article> {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try self.articlesTable.fetchArticlesMatching(searchString, feedIDs)
     }
 
-    public func fetchArticlesMatchingWithArticleIDs(
+    func fetchArticlesMatchingWithArticleIDs(
         searchString: String,
         articleIDs: Set<String>
     ) throws
@@ -139,7 +136,7 @@ public final class ArticlesDatabase: Sendable {
 
     // MARK: - Fetching Articles Async
 
-    public func fetchArticlesAsync(feedID: String) async throws -> Set<Article> {
+    func fetchArticlesAsync(feedID: String) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchArticlesAsync(feedID: feedID) { result in
                 continuation.resume(with: result)
@@ -147,7 +144,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchArticlesAsync(feedIDs: Set<String>) async throws -> Set<Article> {
+    func fetchArticlesAsync(feedIDs: Set<String>) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchArticlesAsync(feedIDs: feedIDs) { result in
                 continuation.resume(with: result)
@@ -155,7 +152,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchArticlesAsync(articleIDs: Set<String>) async throws -> Set<Article> {
+    func fetchArticlesAsync(articleIDs: Set<String>) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchArticlesAsync(articleIDs: articleIDs) { result in
                 continuation.resume(with: result)
@@ -163,7 +160,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchUnreadArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
+    func fetchUnreadArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadArticlesAsync(feedIDs: feedIDs, limit: limit) { result in
                 continuation.resume(with: result)
@@ -171,7 +168,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchTodayArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
+    func fetchTodayArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchTodayArticlesAsync(feedIDs: feedIDs, limit: limit) { result in
                 continuation.resume(with: result)
@@ -179,7 +176,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchedStarredArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
+    func fetchedStarredArticlesAsync(feedIDs: Set<String>, limit: Int? = nil) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchedStarredArticlesAsync(feedIDs: feedIDs, limit: limit) { result in
                 continuation.resume(with: result)
@@ -187,7 +184,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchArticlesMatchingAsync(searchString: String, feedIDs: Set<String>) async throws -> Set<Article> {
+    func fetchArticlesMatchingAsync(searchString: String, feedIDs: Set<String>) async throws -> Set<Article> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchArticlesMatchingAsync(searchString: searchString, feedIDs: feedIDs) { result in
                 continuation.resume(with: result)
@@ -195,7 +192,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchArticlesMatchingWithArticleIDsAsync(
+    func fetchArticlesMatchingWithArticleIDsAsync(
         searchString: String,
         articleIDs: Set<String>
     ) async throws
@@ -211,7 +208,7 @@ public final class ArticlesDatabase: Sendable {
     // MARK: - Unread Counts
 
     /// Fetch all non-zero unread counts.
-    public func fetchAllUnreadCountsAsync() async throws -> UnreadCountDictionary? {
+    func fetchAllUnreadCountsAsync() async throws -> UnreadCountDictionary? {
         try await withCheckedThrowingContinuation { continuation in
             _fetchAllUnreadCounts { result in
                 continuation.resume(with: result)
@@ -220,7 +217,7 @@ public final class ArticlesDatabase: Sendable {
     }
 
     /// Fetch unread count for a single feed.
-    public func fetchUnreadCountAsync(feedID: String) async throws -> Int {
+    func fetchUnreadCountAsync(feedID: String) async throws -> Int {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         return try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadCounts(feedIDs: Set([feedID])) { result in
@@ -239,7 +236,7 @@ public final class ArticlesDatabase: Sendable {
     }
 
     /// Fetch non-zero unread counts for given feedIDs.
-    public func fetchUnreadCountsAsync(feedIDs: Set<String>) async throws -> UnreadCountDictionary {
+    func fetchUnreadCountsAsync(feedIDs: Set<String>) async throws -> UnreadCountDictionary {
         try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadCounts(feedIDs: feedIDs) { result in
                 continuation.resume(with: result)
@@ -247,7 +244,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchUnreadCountForTodayAsync(feedIDs: Set<String>) async throws -> Int {
+    func fetchUnreadCountForTodayAsync(feedIDs: Set<String>) async throws -> Int {
         try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadCount(feedIDs: feedIDs, since: todayCutoffDate()) { result in
                 continuation.resume(with: result)
@@ -255,7 +252,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchUnreadCountForStarredArticlesAsync(feedIDs: Set<String>) async throws -> Int {
+    func fetchUnreadCountForStarredArticlesAsync(feedIDs: Set<String>) async throws -> Int {
         try await withCheckedThrowingContinuation { continuation in
             _fetchStarredAndUnreadCount(feedIDs: feedIDs) { result in
                 continuation.resume(with: result)
@@ -266,7 +263,7 @@ public final class ArticlesDatabase: Sendable {
     // MARK: - Saving, Updating, and Deleting Articles
 
     /// Update articles and save new ones — for feed-based systems (local storage).
-    public func updateAsync(
+    func updateAsync(
         parsedItems: Set<ParsedItem>,
         feedID: String,
         deleteOlder: Bool
@@ -281,7 +278,7 @@ public final class ArticlesDatabase: Sendable {
     }
 
     /// Update articles and save new ones — for sync systems (Feedbin, Feedly, etc.).
-    public func updateAsync(
+    func updateAsync(
         feedIDsAndItems: [String: Set<ParsedItem>],
         defaultRead: Bool
     ) async throws
@@ -295,7 +292,7 @@ public final class ArticlesDatabase: Sendable {
     }
 
     /// Delete articles
-    public func deleteAsync(articleIDs: Set<String>) async throws {
+    func deleteAsync(articleIDs: Set<String>) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             _delete(articleIDs: articleIDs) { error in
                 if let error {
@@ -310,7 +307,7 @@ public final class ArticlesDatabase: Sendable {
     // MARK: - ArticleIDs
 
     /// Fetch the articleIDs of unread articles.
-    public func fetchUnreadArticleIDsAsync() async throws -> Set<String> {
+    func fetchUnreadArticleIDsAsync() async throws -> Set<String> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchUnreadArticleIDsAsync { result in
                 continuation.resume(with: result)
@@ -318,7 +315,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func fetchStarredArticleIDsAsync() async throws -> Set<String> {
+    func fetchStarredArticleIDsAsync() async throws -> Set<String> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchStarredArticleIDsAsync { result in
                 continuation.resume(with: result)
@@ -328,7 +325,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Fetch articleIDs for articles that we should have, but don’t. These articles are either starred or newer than
     /// the article cutoff date.
-    public func fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync() async throws -> Set<String> {
+    func fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDateAsync() async throws -> Set<String> {
         try await withCheckedThrowingContinuation { continuation in
             _fetchArticleIDsForStatusesWithoutArticlesNewerThanCutoffDate { result in
                 continuation.resume(with: result)
@@ -338,7 +335,7 @@ public final class ArticlesDatabase: Sendable {
 
     // MARK: - Statuses
 
-    public func markAsync(
+    func markAsync(
         articles: Set<Article>,
         statusKey: ArticleStatus.Key,
         flag: Bool
@@ -352,7 +349,7 @@ public final class ArticlesDatabase: Sendable {
         }
     }
 
-    public func markAndFetchNewAsync(
+    func markAndFetchNewAsync(
         articleIDs: Set<String>,
         statusKey: ArticleStatus.Key,
         flag: Bool
@@ -368,7 +365,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Create statuses for specified articleIDs. For existing statuses, don’t do anything.
     /// For newly-created statuses, mark them as read and not-starred.
-    public func createStatusesIfNeededAsync(articleIDs: Set<String>) async throws {
+    func createStatusesIfNeededAsync(articleIDs: Set<String>) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             _createStatusesIfNeeded(articleIDs: articleIDs) { error in
                 if let error {
@@ -384,7 +381,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Cancel current operations and close the database.
     @MainActor
-    public func cancelAndSuspend() {
+    func cancelAndSuspend() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         cancelOperations()
         self.suspend()
@@ -393,7 +390,7 @@ public final class ArticlesDatabase: Sendable {
     /// Close the database and stop running database calls.
     /// Any pending calls will complete first.
     @MainActor
-    public func suspend() {
+    func suspend() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.fetchUnreadCountsTask?.cancel()
         self.queue.suspend()
@@ -401,7 +398,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Open the database and allow for running database calls again.
     @MainActor
-    public func resume() {
+    func resume() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.queue.resume()
     }
@@ -410,7 +407,7 @@ public final class ArticlesDatabase: Sendable {
 
     /// Call to free up some memory. Should be done when the app is backgrounded, for instance.
     /// This does not empty *all* caches — just the ones that are empty-able.
-    public func emptyCaches() {
+    func emptyCaches() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.articlesTable.emptyCaches()
     }
@@ -422,7 +419,7 @@ public final class ArticlesDatabase: Sendable {
     /// This prevents the database from growing forever. If we didn’t do this:
     /// 1) The database would grow to an inordinate size, and
     /// 2) the app would become very slow.
-    public func cleanupDatabaseAtStartup(subscribedToFeedIDs: Set<String>) {
+    func cleanupDatabaseAtStartup(subscribedToFeedIDs: Set<String>) {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         if self.retentionStyle == .syncSystem {
             self.articlesTable.deleteOldArticles()

@@ -27,7 +27,7 @@ enum UserInterfaceColorPalette: Int, CustomStringConvertible, CaseIterable {
 }
 
 extension Notification.Name {
-    public static let userInterfaceColorPaletteDidUpdate = Notification
+    static let userInterfaceColorPaletteDidUpdate = Notification
         .Name(rawValue: "UserInterfaceColorPaletteDidUpdateNotification")
 }
 

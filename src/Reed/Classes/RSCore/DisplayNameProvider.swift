@@ -1,0 +1,26 @@
+//
+//  DisplayNameProvider.swift
+//  DataModel
+//
+//  Created by Brent Simmons on 7/28/16.
+//  Copyright © 2016 Ranchero Software, LLC. All rights reserved.
+//
+
+import Foundation
+
+extension Notification.Name {
+    static let DisplayNameDidChange = Notification.Name("DisplayNameDidChange")
+}
+
+/// A type that provides a name for display to the user.
+
+@MainActor
+protocol DisplayNameProvider {
+    var nameForDisplay: String { get }
+}
+
+extension DisplayNameProvider {
+    func postDisplayNameDidChangeNotification() {
+        NotificationCenter.default.post(name: .DisplayNameDidChange, object: self, userInfo: nil)
+    }
+}

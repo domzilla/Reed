@@ -8,14 +8,13 @@
 //
 
 import Foundation
-import RSCore
 
 extension Notification.Name {
-    public static let ChildrenDidChange = Notification.Name("ChildrenDidChange")
+    static let ChildrenDidChange = Notification.Name("ChildrenDidChange")
 }
 
 @MainActor
-public protocol Container: AnyObject, ContainerIdentifiable {
+protocol Container: AnyObject, ContainerIdentifiable {
     var dataStore: DataStore? { get }
     var topLevelFeeds: Set<Feed> { get set }
     var folders: Set<Folder>? { get set }
@@ -49,17 +48,17 @@ public protocol Container: AnyObject, ContainerIdentifiable {
 
 @MainActor
 extension Container {
-    public func hasAtLeastOneFeed() -> Bool {
+    func hasAtLeastOneFeed() -> Bool {
         topLevelFeeds.count > 0
     }
 
     @MainActor
-    public func hasChildFolder(with name: String) -> Bool {
+    func hasChildFolder(with name: String) -> Bool {
         self.childFolder(with: name) != nil
     }
 
     @MainActor
-    public func childFolder(with name: String) -> Folder? {
+    func childFolder(with name: String) -> Folder? {
         guard let folders else {
             return nil
         }
@@ -71,7 +70,7 @@ extension Container {
         return nil
     }
 
-    public func objectIsChild(_ object: AnyObject) -> Bool {
+    func objectIsChild(_ object: AnyObject) -> Bool {
         if let feed = object as? Feed {
             return topLevelFeeds.contains(feed)
         }
@@ -81,7 +80,7 @@ extension Container {
         return false
     }
 
-    public func flattenedFeeds() -> Set<Feed> {
+    func flattenedFeeds() -> Set<Feed> {
         var feeds = Set<Feed>()
         feeds.formUnion(topLevelFeeds)
         if let folders {
@@ -92,19 +91,19 @@ extension Container {
         return feeds
     }
 
-    public func hasFeed(with feedID: String) -> Bool {
+    func hasFeed(with feedID: String) -> Bool {
         self.existingFeed(withFeedID: feedID) != nil
     }
 
-    public func hasFeed(withURL url: String) -> Bool {
+    func hasFeed(withURL url: String) -> Bool {
         self.existingFeed(withURL: url) != nil
     }
 
-    public func has(_ feed: Feed) -> Bool {
+    func has(_ feed: Feed) -> Bool {
         self.flattenedFeeds().contains(feed)
     }
 
-    public func existingFeed(withFeedID feedID: String) -> Feed? {
+    func existingFeed(withFeedID feedID: String) -> Feed? {
         for feed in self.flattenedFeeds() {
             if feed.feedID == feedID {
                 return feed
@@ -113,7 +112,7 @@ extension Container {
         return nil
     }
 
-    public func existingFeed(withURL url: String) -> Feed? {
+    func existingFeed(withURL url: String) -> Feed? {
         for feed in self.flattenedFeeds() {
             if feed.url == url {
                 return feed
@@ -122,7 +121,7 @@ extension Container {
         return nil
     }
 
-    public func existingFeed(withExternalID externalID: String) -> Feed? {
+    func existingFeed(withExternalID externalID: String) -> Feed? {
         for feed in self.flattenedFeeds() {
             if feed.externalID == externalID {
                 return feed
@@ -132,7 +131,7 @@ extension Container {
     }
 
     @MainActor
-    public func existingFolder(with name: String) -> Folder? {
+    func existingFolder(with name: String) -> Folder? {
         guard let folders else {
             return nil
         }
@@ -148,7 +147,7 @@ extension Container {
         return nil
     }
 
-    public func existingFolder(withID folderID: Int) -> Folder? {
+    func existingFolder(withID folderID: Int) -> Folder? {
         guard let folders else {
             return nil
         }
@@ -164,7 +163,7 @@ extension Container {
         return nil
     }
 
-    public func postChildrenDidChangeNotification() {
+    func postChildrenDidChangeNotification() {
         NotificationCenter.default.post(name: .ChildrenDidChange, object: self)
     }
 }

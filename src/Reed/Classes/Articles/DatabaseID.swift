@@ -7,12 +7,11 @@
 //
 
 import Foundation
-import RSCore
 import Synchronization
 
 private let databaseIDCache = Mutex([String: String]())
 
-public func databaseIDWithString(_ s: String) -> String {
+func databaseIDWithString(_ s: String) -> String {
     databaseIDCache.withLock { cache in
         if let identifier = cache[s] {
             return identifier

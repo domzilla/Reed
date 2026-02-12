@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSWeb
 
 @MainActor
 protocol SyncProvider {

@@ -7,23 +7,21 @@
 //
 
 import Foundation
-import RSCore
-import RSWeb
 
 @MainActor
-public final class Feed: SidebarItem, Renamable, Hashable {
-    public nonisolated let feedID: String
-    public nonisolated let dataStoreID: String
-    public nonisolated let url: String
-    public nonisolated let sidebarItemID: SidebarItemIdentifier?
+final class Feed: SidebarItem, Renamable, Hashable {
+    nonisolated let feedID: String
+    nonisolated let dataStoreID: String
+    nonisolated let url: String
+    nonisolated let sidebarItemID: SidebarItemIdentifier?
 
-    public weak var dataStore: DataStore?
+    weak var dataStore: DataStore?
 
-    public var defaultReadFilterType: ReadFilterType {
+    var defaultReadFilterType: ReadFilterType {
         .none
     }
 
-    public var homePageURL: String? {
+    var homePageURL: String? {
         get {
             self.metadata.homePageURL
         }
@@ -40,7 +38,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
     // The icon URL is a JSON-Feed-only feature.
     // Otherwise we find an icon URL via other means, but we don’t store it
     // as part of feed metadata.
-    public var iconURL: String? {
+    var iconURL: String? {
         get {
             self.metadata.iconURL
         }
@@ -53,7 +51,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
     // The favicon URL is a JSON-Feed-only feature.
     // Otherwise we find a favicon URL via other means, but we don’t store it
     // as part of feed metadata.
-    public var faviconURL: String? {
+    var faviconURL: String? {
         get {
             self.metadata.faviconURL
         }
@@ -62,7 +60,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    @MainActor public var name: String? {
+    @MainActor var name: String? {
         didSet {
             if self.name != oldValue {
                 postDisplayNameDidChangeNotification()
@@ -70,7 +68,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var authors: Set<Author>? {
+    var authors: Set<Author>? {
         get {
             if let authorsArray = metadata.authors {
                 return Set(authorsArray)
@@ -86,7 +84,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    @MainActor public var editedName: String? {
+    @MainActor var editedName: String? {
         // Don’t let editedName == ""
         get {
             guard let s = metadata.editedName, !s.isEmpty else {
@@ -106,7 +104,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var conditionalGetInfo: HTTPConditionalGetInfo? {
+    var conditionalGetInfo: HTTPConditionalGetInfo? {
         get {
             self.metadata.conditionalGetInfo
         }
@@ -115,7 +113,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var conditionalGetInfoDate: Date? {
+    var conditionalGetInfoDate: Date? {
         get {
             self.metadata.conditionalGetInfoDate
         }
@@ -124,7 +122,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var cacheControlInfo: CacheControlInfo? {
+    var cacheControlInfo: CacheControlInfo? {
         get {
             self.metadata.cacheControlInfo
         }
@@ -133,7 +131,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var contentHash: String? {
+    var contentHash: String? {
         get {
             self.metadata.contentHash
         }
@@ -142,7 +140,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var isNotifyAboutNewArticles: Bool? {
+    var isNotifyAboutNewArticles: Bool? {
         get {
             self.metadata.isNotifyAboutNewArticles
         }
@@ -151,7 +149,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var isArticleExtractorAlwaysOn: Bool? {
+    var isArticleExtractorAlwaysOn: Bool? {
         get {
             self.metadata.isArticleExtractorAlwaysOn
         }
@@ -160,7 +158,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
         }
     }
 
-    public var externalID: String? {
+    var externalID: String? {
         get {
             self.metadata.externalID
         }
@@ -170,7 +168,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
     }
 
     // Folder Name: Sync Service Relationship ID
-    public var folderRelationship: [String: String]? {
+    var folderRelationship: [String: String]? {
         get {
             self.metadata.folderRelationship
         }
@@ -181,7 +179,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     /// Last time an attempt was made to read the feed.
     /// (Not necessarily a successful attempt.)
-    public var lastCheckDate: Date? {
+    var lastCheckDate: Date? {
         get {
             self.metadata.lastCheckDate
         }
@@ -192,7 +190,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     // MARK: - DisplayNameProvider
 
-    public var nameForDisplay: String {
+    var nameForDisplay: String {
         if let s = editedName, !s.isEmpty {
             return s
         }
@@ -204,7 +202,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     // MARK: - Renamable
 
-    public func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let dataStore else {
             return
         }
@@ -220,7 +218,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     // MARK: - UnreadCountProvider
 
-    public var unreadCount: Int {
+    var unreadCount: Int {
         get {
             self.dataStore?.unreadCount(for: self) ?? 0
         }
@@ -235,7 +233,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     // MARK: - NotificationDisplayName
 
-    public var notificationDisplayName: String {
+    var notificationDisplayName: String {
         if self.url.contains("www.reddit.com") {
             NSLocalizedString("Notify about new posts", comment: "notifyNameDisplay / Reddit")
         } else {
@@ -263,21 +261,21 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 
     // MARK: - API
 
-    public func dropConditionalGetInfo() {
+    func dropConditionalGetInfo() {
         self.conditionalGetInfo = nil
         self.contentHash = nil
     }
 
     // MARK: - Hashable
 
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.feedID)
         hasher.combine(self.dataStoreID)
     }
 
     // MARK: - Equatable
 
-    public nonisolated class func == (lhs: Feed, rhs: Feed) -> Bool {
+    nonisolated class func == (lhs: Feed, rhs: Feed) -> Bool {
         lhs.feedID == rhs.feedID && lhs.dataStoreID == rhs.dataStoreID
     }
 }
@@ -285,7 +283,7 @@ public final class Feed: SidebarItem, Renamable, Hashable {
 // MARK: - OPMLRepresentable
 
 extension Feed: OPMLRepresentable {
-    public func OPMLString(indentLevel: Int, allowCustomAttributes _: Bool) -> String {
+    func OPMLString(indentLevel: Int, allowCustomAttributes _: Bool) -> String {
         // https://github.com/brentsimmons/NetNewsWire/issues/527
         // Don’t use nameForDisplay because that can result in a feed name "Untitled" written to disk,
         // which Reed may take later to be the actual name.

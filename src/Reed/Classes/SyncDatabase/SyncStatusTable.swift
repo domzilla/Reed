@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import RSDatabase
-import RSDatabaseObjC
 
 struct SyncStatusTable: Sendable {
     static let name = "syncStatus"

@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSCore
 
 @MainActor
 protocol SmallIconProvider {

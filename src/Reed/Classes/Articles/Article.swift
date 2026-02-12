@@ -8,30 +8,30 @@
 
 import Foundation
 
-public typealias ArticleSetBlock = (Set<Article>) -> Void
+typealias ArticleSetBlock = (Set<Article>) -> Void
 
-public final class Article: Sendable {
-    public let articleID: String // Unique database ID (possibly sync service ID)
-    public let accountID: String
-    public let feedID: String // Likely a URL, but not necessarily
-    public let uniqueID: String // Unique per feed (RSS guid, for example)
-    public let title: String?
-    public let contentHTML: String?
-    public let contentText: String?
-    public let markdown: String?
-    public let rawLink: String? // We store raw source value, but use computed url or link other than where raw value
+final class Article: Sendable {
+    let articleID: String // Unique database ID (possibly sync service ID)
+    let accountID: String
+    let feedID: String // Likely a URL, but not necessarily
+    let uniqueID: String // Unique per feed (RSS guid, for example)
+    let title: String?
+    let contentHTML: String?
+    let contentText: String?
+    let markdown: String?
+    let rawLink: String? // We store raw source value, but use computed url or link other than where raw value
     // required.
-    public let rawExternalLink: String? // We store raw source value, but use computed externalURL or externalLink other
+    let rawExternalLink: String? // We store raw source value, but use computed externalURL or externalLink other
     // than where raw value required.
-    public let summary: String?
-    public let rawImageLink: String? // We store raw source value, but use computed imageURL or imageLink other than
+    let summary: String?
+    let rawImageLink: String? // We store raw source value, but use computed imageURL or imageLink other than
     // where raw value required.
-    public let datePublished: Date?
-    public let dateModified: Date?
-    public let authors: Set<Author>?
-    public let status: ArticleStatus
+    let datePublished: Date?
+    let dateModified: Date?
+    let authors: Set<Author>?
+    let status: ArticleStatus
 
-    public init(
+    init(
         accountID: String,
         articleID: String?,
         feedID: String,
@@ -72,7 +72,7 @@ public final class Article: Sendable {
         }
     }
 
-    public static func calculatedArticleID(feedID: String, uniqueID: String) -> String {
+    static func calculatedArticleID(feedID: String, uniqueID: String) -> String {
         databaseIDWithString("\(feedID) \(uniqueID)")
     }
 }
@@ -80,11 +80,11 @@ public final class Article: Sendable {
 // MARK: - Hashable
 
 extension Article: Hashable {
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.articleID)
     }
 
-    public nonisolated static func == (lhs: Article, rhs: Article) -> Bool {
+    nonisolated static func == (lhs: Article, rhs: Article) -> Bool {
         lhs.articleID == rhs.articleID && lhs.accountID == rhs.accountID && lhs.feedID == rhs.feedID && lhs
             .uniqueID == rhs.uniqueID && lhs.title == rhs.title && lhs.contentHTML == rhs.contentHTML && lhs
             .contentText == rhs.contentText && lhs.rawLink == rhs.rawLink && lhs.rawExternalLink == rhs
@@ -94,22 +94,22 @@ extension Article: Hashable {
 }
 
 extension Set<Article> {
-    public nonisolated func articleIDs() -> Set<String> {
+    nonisolated func articleIDs() -> Set<String> {
         Set<String>(map(\.articleID))
     }
 
-    public nonisolated func unreadArticles() -> Set<Article> {
+    nonisolated func unreadArticles() -> Set<Article> {
         let articles = self.filter { !$0.status.read }
         return Set(articles)
     }
 
-    public nonisolated func contains(accountID: String, articleID: String) -> Bool {
+    nonisolated func contains(accountID: String, articleID: String) -> Bool {
         self.contains(where: { $0.accountID == accountID && $0.articleID == articleID })
     }
 }
 
 extension [Article] {
-    public nonisolated func articleIDs() -> [String] {
+    nonisolated func articleIDs() -> [String] {
         map(\.articleID)
     }
 }
@@ -140,7 +140,7 @@ extension Article {
         "var",
     ]
 
-    public func sanitizedTitle(forHTML: Bool = true) -> String? {
+    func sanitizedTitle(forHTML: Bool = true) -> String? {
         guard let title else {
             return nil
         }

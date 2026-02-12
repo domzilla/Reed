@@ -31,8 +31,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Replaced `FetchRequestOperation` + `FetchRequestQueue` operation-based pattern with `Task`-based cancellation — deleted `FetchRequestOperation` (105 LOC), simplified `FetchRequestQueue` to a single `Task<Void, Never>?` with cancel-and-replace semantics
 - Merged 6 trivially small files into logical neighbors — `PseudoFeed` protocol into `SmartFeed.swift`, `AppNotifications` into `SceneCoordinator.swift`, `SyncConstants` into `SyncStatus.swift`, `DatabaseObject+Database` into `RelatedObjectsMap+Database.swift`, `MainTimelineDataSource` into `MainTimelineViewController.swift`, `ErrorHandler` into `UIViewController+Extras.swift` + inlined at call sites
 - Consolidated `AuthorAvatarDownloader` into `ImageDownloader` — avatar caching, scaling, and notification logic now lives directly in `ImageDownloader`, eliminating the intermediate NotificationCenter hop between the two classes
+- Inlined vendor RS* modules (RSCore, RSParser, RSWeb, RSDatabase, RSTree, RSMarkdown) into the app target — removed git submodule, 6 package targets, and all cross-module `import`/`public` boilerplate; ObjC headers now go through the bridging header
+- Removed dead `TransportError` pattern matching from `DataStoreError` (nothing throws `TransportError` after removing `Transport.swift`)
 
 ### Removed
+- Dead vendor module files: 10 unused files deleted (Transport.swift, TransportJSON.swift, MacWebBrowser.swift, Dictionary+RSWeb.swift, HTTPDateInfo.swift, HTTPLinkPagingInfo.swift, MimeType.swift, String+RSWeb.swift, URLRequest+RSWeb.swift, UIStoryboard+RSCore.swift, ModalNavigationController.swift, RSParser/Exports.swift)
 - `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
 - All legacy data store migration code (`migrateFromLegacyDataStores`, `migrateDataStoreData`, `cleanupLegacyDataStoreFolders`)
 - Dead `accountLocalPad` and `accountLocalPhone` image assets (only used in the removed `.onMyMac` branch)

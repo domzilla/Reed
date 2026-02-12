@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RSCore
 
 @MainActor
 func markArticles(
@@ -155,7 +154,7 @@ enum ArticlePathKey {
 
 @MainActor
 extension Article {
-    public var pathUserInfo: [AnyHashable: Any] {
+    var pathUserInfo: [AnyHashable: Any] {
         [
             ArticlePathKey.dataStoreID: accountID,
             ArticlePathKey.dataStoreName: dataStore?.nameForDisplay ?? "",

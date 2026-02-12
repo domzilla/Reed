@@ -10,20 +10,20 @@
 import Foundation
 import UIKit
 
-public class ColorHash {
-    public static let defaultSaturation = [CGFloat(0.35), CGFloat(0.5), CGFloat(0.65)]
-    public static let defaultBrightness = [CGFloat(0.5), CGFloat(0.65), CGFloat(0.80)]
+class ColorHash {
+    static let defaultSaturation = [CGFloat(0.35), CGFloat(0.5), CGFloat(0.65)]
+    static let defaultBrightness = [CGFloat(0.5), CGFloat(0.65), CGFloat(0.80)]
 
     let seed = CGFloat(131.0)
     let seed2 = CGFloat(137.0)
     let maxSafeInteger = 9_007_199_254_740_991.0 / CGFloat(137.0)
     let full = CGFloat(360.0)
 
-    public private(set) var str: String
-    public private(set) var brightness: [CGFloat]
-    public private(set) var saturation: [CGFloat]
+    private(set) var str: String
+    private(set) var brightness: [CGFloat]
+    private(set) var saturation: [CGFloat]
 
-    public init(
+    init(
         _ str: String,
         _ saturation: [CGFloat] = defaultSaturation,
         _ brightness: [CGFloat] = defaultBrightness
@@ -33,7 +33,7 @@ public class ColorHash {
         self.brightness = brightness
     }
 
-    public var bkdrHash: CGFloat {
+    var bkdrHash: CGFloat {
         var hash = CGFloat(0)
         for char in "\(self.str)x" {
             if let scl = String(char).unicodeScalars.first?.value {
@@ -46,7 +46,7 @@ public class ColorHash {
         return hash
     }
 
-    public var HSB: (CGFloat, CGFloat, CGFloat) {
+    var HSB: (CGFloat, CGFloat, CGFloat) {
         var hash = CGFloat(bkdrHash)
         let H = hash.truncatingRemainder(dividingBy: self.full - 1.0) / self.full
         hash /= self.full
@@ -56,7 +56,7 @@ public class ColorHash {
         return (H, S, B)
     }
 
-    public var color: UIColor {
+    var color: UIColor {
         let (H, S, B) = self.HSB
         return UIColor(hue: H, saturation: S, brightness: B, alpha: 1.0)
     }

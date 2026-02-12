@@ -6,8 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import RSCore
-import RSWeb
 import SafariServices
 import UIKit
 @preconcurrency import WebKit

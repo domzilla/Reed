@@ -7,25 +7,24 @@
 //
 
 import Foundation
-import RSParser
 
 extension Notification.Name {
-    public static let feedSettingDidChange = Notification.Name(rawValue: "FeedSettingDidChangeNotification")
+    static let feedSettingDidChange = Notification.Name(rawValue: "FeedSettingDidChangeNotification")
 }
 
 extension Feed {
-    public static let SettingUserInfoKey = "feedSetting"
+    static let SettingUserInfoKey = "feedSetting"
 
-    public enum SettingKey {
-        public static let homePageURL = "homePageURL"
-        public static let iconURL = "iconURL"
-        public static let faviconURL = "faviconURL"
-        public static let name = "name"
-        public static let editedName = "editedName"
-        public static let authors = "authors"
-        public static let contentHash = "contentHash"
-        public static let conditionalGetInfo = "conditionalGetInfo"
-        public static let cacheControlInfo = "cacheControlInfo"
+    enum SettingKey {
+        static let homePageURL = "homePageURL"
+        static let iconURL = "iconURL"
+        static let faviconURL = "faviconURL"
+        static let name = "name"
+        static let editedName = "editedName"
+        static let authors = "authors"
+        static let contentHash = "contentHash"
+        static let conditionalGetInfo = "conditionalGetInfo"
+        static let cacheControlInfo = "cacheControlInfo"
     }
 }
 
@@ -46,11 +45,11 @@ extension Feed {
 }
 
 extension Article {
-    @MainActor public var dataStore: DataStore? {
+    @MainActor var dataStore: DataStore? {
         DataStore.shared.existingDataStore(dataStoreID: accountID)
     }
 
-    @MainActor public var feed: Feed? {
+    @MainActor var feed: Feed? {
         self.dataStore?.existingFeed(withFeedID: feedID)
     }
 }

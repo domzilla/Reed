@@ -7,9 +7,6 @@
 //
 
 import Foundation
-import RSCore
-import RSDatabase
-import RSDatabaseObjC
 import Synchronization
 
 // Article->ArticleStatus is a to-one relationship.

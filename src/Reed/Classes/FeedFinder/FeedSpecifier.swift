@@ -7,10 +7,9 @@
 //
 
 import Foundation
-import RSWeb
 
-public struct FeedSpecifier: Sendable {
-    public enum Source: Int, Sendable {
+struct FeedSpecifier: Sendable {
+    enum Source: Int, Sendable {
         case UserEntered = 0, HTMLHead, HTMLLink
 
         func equalToOrBetterThan(_ otherSource: Source) -> Bool {
@@ -18,15 +17,15 @@ public struct FeedSpecifier: Sendable {
         }
     }
 
-    public let title: String?
-    public let urlString: String
-    public let source: Source
-    public let orderFound: Int
-    public var score: Int {
+    let title: String?
+    let urlString: String
+    let source: Source
+    let orderFound: Int
+    var score: Int {
         calculatedScore()
     }
 
-    public nonisolated init(title: String?, urlString: String, source: Source, orderFound: Int) {
+    nonisolated init(title: String?, urlString: String, source: Source, orderFound: Int) {
         self.title = title
         self.urlString = urlString
         self.source = source
@@ -63,7 +62,7 @@ public struct FeedSpecifier: Sendable {
         )
     }
 
-    public nonisolated static func bestFeed(in feedSpecifiers: Set<FeedSpecifier>) -> FeedSpecifier? {
+    nonisolated static func bestFeed(in feedSpecifiers: Set<FeedSpecifier>) -> FeedSpecifier? {
         if feedSpecifiers.isEmpty {
             return nil
         }
@@ -89,11 +88,11 @@ public struct FeedSpecifier: Sendable {
 // MARK: - Hashable
 
 extension FeedSpecifier: Hashable {
-    public nonisolated func hash(into hasher: inout Hasher) {
+    nonisolated func hash(into hasher: inout Hasher) {
         hasher.combine(self.urlString)
     }
 
-    public nonisolated static func == (lhs: FeedSpecifier, rhs: FeedSpecifier) -> Bool {
+    nonisolated static func == (lhs: FeedSpecifier, rhs: FeedSpecifier) -> Bool {
         lhs.urlString == rhs.urlString
     }
 }

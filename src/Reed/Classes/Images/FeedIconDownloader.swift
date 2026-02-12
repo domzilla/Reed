@@ -7,17 +7,14 @@
 //
 
 import Foundation
-import RSCore
-import RSParser
-import RSWeb
 
 extension Notification.Name {
     static let feedIconDidBecomeAvailable = Notification.Name("FeedIconDidBecomeAvailable") // UserInfoKey.feed
 }
 
 @MainActor
-public final class FeedIconDownloader {
-    public static let shared = FeedIconDownloader()
+final class FeedIconDownloader {
+    static let shared = FeedIconDownloader()
 
     private let imageDownloader = ImageDownloader.shared
     private static let saveQueue = CoalescingQueue(name: "Cache Save Queue", interval: 1.0)

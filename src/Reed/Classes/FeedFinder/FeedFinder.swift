@@ -8,14 +8,11 @@
 
 import DZFoundation
 import Foundation
-import RSCore
-import RSParser
-import RSWeb
 
-public enum FeedFinderError: LocalizedError {
+enum FeedFinderError: LocalizedError {
     case feedNotFound
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .feedNotFound:
             NSLocalizedString("The feed couldn't be found and can't be added.", comment: "Not found")
@@ -23,9 +20,9 @@ public enum FeedFinderError: LocalizedError {
     }
 }
 
-public final class FeedFinder: Sendable {
+final class FeedFinder: Sendable {
     @concurrent
-    public static func find(url: URL) async throws -> Set<FeedSpecifier> {
+    static func find(url: URL) async throws -> Set<FeedSpecifier> {
         // Check special cases first.
         if let feedSpecifier = FeedSpecifier.knownFeedSpecifier(url: url) {
             DZLog("FeedFinder: found special case feed URL: \(url.absoluteString) - \(feedSpecifier.urlString)")
