@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
 ### Changed
+- Inlined 11 trivial extension files into their callers — `Calendar+RSCore`, `NotificationCenter+RSCore`, `Bundle+RSCore`, `UIActivityViewController+Extras`, `AddFeedDefaultContainer`, `CacheCleaner`, `UIView+RSCore`, `UICollectionView+RSCore`, `UIPageViewController+RSCore`, `UIFont+RSCore`, `String+RSParser` each had 1–2 call sites and didn't justify separate files
+- Merged 3 extension file pairs — `UIViewController+RSCore` into `UIViewController+Extras`, `ExtensionContainers+DataStore` into `ExtensionContainersFile+MainApp`, `CGImage+RSCore` into `IconImage.swift`
 - Replaced all NetNewsWire references with Reed throughout codebase (file headers, OPML export comments, Share Extension title, variable names)
 - Removed multi-account legacy layer: ~15 typealiases (`Account`, `AccountType`, `AccountError`, `AccountManager`, `AccountBehavior`), ~10 backward-compat extension shims (`.accountID`, `.account`, `.behaviors`), and notification aliases
 - Replaced all `Account`/`account` references with canonical `DataStore`/`dataStore` names across ~30 source files
@@ -35,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Removed dead `TransportError` pattern matching from `DataStoreError` (nothing throws `TransportError` after removing `Transport.swift`)
 
 ### Removed
+- 17 unnecessary extension files deleted — 3 entirely dead code (`UniformTypeIdentifiers+RSCore`, `FileManager+RSCore`, `URLComponents+RSWeb`), 11 inlined into callers, 3 merged into existing files
+- Dead code: `IconImage.appIcon`, `UIImage.appIconImage`, `NSAttributedString.adding(font:)`, `Bundle.appName`, `Bundle.buildNumber`
 - Dead vendor module files: 10 unused files deleted (Transport.swift, TransportJSON.swift, MacWebBrowser.swift, Dictionary+RSWeb.swift, HTTPDateInfo.swift, HTTPLinkPagingInfo.swift, MimeType.swift, String+RSWeb.swift, URLRequest+RSWeb.swift, UIStoryboard+RSCore.swift, ModalNavigationController.swift, RSParser/Exports.swift)
 - `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
 - All legacy data store migration code (`migrateFromLegacyDataStores`, `migrateDataStoreData`, `cleanupLegacyDataStoreFolders`)

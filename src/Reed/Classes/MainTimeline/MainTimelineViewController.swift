@@ -124,7 +124,8 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
     private var navigationBarTitleLabel: UILabel {
         let label = UILabel()
-        label.font = UIFont.preferredFont(forTextStyle: .subheadline).bold()
+        let font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.font = font.fontDescriptor.withSymbolicTraits(.traitBold).map { UIFont(descriptor: $0, size: 0) } ?? font
         label.isUserInteractionEnabled = true
         label.numberOfLines = 1
         label.textAlignment = .center
@@ -1322,7 +1323,12 @@ extension MainTimelineViewController {
     }
 
     private func shareDialogForTableCell(indexPath: IndexPath, url: URL, title: String?) {
-        let activityViewController = UIActivityViewController(url: url, title: title, applicationActivities: nil)
+        let itemSource = ArticleActivityItemSource(url: url, subject: title)
+        let titleSource = TitleActivityItemSource(title: title)
+        let activityViewController = UIActivityViewController(
+            activityItems: [titleSource, itemSource],
+            applicationActivities: nil
+        )
 
         guard let cell = tableView.cellForRow(at: indexPath) else { return }
         let popoverController = activityViewController.popoverPresentationController

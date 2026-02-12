@@ -69,7 +69,10 @@ final class IconView: UIView {
     }
 
     override func layoutSubviews() {
-        self.imageView.setFrameIfNotEqual(rectForImageView())
+        let rect = rectForImageView()
+        if !self.imageView.frame.equalTo(rect) {
+            self.imageView.frame = rect
+        }
         updateBackgroundColor()
     }
 }

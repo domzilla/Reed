@@ -24,28 +24,6 @@ extension UIImage {
 
         return UIImage(cgImage: cgImage)
     }
-
-    static var appIconImage: UIImage? {
-        // https://stackoverflow.com/a/51241158/14256
-        if
-            let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
-            let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
-            let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
-            let lastIcon = iconFiles.last
-        {
-            return UIImage(named: lastIcon)
-        }
-        return nil
-    }
-}
-
-extension IconImage {
-    static let appIcon: IconImage? = {
-        if let image = UIImage.appIconImage {
-            return IconImage(image)
-        }
-        return nil
-    }()
 }
 
 // MARK: - IconScalerQueue

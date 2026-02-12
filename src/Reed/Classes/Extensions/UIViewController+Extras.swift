@@ -10,6 +10,16 @@ import DZFoundation
 import UIKit
 
 extension UIViewController {
+    func presentError(title: String, message: String, dismiss: (() -> Void)? = nil) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let dismissTitle = NSLocalizedString("OK", comment: "OK")
+        let dismissAction = UIAlertAction(title: dismissTitle, style: .default) { _ in
+            dismiss?()
+        }
+        alertController.addAction(dismissAction)
+        self.present(alertController, animated: true, completion: nil)
+    }
+
     func presentError(_ error: Error, dismiss: (() -> Void)? = nil) {
         if let dataStoreError = error as? DataStoreError, dataStoreError.isCredentialsError {
             presentDataStoreError(dataStoreError, dismiss: dismiss)

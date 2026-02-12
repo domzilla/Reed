@@ -13,40 +13,6 @@ private let italicTrait = UIFontDescriptor.SymbolicTraits.traitItalic
 private let monoSpaceTrait = UIFontDescriptor.SymbolicTraits.traitMonoSpace
 
 extension NSAttributedString {
-    /// Adds a font and color to an attributed string.
-    ///
-    /// - Parameters:
-    ///   - baseFont: The font to add.
-    func adding(font baseFont: UIFont) -> NSAttributedString {
-        let mutable = self.mutableCopy() as! NSMutableAttributedString
-        let fullRange = NSRange(location: 0, length: mutable.length)
-
-        let size = baseFont.pointSize
-        let baseDescriptor = baseFont.fontDescriptor
-        let baseSymbolicTraits = baseDescriptor.symbolicTraits
-
-        mutable.enumerateAttribute(.font, in: fullRange, options: []) { (
-            font: Any?,
-            range: NSRange,
-            _: UnsafeMutablePointer<ObjCBool>
-        ) in
-            guard let font = font as? UIFont else { return }
-
-            let currentDescriptor = font.fontDescriptor
-            let symbolicTraits = baseSymbolicTraits.union(currentDescriptor.symbolicTraits)
-
-            var descriptor = currentDescriptor.addingAttributes(baseDescriptor.fontAttributes)
-
-            descriptor = descriptor.withSymbolicTraits(symbolicTraits)!
-
-            let newFont = UIFont(descriptor: descriptor, size: size)
-
-            mutable.addAttribute(.font, value: newFont as Any, range: range)
-        }
-
-        return mutable.copy() as! NSAttributedString
-    }
-
     private enum InTag {
         case none
         case opening

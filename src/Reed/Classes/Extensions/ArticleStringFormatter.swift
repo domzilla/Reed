@@ -106,7 +106,7 @@ struct ArticleStringFormatter {
     }
 
     static func dateString(_ date: Date) -> String {
-        if Calendar.dateIsToday(date) {
+        if Calendar.autoupdatingCurrent.isDateInToday(date) {
             return self.timeFormatter.string(from: date)
         }
         return self.dateFormatter.string(from: date)

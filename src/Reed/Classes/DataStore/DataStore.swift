@@ -1427,11 +1427,15 @@ extension DataStore {
 
         if shouldSendNotification {
             userInfo[UserInfoKey.feeds] = feeds
-            NotificationCenter.default.postOnMainThread(
-                name: .DataStoreDidDownloadArticles,
-                object: self,
-                userInfo: userInfo
-            )
+            nonisolated(unsafe) let capturedSelf = self
+            nonisolated(unsafe) let capturedUserInfo = userInfo
+            Task { @MainActor in
+                NotificationCenter.default.post(
+                    name: .DataStoreDidDownloadArticles,
+                    object: capturedSelf,
+                    userInfo: capturedUserInfo
+                )
+            }
         }
     }
 }

@@ -547,7 +547,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
     func updateFeedSelection(animations: Animations) {
         if let indexPath = coordinator.currentFeedIndexPath {
-            self.collectionView.selectItemAndScrollIfNotVisible(at: indexPath, animations: animations)
+            self.selectCollectionViewItemIfNotVisible(at: indexPath, animations: animations)
         } else {
             if let indexPath = collectionView.indexPathsForSelectedItems?.first {
                 if animations.contains(.select) {
@@ -676,7 +676,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     func restoreSelectionIfNecessary(adjustScroll: Bool) {
         if let indexPath = coordinator.mainFeedIndexPathForCurrentTimeline() {
             if adjustScroll {
-                self.collectionView.selectItemAndScrollIfNotVisible(at: indexPath, animations: [])
+                self.selectCollectionViewItemIfNotVisible(at: indexPath, animations: [])
             } else {
                 self.collectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
             }
@@ -684,6 +684,23 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     }
 
     // MARK: - Private
+
+    private func selectCollectionViewItemIfNotVisible(at indexPath: IndexPath, animations: Animations) {
+        guard
+            let dataSource = collectionView.dataSource,
+            let numberOfSections = dataSource.numberOfSections,
+            indexPath.section < numberOfSections(collectionView),
+            indexPath.row < dataSource.collectionView(collectionView, numberOfItemsInSection: indexPath.section) else
+        {
+            return
+        }
+
+        self.collectionView.selectItem(at: indexPath, animated: animations.contains(.select), scrollPosition: [])
+
+        if !self.collectionView.indexPathsForVisibleItems.contains(indexPath) {
+            self.collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: true)
+        }
+    }
 
     /// Configure standard feed cells
     func configure(_ cell: MainFeedCollectionViewCell, indexPath: IndexPath) {

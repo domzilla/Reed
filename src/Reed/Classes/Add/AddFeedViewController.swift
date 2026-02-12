@@ -103,7 +103,7 @@ final class AddFeedViewController: UITableViewController {
         self.nameTextField.text = self.initialFeedName
         self.nameTextField.delegate = self
 
-        if let defaultContainer = AddFeedDefaultContainer.defaultContainer {
+        if let defaultContainer = self.resolveDefaultContainer() {
             self.container = defaultContainer
         } else {
             self.addButton.isEnabled = false
@@ -265,7 +265,7 @@ extension AddFeedViewController: AddFeedFolderViewControllerDelegate {
     func didSelect(container: Container) {
         self.container = container
         updateFolderLabel()
-        AddFeedDefaultContainer.saveDefaultContainer(container)
+        self.saveDefaultContainer(container)
     }
 }
 
@@ -283,6 +283,29 @@ extension AddFeedViewController: UITextFieldDelegate {
 extension AddFeedViewController {
     private func updateUI() {
         self.addButton.isEnabled = (self.urlTextField.text?.mayBeURL ?? false)
+    }
+
+    private func resolveDefaultContainer() -> Container? {
+        let dataStore = DataStore.shared
+        guard dataStore.isActive else { return nil }
+
+        if
+            let folderName = AppDefaults.shared.addFeedFolderName,
+            let folder = dataStore.existingFolder(withDisplayName: folderName)
+        {
+            return folder
+        }
+
+        return dataStore
+    }
+
+    private func saveDefaultContainer(_ container: Container) {
+        AppDefaults.shared.addFeedAccountID = container.dataStore?.dataStoreID
+        if let folder = container as? Folder {
+            AppDefaults.shared.addFeedFolderName = folder.nameForDisplay
+        } else {
+            AppDefaults.shared.addFeedFolderName = nil
+        }
     }
 
     private func updateFolderLabel() {

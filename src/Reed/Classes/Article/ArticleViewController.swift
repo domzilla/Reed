@@ -215,7 +215,8 @@ final class ArticleViewController: UIViewController {
         // same time. That is really weird when it happens.
         let panGestureRecognizer = UIPanGestureRecognizer()
         panGestureRecognizer.delegate = self
-        self.pageViewController.scrollViewInsidePageControl?.addGestureRecognizer(panGestureRecognizer)
+        let scrollView = self.pageViewController.view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView
+        scrollView?.addGestureRecognizer(panGestureRecognizer)
 
         self.pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(self.pageViewController.view)

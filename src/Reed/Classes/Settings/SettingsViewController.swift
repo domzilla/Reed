@@ -111,7 +111,10 @@ final class SettingsViewController: UITableViewController {
         let buildLabel = NonIntrinsicLabel(frame: CGRect(x: 32.0, y: 0.0, width: 0.0, height: 0.0))
         buildLabel.font = UIFont.systemFont(ofSize: 11.0)
         buildLabel.textColor = UIColor.gray
-        buildLabel.text = "\(Bundle.main.appName) \(Bundle.main.versionNumber) (Build \(Bundle.main.buildNumber))"
+        let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? ""
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        buildLabel.text = "\(appName) \(version) (Build \(build))"
         buildLabel.sizeToFit()
         buildLabel.translatesAutoresizingMaskIntoConstraints = false
 

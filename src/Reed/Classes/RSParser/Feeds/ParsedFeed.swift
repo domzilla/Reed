@@ -40,7 +40,7 @@ struct ParsedFeed: Sendable {
     ) {
         self.type = type
         self.title = title
-        self.homePageURL = homePageURL?.nilIfEmptyOrWhitespace
+        self.homePageURL = homePageURL.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         self.feedURL = feedURL
         self.language = language
         self.feedDescription = feedDescription
