@@ -6,7 +6,6 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import MessageUI
 import RSCore
 import RSWeb
 import SafariServices

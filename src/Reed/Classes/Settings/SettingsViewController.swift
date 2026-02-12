@@ -8,7 +8,6 @@
 
 import CoreServices
 import RSCore
-import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
