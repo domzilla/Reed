@@ -8,8 +8,8 @@
 
 import Foundation
 
-#if SWIFT_PACKAGE
-#endif
+typealias JSONDictionary = [String: Any]
+typealias JSONArray = [JSONDictionary]
 
 // See https://jsonfeed.org/version/1.1
 
@@ -53,7 +53,7 @@ enum JSONFeedParser {
         "://jsonfeed.org/version/" // Allow for the mistake of not getting the scheme exactly correct.
 
     static func parse(_ parserData: ParserData) throws -> ParsedFeed? {
-        guard let d = JSONUtilities.dictionary(with: parserData.data) else {
+        guard let d = try? JSONSerialization.jsonObject(with: parserData.data) as? JSONDictionary else {
             throw FeedParserError.invalidJSON
         }
 

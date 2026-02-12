@@ -14,6 +14,27 @@ extension Notification.Name {
     static let UserDidAddFeed = Notification.Name("UserDidAddFeedNotification")
 }
 
+private struct SingleArticleFetcher: ArticleFetcher {
+    let dataStore: DataStore
+    let articleID: String
+
+    func fetchArticles() throws -> Set<Article> {
+        try self.dataStore.fetchArticles(.articleIDs(Set([self.articleID])))
+    }
+
+    func fetchArticlesAsync() async throws -> Set<Article> {
+        try await self.dataStore.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+    }
+
+    func fetchUnreadArticles() throws -> Set<Article> {
+        try self.dataStore.fetchArticles(.articleIDs(Set([self.articleID])))
+    }
+
+    func fetchUnreadArticlesAsync() async throws -> Set<Article> {
+        try await self.dataStore.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+    }
+}
+
 enum SearchScope: Int {
     case timeline = 0
     case global = 1

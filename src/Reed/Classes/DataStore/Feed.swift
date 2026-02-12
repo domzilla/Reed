@@ -9,7 +9,7 @@
 import Foundation
 
 @MainActor
-final class Feed: SidebarItem, Renamable, Hashable {
+final class Feed: SidebarItem, Hashable {
     nonisolated let feedID: String
     nonisolated let dataStoreID: String
     nonisolated let url: String
@@ -199,8 +199,6 @@ final class Feed: SidebarItem, Renamable, Hashable {
         }
         return NSLocalizedString("Untitled", comment: "Feed name")
     }
-
-    // MARK: - Renamable
 
     func rename(to newName: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let dataStore else {

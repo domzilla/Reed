@@ -54,10 +54,10 @@ enum FeedParser {
                 return try RSSInJSONParser.parse(parserData)
 
             case .rss:
-                return RSSParser.parse(parserData)
+                return RSRSSParser.parseFeed(with: parserData).flatMap { RSParsedFeedTransformer.parsedFeed($0) }
 
             case .atom:
-                return AtomParser.parse(parserData)
+                return RSAtomParser.parseFeed(with: parserData).flatMap { RSParsedFeedTransformer.parsedFeed($0) }
 
             case .unknown, .notAFeed:
                 return nil

@@ -8,6 +8,8 @@
 
 import Foundation
 
+private final class TopLevelRepresentedObject {}
+
 @MainActor
 final class Node: Hashable {
     weak var parent: Node?

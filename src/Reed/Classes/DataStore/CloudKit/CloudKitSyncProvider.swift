@@ -789,7 +789,12 @@ extension CloudKitSyncProvider {
     }
 
     private func downloadAndParseFeed(feedURL: URL, feed: Feed) async throws -> ParsedFeed {
-        let (parsedFeed, response) = try await InitialFeedDownloader.download(feedURL)
+        let (data, response) = try await Downloader.shared.download(feedURL)
+        let parsedFeed: ParsedFeed? = if let data {
+            try await FeedParser.parse(ParserData(url: feedURL.absoluteString, data: data))
+        } else {
+            nil
+        }
         feed.lastCheckDate = Date()
 
         guard let parsedFeed else {

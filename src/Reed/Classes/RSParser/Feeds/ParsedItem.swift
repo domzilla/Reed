@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Markdown
 
 struct ParsedItem: Hashable, Sendable {
     let syncServiceID: String? // Nil when not syncing
@@ -68,7 +69,7 @@ struct ParsedItem: Hashable, Sendable {
 
         // Render Markdown when present, else use contentHTML
         if let markdown {
-            self.contentHTML = RSMarkdown.markdownToHTML(markdown)
+            self.contentHTML = HTMLFormatter.format(Document(parsing: markdown))
         } else {
             self.contentHTML = contentHTML
         }

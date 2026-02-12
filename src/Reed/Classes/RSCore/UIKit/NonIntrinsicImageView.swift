@@ -11,7 +11,12 @@
 import UIKit
 
 final class NonIntrinsicImageView: UIImageView {
-    // Prevent autolayout from messing around with our frame settings
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+    }
+}
+
+final class NonIntrinsicLabel: UILabel {
     override var intrinsicContentSize: CGSize {
         CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
     }

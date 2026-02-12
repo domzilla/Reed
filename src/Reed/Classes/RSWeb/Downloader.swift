@@ -73,7 +73,7 @@ final class Downloader {
             return
         }
 
-        let isCacheableRequest = urlRequest.httpMethod == HTTPMethod.get
+        let isCacheableRequest = urlRequest.httpMethod == "GET"
 
         // Return cached record if available.
         if isCacheableRequest {

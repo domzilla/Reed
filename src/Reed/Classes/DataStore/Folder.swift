@@ -8,7 +8,7 @@
 
 import Foundation
 
-final class Folder: SidebarItem, Renamable, Container, Hashable {
+final class Folder: SidebarItem, Container, Hashable {
     nonisolated let dataStoreID: String
     weak var dataStore: DataStore?
 
@@ -53,8 +53,6 @@ final class Folder: SidebarItem, Renamable, Container, Hashable {
             }
         }
     }
-
-    // MARK: - Renamable
 
     func rename(to name: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let dataStore else {

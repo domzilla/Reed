@@ -22,11 +22,28 @@ extension DataStore: SmallIconProvider {
 
 @MainActor
 extension Feed: SmallIconProvider {
+    private static var generatedFaviconCache = [String: IconImage]()
+
     var smallIcon: IconImage? {
         if let iconImage = FaviconDownloader.shared.favicon(for: self) {
             return iconImage
         }
-        return FaviconGenerator.favicon(self)
+        return self.generatedFavicon()
+    }
+
+    private func generatedFavicon() -> IconImage {
+        if let cached = Feed.generatedFaviconCache[self.url] {
+            return cached
+        }
+
+        let colorHash = ColorHash(self.url)
+        if let favicon = Assets.Images.faviconTemplate.maskWithColor(color: colorHash.color.cgColor) {
+            let iconImage = IconImage(favicon, isBackgroundSuppressed: true)
+            Feed.generatedFaviconCache[self.url] = iconImage
+            return iconImage
+        } else {
+            return IconImage(Assets.Images.faviconTemplate, isBackgroundSuppressed: true)
+        }
     }
 }
 

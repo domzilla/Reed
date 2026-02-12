@@ -13,6 +13,19 @@ import WebKit
 
 private let reuseIdentifier = "FeedCell"
 private let folderIdentifier = "Folder"
+
+private final class MainFeedRowIdentifier: NSObject, NSCopying {
+    var indexPath: IndexPath
+
+    init(indexPath: IndexPath) {
+        self.indexPath = indexPath
+    }
+
+    func copy(with _: NSZone? = nil) -> Any {
+        self
+    }
+}
+
 private let containerReuseIdentifier = "Container"
 
 final class MainFeedCollectionViewController: UICollectionViewController, UndoableCommandRunner {
@@ -999,7 +1012,10 @@ extension MainFeedCollectionViewController: UIContextMenuInteractionDelegate {
             return nil
         }
 
-        return UITargetedPreview(view: cell, parameters: CroppingPreviewParameters(view: cell))
+        let params = UIPreviewParameters()
+        let insetBounds = CGRect(x: 1, y: 1, width: cell.bounds.width - 2, height: cell.bounds.height - 2)
+        params.visiblePath = UIBezierPath(roundedRect: insetBounds, cornerRadius: 10)
+        return UITargetedPreview(view: cell, parameters: params)
     }
 }
 

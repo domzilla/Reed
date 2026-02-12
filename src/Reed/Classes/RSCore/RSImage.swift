@@ -21,6 +21,8 @@ import UIKit
 typealias RSImage = UIImage
 #endif
 
+typealias ImageResultBlock = @MainActor (RSImage?) -> Void
+
 private let RSImageLogger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "RSImage")
 private let debugLoggingEnabled = false
 

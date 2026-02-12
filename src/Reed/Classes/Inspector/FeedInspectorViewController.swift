@@ -208,7 +208,7 @@ final class FeedInspectorViewController: UITableViewController {
     }
 
     override func tableView(_: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        section == 0 ? ImageHeaderView.rowHeight : UITableView.automaticDimension
+        section == 0 ? 88.0 : UITableView.automaticDimension
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

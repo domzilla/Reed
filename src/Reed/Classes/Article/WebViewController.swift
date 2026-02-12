@@ -10,6 +10,18 @@ import SafariServices
 import UIKit
 @preconcurrency import WebKit
 
+private final class WrapperScriptMessageHandler: NSObject, WKScriptMessageHandler {
+    private weak var handler: WKScriptMessageHandler?
+
+    init(_ handler: WKScriptMessageHandler) {
+        self.handler = handler
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        self.handler?.userContentController(userContentController, didReceive: message)
+    }
+}
+
 final class WebViewController: UIViewController {
     private enum MessageName {
         static let imageWasClicked = "imageWasClicked"

@@ -18,3 +18,17 @@ nonisolated enum HTTPRequestHeader {
     static let ifModifiedSince = "If-Modified-Since"
     static let ifNoneMatch = "If-None-Match" // Etag
 }
+
+nonisolated struct HTTPResponseHeader: Sendable {
+    static let contentType = "Content-Type"
+    static let location = "Location"
+    static let link = "Links"
+    static let date = "Date"
+
+    // Conditional GET
+    static let lastModified = "Last-Modified"
+    static let etag = "Etag"
+
+    static let cacheControl = "Cache-Control"
+    static let retryAfter = "Retry-After"
+}

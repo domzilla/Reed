@@ -17,7 +17,7 @@ extension UIImage {
     }
 
     nonisolated static func scaledForIcon(_ data: Data) -> UIImage? {
-        let scaledMaxPixelSize = Int(ceil(CGFloat(UIImage.maxIconSize) * RSScreen.maxScreenScale))
+        let scaledMaxPixelSize = Int(ceil(CGFloat(UIImage.maxIconSize) * 3.0))
         guard let cgImage = UIImage.scaleImage(data, maxPixelSize: scaledMaxPixelSize) else {
             return nil
         }
