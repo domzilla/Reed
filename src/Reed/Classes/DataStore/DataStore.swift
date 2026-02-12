@@ -1427,7 +1427,7 @@ extension DataStore {
 
         if shouldSendNotification {
             userInfo[UserInfoKey.feeds] = feeds
-            nonisolated(unsafe) let capturedSelf = self
+            let capturedSelf = self
             nonisolated(unsafe) let capturedUserInfo = userInfo
             Task { @MainActor in
                 NotificationCenter.default.post(

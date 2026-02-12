@@ -17,10 +17,6 @@ static BOOL bytesAreProbablyHTML(const char *bytes, NSUInteger numberOfBytes);
 static BOOL bytesAreProbablyXML(const char *bytes, NSUInteger numberOfBytes);
 static BOOL bytesStartWithStringIgnoringWhitespace(const char *string, const char *bytes, NSUInteger numberOfBytes);
 static BOOL didFindString(const char *string, const char *bytes, NSUInteger numberOfBytes);
-static BOOL bytesStartWithRSS(const char *bytes, NSUInteger numberOfBytes);
-static BOOL bytesStartWithRDF(const char *bytes, NSUInteger numberOfBytes);
-static BOOL bytesStartWithAtom(const char *bytes, NSUInteger numberOfBytes);
-
 @implementation NSData (RSParser)
 
 - (BOOL)isProbablyHTML {

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Assertion crash in `DownloadProgress.completeTasks()` — recursive `selectForProcessing()` called `completeTask()` more times than tasks were added
 - "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
 - CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
+- Removed 3 dead forward declarations in `NSData+RSParser.m` and fixed 2 compiler warnings (`unused binding in ShareFolderPickerController`, `unnecessary nonisolated(unsafe) in DataStore`)
 - Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
 ### Changed

@@ -40,7 +40,7 @@ final class ShareFolderPickerController: UITableViewController {
             tableView.dequeueReusableCell(withIdentifier: "FolderCell", for: indexPath) as! ShareFolderPickerCell
         }
 
-        if let dataStore = container as? ExtensionDataStore {
+        if container is ExtensionDataStore {
             cell.iconImageView.image = ShareAssets.dataStoreImage
         } else {
             cell.iconImageView.image = ShareAssets.Images.mainFolder.image
