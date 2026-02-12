@@ -32,7 +32,6 @@ final class CloudKitSyncProvider: SyncProvider {
     private let feedsZone: CloudKitFeedsZone
     private let articlesZone: CloudKitArticlesZone
 
-    private let mainThreadOperationQueue = MainThreadOperationQueue()
     private let refresher: FeedRefresher
 
     weak var dataStore: DataStore?
@@ -86,17 +85,10 @@ final class CloudKitSyncProvider: SyncProvider {
     }
 
     func receiveRemoteNotification(for _: DataStore, userInfo: [AnyHashable: Any]) async {
-        await withCheckedContinuation { continuation in
-            let op = CloudKitRemoteNotificationOperation(
-                feedsZone: feedsZone,
-                articlesZone: articlesZone,
-                userInfo: userInfo
-            )
-            op.completionBlock = { _ in
-                continuation.resume()
-            }
-            self.mainThreadOperationQueue.add(op)
-        }
+        DZLog("iCloud: Processing remote notification")
+        await self.feedsZone.receiveRemoteNotification(userInfo: userInfo)
+        await self.articlesZone.receiveRemoteNotification(userInfo: userInfo)
+        DZLog("iCloud: Finished processing remote notification")
     }
 
     func refreshAll(for dataStore: DataStore) async throws {
@@ -125,16 +117,13 @@ final class CloudKitSyncProvider: SyncProvider {
     }
 
     func refreshArticleStatus(for _: DataStore) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            let op = CloudKitReceiveStatusOperation(articlesZone: articlesZone)
-            op.completionBlock = { mainThreadOperaion in
-                if mainThreadOperaion.isCanceled {
-                    continuation.resume(throwing: CloudKitSyncProviderError.unknown)
-                } else {
-                    continuation.resume(returning: ())
-                }
-            }
-            self.mainThreadOperationQueue.add(op)
+        DZLog("iCloud: Refreshing article statuses")
+        do {
+            try await self.articlesZone.refreshArticles()
+            DZLog("iCloud: Finished refreshing article statuses")
+        } catch {
+            DZLog("iCloud: Receive status error: \(error.localizedDescription)")
+            throw error
         }
     }
 
@@ -941,22 +930,95 @@ extension CloudKitSyncProvider {
     }
 
     private func sendArticleStatus(dataStore: DataStore, showProgress: Bool) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            let op = CloudKitSendStatusOperation(
-                dataStore: dataStore,
-                articlesZone: articlesZone,
-                refreshProgress: refreshProgress,
-                showProgress: showProgress,
-                database: syncDatabase
-            )
-            op.completionBlock = { mainThreadOperation in
-                if mainThreadOperation.isCanceled {
-                    continuation.resume(throwing: CloudKitSyncProviderError.unknown)
-                } else {
-                    continuation.resume(returning: ())
-                }
+        DZLog("iCloud: Sending article statuses")
+        let blockSize = 150
+        let localProgress = DownloadProgress(numberOfTasks: 0)
+
+        if showProgress {
+            self.refreshProgress.addChild(localProgress)
+        }
+
+        defer {
+            localProgress.completeAll()
+        }
+
+        if showProgress {
+            localProgress.addTask()
+        }
+
+        try await self.sendStatusBatch(
+            dataStore: dataStore,
+            blockSize: blockSize
+        )
+        DZLog("iCloud: Finished sending article statuses")
+    }
+
+    /// Recursively processes sync status batches until none remain.
+    private func sendStatusBatch(
+        dataStore: DataStore,
+        blockSize: Int
+    ) async throws {
+        guard
+            let syncStatuses = try await self.syncDatabase.selectForProcessing(limit: blockSize),
+            !syncStatuses.isEmpty else
+        {
+            return
+        }
+
+        let stopProcessing = try await self.processSendStatuses(
+            Array(syncStatuses),
+            dataStore: dataStore
+        )
+        if stopProcessing {
+            return
+        }
+
+        try await self.sendStatusBatch(
+            dataStore: dataStore,
+            blockSize: blockSize
+        )
+    }
+
+    /// Returns true if processing should stop.
+    private func processSendStatuses(
+        _ syncStatuses: [SyncStatus],
+        dataStore: DataStore
+    ) async throws
+        -> Bool
+    {
+        let articleIDs = syncStatuses.map(\.articleID)
+        let articles: Set<Article>
+
+        do {
+            articles = try await dataStore.fetchArticlesAsync(.articleIDs(Set(articleIDs)))
+        } catch {
+            try? await self.syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map(\.articleID)))
+            DZLog("iCloud: Send article status fetch articles error: \(error.localizedDescription)")
+            return true
+        }
+
+        let syncStatusesDict = Dictionary(grouping: syncStatuses, by: { $0.articleID })
+        let articlesDict = articles.reduce(into: [String: Article]()) { result, article in
+            result[article.articleID] = article
+        }
+        let statusUpdates = syncStatusesDict.compactMap { key, value in
+            CloudKitArticleStatusUpdate(articleID: key, statuses: value, article: articlesDict[key])
+        }
+
+        if statusUpdates.isEmpty {
+            try? await self.syncDatabase.deleteSelectedForProcessing(Set(articleIDs))
+            return true
+        } else {
+            do {
+                try await self.articlesZone.modifyArticles(statusUpdates)
+                try? await self.syncDatabase.deleteSelectedForProcessing(Set(statusUpdates.map(\.articleID)))
+                return false
+            } catch {
+                try? await self.syncDatabase.resetSelectedForProcessing(Set(syncStatuses.map(\.articleID)))
+                self.processSyncError(dataStore, error)
+                DZLog("iCloud: Send article status modify articles error: \(error.localizedDescription)")
+                return true
             }
-            self.mainThreadOperationQueue.add(op)
         }
     }
 

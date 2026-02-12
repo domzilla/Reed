@@ -44,7 +44,7 @@ public final class ArticlesDatabase: Sendable {
 
     private let articlesTable: ArticlesTable
     private let queue: DatabaseQueue
-    private let operationQueue = MainThreadOperationQueue()
+    private var fetchUnreadCountsTask: Task<Void, Never>?
     private let retentionStyle: RetentionStyle
     private let accountID: String
 
@@ -395,7 +395,7 @@ public final class ArticlesDatabase: Sendable {
     @MainActor
     public func suspend() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
-        self.operationQueue.suspend()
+        self.fetchUnreadCountsTask?.cancel()
         self.queue.suspend()
     }
 
@@ -404,7 +404,6 @@ public final class ArticlesDatabase: Sendable {
     public func resume() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         self.queue.resume()
-        self.operationQueue.resume()
     }
 
     // MARK: - Caches
@@ -463,7 +462,7 @@ extension ArticlesDatabase {
     private func cancelOperations() {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
         Task { @MainActor in
-            self.operationQueue.cancelAll()
+            self.fetchUnreadCountsTask?.cancel()
         }
     }
 }
@@ -491,16 +490,37 @@ typealias ArticleStatusesResultBlock = @Sendable (ArticleStatusesResult) -> Void
 extension ArticlesDatabase {
     private func _fetchAllUnreadCounts(_ completion: @escaping UnreadCountDictionaryCompletionBlock) {
         DZLog("ArticlesDatabase: \(#function) \(self.accountID)")
-        Task { @MainActor in
-            let operation = FetchAllUnreadCountsOperation(databaseQueue: queue)
-            if let operationName = operation.name {
-                self.operationQueue.cancel(named: operationName)
+
+        self.fetchUnreadCountsTask?.cancel()
+        self.fetchUnreadCountsTask = Task { @MainActor in
+            self.queue.runInDatabase { databaseResult in
+                guard !Task.isCancelled else {
+                    completion(.failure(DatabaseError.isSuspended))
+                    return
+                }
+
+                switch databaseResult {
+                case let .success(database):
+                    let sql = "select distinct feedID, count(*) from articles natural join statuses where read=0 group by feedID;"
+                    guard let resultSet = database.executeQuery(sql, withArgumentsIn: nil) else {
+                        completion(.failure(DatabaseError.isSuspended))
+                        return
+                    }
+
+                    var unreadCountDictionary = UnreadCountDictionary()
+                    while resultSet.next() {
+                        let unreadCount = resultSet.long(forColumnIndex: 1)
+                        if let feedID = resultSet.string(forColumnIndex: 0) {
+                            unreadCountDictionary[feedID] = unreadCount
+                        }
+                    }
+                    resultSet.close()
+                    completion(.success(unreadCountDictionary))
+
+                case .failure:
+                    completion(.failure(DatabaseError.isSuspended))
+                }
             }
-            operation.completionBlock = { operation in
-                let fetchOperation = operation as! FetchAllUnreadCountsOperation
-                completion(fetchOperation.result ?? .failure(DatabaseError.isSuspended))
-            }
-            self.operationQueue.add(operation)
         }
     }
 
