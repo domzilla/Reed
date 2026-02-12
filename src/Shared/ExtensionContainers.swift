@@ -39,7 +39,6 @@ struct ExtensionDataStore: ExtensionContainer {
     enum CodingKeys: String, CodingKey {
         case name
         case dataStoreID = "accountID"
-        case type
         case disallowFeedInRootFolder
         case containerID
         case folders
@@ -47,7 +46,6 @@ struct ExtensionDataStore: ExtensionContainer {
 
     let name: String
     let dataStoreID: String
-    let type: DataStoreType
     let disallowFeedInRootFolder: Bool
     let containerID: ContainerIdentifier?
     let folders: [ExtensionFolder]
@@ -56,7 +54,6 @@ struct ExtensionDataStore: ExtensionContainer {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.name = try container.decode(String.self, forKey: .name)
         self.dataStoreID = try container.decode(String.self, forKey: .dataStoreID)
-        self.type = try container.decode(DataStoreType.self, forKey: .type)
         self.disallowFeedInRootFolder = try container.decode(Bool.self, forKey: .disallowFeedInRootFolder)
         self.containerID = try container.decodeIfPresent(ContainerIdentifier.self, forKey: .containerID)
         self.folders = try container.decode([ExtensionFolder].self, forKey: .folders)
@@ -66,7 +63,6 @@ struct ExtensionDataStore: ExtensionContainer {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.name, forKey: .name)
         try container.encode(self.dataStoreID, forKey: .dataStoreID)
-        try container.encode(self.type, forKey: .type)
         try container.encode(self.disallowFeedInRootFolder, forKey: .disallowFeedInRootFolder)
         try container.encodeIfPresent(self.containerID, forKey: .containerID)
         try container.encode(self.folders, forKey: .folders)

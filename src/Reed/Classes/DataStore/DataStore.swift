@@ -1441,11 +1441,3 @@ extension DataStore: OPMLRepresentable {
         return s
     }
 }
-
-// MARK: - DataStoreType
-
-public nonisolated enum DataStoreType: Int, Codable, Sendable {
-    // Raw values should not change since they're stored on disk.
-    case onMyMac = 1
-    case cloudKit = 2
-}

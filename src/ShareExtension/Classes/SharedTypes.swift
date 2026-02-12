@@ -8,18 +8,6 @@
 
 import Foundation
 
-// MARK: - DataStoreType (formerly AccountType)
-
-public nonisolated enum DataStoreType: Int, Codable, Sendable {
-    // Raw values should not change since they're stored on disk.
-    case onMyMac = 1
-    case cloudKit = 2
-
-    public var isDeveloperRestricted: Bool {
-        self == .cloudKit
-    }
-}
-
 // MARK: - ContainerIdentifier
 
 public enum ContainerIdentifier: Hashable, Equatable, Sendable {

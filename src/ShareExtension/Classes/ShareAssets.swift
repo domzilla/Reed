@@ -16,20 +16,8 @@ enum ShareAssets {
         }
     }
 
-    /// Returns the appropriate image for a data store type.
-    @MainActor
-    static func dataStoreImage(_ dataStoreType: DataStoreType) -> UIImage {
-        switch dataStoreType {
-        case .onMyMac:
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                UIImage(systemName: "desktopcomputer")!
-            } else {
-                UIImage(systemName: "iphone")!
-            }
-        case .cloudKit:
-            UIImage(systemName: "icloud")!
-        }
-    }
+    /// CloudKit data store icon.
+    static var dataStoreImage: UIImage { UIImage(systemName: "icloud")! }
 }
 
 /// Simplified icon wrapper for ShareExtension (RSCore's IconImage is not available).

@@ -41,7 +41,7 @@ final class ShareFolderPickerController: UITableViewController {
         }
 
         if let dataStore = container as? ExtensionDataStore {
-            cell.iconImageView.image = ShareAssets.dataStoreImage(dataStore.type)
+            cell.iconImageView.image = ShareAssets.dataStoreImage
         } else {
             cell.iconImageView.image = ShareAssets.Images.mainFolder.image
         }

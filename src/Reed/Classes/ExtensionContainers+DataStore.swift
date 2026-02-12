@@ -12,7 +12,6 @@ extension ExtensionDataStore {
     init(dataStore: DataStore) {
         self.name = dataStore.nameForDisplay
         self.dataStoreID = dataStore.dataStoreID
-        self.type = .cloudKit // CloudKit sync support
         self.disallowFeedInRootFolder = false // Feeds allowed in root folder
         self.containerID = dataStore.containerID
         self.folders = dataStore.sortedFolders?.map { ExtensionFolder(folder: $0) } ?? [ExtensionFolder]()

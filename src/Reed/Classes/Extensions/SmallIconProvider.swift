@@ -17,9 +17,7 @@ protocol SmallIconProvider {
 @MainActor
 extension DataStore: SmallIconProvider {
     var smallIcon: IconImage? {
-        // CloudKit icon represents sync capability
-        let image = Assets.dataStoreImage(.cloudKit)
-        return IconImage(image)
+        IconImage(Assets.Images.accountCloudKit)
     }
 }
 

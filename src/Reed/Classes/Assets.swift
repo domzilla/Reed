@@ -33,9 +33,6 @@ enum Assets {
             )
         }
 
-        static var accountLocalPadImage: UIImage { UIImage(named: "accountLocalPad")! }
-        static var accountLocalPhoneImage: UIImage { UIImage(named: "accountLocalPhone")! }
-
         static var circleClosed: UIImage { UIImage(symbol: "largecircle.fill.circle")! }
         static var markBelowAsRead: UIImage { UIImage(symbol: "arrowtriangle.down.circle")! }
         static var markAboveAsRead: UIImage { UIImage(symbol: "arrowtriangle.up.circle")! }
@@ -101,20 +98,6 @@ enum Assets {
                 isBackgroundSuppressed: true,
                 preferredColor: Assets.Colors.secondaryAccent.cgColor
             )
-        }
-    }
-
-    @MainActor
-    static func dataStoreImage(_ dataStoreType: DataStoreType) -> UIImage {
-        switch dataStoreType {
-        case .onMyMac:
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                Assets.Images.accountLocalPadImage
-            } else {
-                Assets.Images.accountLocalPhoneImage
-            }
-        case .cloudKit:
-            Assets.Images.accountCloudKit
         }
     }
 

@@ -26,6 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Renamed `ExtensionAccount` → `ExtensionDataStore` in Share Extension (preserving on-disk JSON keys for backward compat)
 
 ### Removed
+- `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
+- All legacy data store migration code (`migrateFromLegacyDataStores`, `migrateDataStoreData`, `cleanupLegacyDataStoreFolders`)
+- Dead `accountLocalPad` and `accountLocalPhone` image assets (only used in the removed `.onMyMac` branch)
+- `isDeveloperRestricted` property from Share Extension (was only defined on the removed `DataStoreType`)
+- `type` property from `ExtensionDataStore` serialization (always hardcoded to `.cloudKit`)
 - `OrganizationIdentifier` and `AppGroup` keys from Info.plist (replaced by `AppConstants` and `SharedConstants`)
 - Dead `.x-netnewswire-hide` CSS rule from `core.css` (never wired up in rendering pipeline)
 - Dead `AccountBehavior` enum and all behavior-check code paths (`.disallowFeedInRootFolder`, `.disallowFolderManagement`, `.disallowFeedInMultipleFolders`) — behaviors always returned `[]`

@@ -85,9 +85,8 @@ public final class DataStoreManager: UnreadCountProvider {
         self.dataStoresFolder = AppConfig.dataSubfolder(named: "DataStores").path
 
         // Create the data store folder
-        // Format: "2_iCloud" where 2 is the CloudKit type raw value for backward compatibility
         let iCloudDataStoreFolder = (dataStoresFolder as NSString)
-            .appendingPathComponent("2_\(self.iCloudDataStoreIdentifier)")
+            .appendingPathComponent(self.iCloudDataStoreIdentifier)
         do {
             try FileManager.default.createDirectory(
                 atPath: iCloudDataStoreFolder,
@@ -98,12 +97,6 @@ public final class DataStoreManager: UnreadCountProvider {
             assertionFailure("Could not create folder for data store.")
             abort()
         }
-
-        // Migrate data from old data store structure if needed
-        Self.migrateFromLegacyDataStores(
-            dataStoresFolder: self.dataStoresFolder,
-            iCloudDataStoreFolder: iCloudDataStoreFolder
-        )
 
         self.defaultDataStore = DataStore(
             dataFolder: iCloudDataStoreFolder,
@@ -330,120 +323,5 @@ extension DataStoreManager {
     @MainActor
     private func updateUnreadCount() {
         self.unreadCount = self.defaultDataStore.isActive ? self.defaultDataStore.unreadCount : 0
-    }
-
-    /// Migrates data from old multi-data-store structure to the unified data store
-    fileprivate static func migrateFromLegacyDataStores(dataStoresFolder: String, iCloudDataStoreFolder: String) {
-        let fileManager = FileManager.default
-
-        // Check if migration is needed - look for old data store folders
-        guard let contents = try? fileManager.contentsOfDirectory(atPath: dataStoresFolder) else {
-            return
-        }
-
-        // Check if the iCloud folder already has data (already migrated)
-        let opmlPath = (iCloudDataStoreFolder as NSString).appendingPathComponent("Subscriptions.opml")
-        if fileManager.fileExists(atPath: opmlPath) {
-            // Already has data, clean up old folders
-            self.cleanupLegacyDataStoreFolders(
-                dataStoresFolder: dataStoresFolder,
-                iCloudDataStoreFolder: iCloudDataStoreFolder,
-                contents: contents
-            )
-            return
-        }
-
-        // First priority: migrate from existing CloudKit data store
-        for item in contents {
-            let itemPath = (dataStoresFolder as NSString).appendingPathComponent(item)
-            if item.hasPrefix("2_") { // CloudKit data store type
-                self.migrateDataStoreData(from: itemPath, to: iCloudDataStoreFolder)
-                self.cleanupLegacyDataStoreFolders(
-                    dataStoresFolder: dataStoresFolder,
-                    iCloudDataStoreFolder: iCloudDataStoreFolder,
-                    contents: contents
-                )
-                return
-            }
-        }
-
-        // Second priority: migrate from local "OnMyMac" data store
-        let onMyMacPath = (dataStoresFolder as NSString).appendingPathComponent("OnMyMac")
-        if fileManager.fileExists(atPath: onMyMacPath) {
-            self.migrateDataStoreData(from: onMyMacPath, to: iCloudDataStoreFolder)
-            self.cleanupLegacyDataStoreFolders(
-                dataStoresFolder: dataStoresFolder,
-                iCloudDataStoreFolder: iCloudDataStoreFolder,
-                contents: contents
-            )
-            return
-        }
-
-        // Third priority: migrate from any local data store (1_*)
-        for item in contents {
-            let itemPath = (dataStoresFolder as NSString).appendingPathComponent(item)
-            if item.hasPrefix("1_") { // onMyMac data store type
-                self.migrateDataStoreData(from: itemPath, to: iCloudDataStoreFolder)
-                self.cleanupLegacyDataStoreFolders(
-                    dataStoresFolder: dataStoresFolder,
-                    iCloudDataStoreFolder: iCloudDataStoreFolder,
-                    contents: contents
-                )
-                return
-            }
-        }
-    }
-
-    fileprivate static func migrateDataStoreData(from sourcePath: String, to destPath: String) {
-        let fileManager = FileManager.default
-
-        // Files to migrate
-        let filesToMigrate = [
-            "Subscriptions.opml",
-            "FeedMetadata.plist",
-            "DB.sqlite3",
-            "DB.sqlite3-shm",
-            "DB.sqlite3-wal",
-            "Sync.sqlite3",
-            "Sync.sqlite3-shm",
-            "Sync.sqlite3-wal",
-        ]
-
-        for filename in filesToMigrate {
-            let sourceFile = (sourcePath as NSString).appendingPathComponent(filename)
-            let destFile = (destPath as NSString).appendingPathComponent(filename)
-
-            if fileManager.fileExists(atPath: sourceFile), !fileManager.fileExists(atPath: destFile) {
-                try? fileManager.copyItem(atPath: sourceFile, toPath: destFile)
-            }
-        }
-    }
-
-    fileprivate static func cleanupLegacyDataStoreFolders(
-        dataStoresFolder: String,
-        iCloudDataStoreFolder: String,
-        contents: [String]
-    ) {
-        let fileManager = FileManager.default
-        let iCloudFolderName = (iCloudDataStoreFolder as NSString).lastPathComponent
-
-        for item in contents {
-            // Skip the current iCloud folder
-            if item == iCloudFolderName {
-                continue
-            }
-
-            // Skip hidden files
-            if item.hasPrefix(".") {
-                continue
-            }
-
-            let itemPath = (dataStoresFolder as NSString).appendingPathComponent(item)
-
-            // Remove old data store folders (OnMyMac, 1_*, 2_*)
-            if item == "OnMyMac" || item.hasPrefix("1_") || item.hasPrefix("2_") {
-                try? fileManager.removeItem(atPath: itemPath)
-            }
-        }
     }
 }
