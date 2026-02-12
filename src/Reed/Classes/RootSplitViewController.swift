@@ -155,7 +155,7 @@ final class RootSplitViewController: UISplitViewController {
 
     @objc
     func refresh(_: Any?) {
-        appDelegate.manualRefresh(errorHandler: ErrorHandler.present(self))
+        appDelegate.manualRefresh(errorHandler: self.errorPresenter())
     }
 
     @objc

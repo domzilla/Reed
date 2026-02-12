@@ -8,6 +8,10 @@
 
 import Foundation
 @preconcurrency import RSCore
+import UIKit
+
+@MainActor
+protocol PseudoFeed: AnyObject, SidebarItem, SmallIconProvider {}
 
 @MainActor
 final class SmartFeed: PseudoFeed {

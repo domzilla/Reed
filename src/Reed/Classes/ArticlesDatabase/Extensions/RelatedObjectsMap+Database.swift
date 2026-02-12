@@ -9,6 +9,13 @@
 import Foundation
 import RSDatabase
 
+extension [DatabaseObject] {
+    func asAuthors() -> Set<Author>? {
+        let authors = Set(self.map { $0 as! Author })
+        return authors.isEmpty ? nil : authors
+    }
+}
+
 extension RelatedObjectsMap {
     func authors(for articleID: String) -> Set<Author>? {
         if let objects = self[articleID] {

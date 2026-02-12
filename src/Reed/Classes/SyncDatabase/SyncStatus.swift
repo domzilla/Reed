@@ -9,6 +9,13 @@
 import Foundation
 import RSDatabase
 
+struct SyncDatabaseKey: Sendable {
+    static let articleID = "articleID"
+    static let key = "key"
+    static let flag = "flag"
+    static let selected = "selected"
+}
+
 public struct SyncStatus: Sendable {
     public enum Key: String, Sendable {
         case read

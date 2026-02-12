@@ -375,7 +375,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         // If the error dialog appears too closely to the call to endRefreshing, then the refreshControl never
         // disappears.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            appDelegate.manualRefresh(errorHandler: ErrorHandler.present(self))
+            appDelegate.manualRefresh(errorHandler: self.errorPresenter())
         }
     }
 
@@ -1357,5 +1357,16 @@ extension MainTimelineViewController {
             self?.shareDialogForTableCell(indexPath: indexPath, url: url, title: article.title)
         }
         return action
+    }
+}
+
+// MARK: - MainTimelineDataSource
+
+final class MainTimelineDataSource<SectionIdentifierType, ItemIdentifierType>: UITableViewDiffableDataSource<
+    SectionIdentifierType,
+    ItemIdentifierType
+> where SectionIdentifierType: Hashable, ItemIdentifierType: Hashable {
+    override func tableView(_: UITableView, canEditRowAt _: IndexPath) -> Bool {
+        true
     }
 }

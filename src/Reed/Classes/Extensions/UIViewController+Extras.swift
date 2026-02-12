@@ -6,6 +6,7 @@
 //  Copyright © 2020 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import RSCore
 import UIKit
 
@@ -123,5 +124,19 @@ extension UIViewController {
         }
 
         self.present(alertController, animated: true, completion: nil)
+    }
+}
+
+extension UIViewController {
+    nonisolated func errorPresenter() -> @Sendable (Error) -> Void {
+        { [weak self] error in
+            Task { @MainActor in
+                if UIApplication.shared.applicationState == .active {
+                    self?.presentError(error)
+                } else {
+                    DZErrorLog(error)
+                }
+            }
+        }
     }
 }

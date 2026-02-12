@@ -184,12 +184,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
 
         if let lastRefresh = AppDefaults.shared.lastRefresh {
             if Date() > lastRefresh.addingTimeInterval(15 * 60) {
-                DataStore.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
+                DataStore.shared.refreshAllWithoutWaiting(errorHandler: { DZErrorLog($0) })
             } else {
                 DataStore.shared.syncArticleStatusAllWithoutWaiting()
             }
         } else {
-            DataStore.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
+            DataStore.shared.refreshAllWithoutWaiting(errorHandler: { DZErrorLog($0) })
         }
     }
 
@@ -418,7 +418,7 @@ extension AppDelegate {
             if DataStore.shared.isSuspended {
                 DataStore.shared.resumeAll()
             }
-            await DataStore.shared.refreshAllManaged(errorHandler: ErrorHandler.log)
+            await DataStore.shared.refreshAllManaged(errorHandler: { DZErrorLog($0) })
             if !DataStore.shared.isSuspended {
                 self.suspendApplication()
                 DZLog("Background refresh completed.")

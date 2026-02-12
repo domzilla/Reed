@@ -857,7 +857,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         // If the error dialog appears too closely to the call to endRefreshing, then the refreshControl never
         // disappears.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            appDelegate.manualRefresh(errorHandler: ErrorHandler.present(self))
+            appDelegate.manualRefresh(errorHandler: self.errorPresenter())
         }
     }
 
@@ -1431,7 +1431,7 @@ extension MainFeedCollectionViewController {
             let deleteCommand = DeleteCommand(
                 nodesToDelete: [deleteNode],
                 undoManager: undoManager,
-                errorHandler: ErrorHandler.present(self)
+                errorHandler: self.errorPresenter()
             ) else
         {
             return

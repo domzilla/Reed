@@ -12,6 +12,10 @@ import SafariServices
 import UIKit
 import UserNotifications
 
+extension Notification.Name {
+    static let UserDidAddFeed = Notification.Name("UserDidAddFeedNotification")
+}
+
 enum SearchScope: Int {
     case timeline = 0
     case global = 1
