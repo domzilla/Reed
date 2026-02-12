@@ -20,14 +20,6 @@ final class ArticleStatusSyncTimer {
     private var lastTimedRefresh: Date?
     private let launchTime = Date()
 
-    func fireOldTimer() {
-        if let timer = internalTimer {
-            if timer.fireDate < Date() {
-                self.timedRefresh(nil)
-            }
-        }
-    }
-
     func start() {
         self.shuttingDown = false
     }

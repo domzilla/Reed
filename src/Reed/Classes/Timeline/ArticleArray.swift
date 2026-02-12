@@ -48,12 +48,6 @@ extension [Article] {
         return nil
     }
 
-    func articlesForIndexes(_ indexes: IndexSet) -> [Article] {
-        indexes.compactMap { oneIndex -> Article? in
-            return self.articleAtRow(oneIndex)
-        }
-    }
-
     func sortedByDate(_ sortDirection: ComparisonResult, groupByFeed: Bool = false) -> ArticleArray {
         ArticleSorter.sortedByDate(articles: self, sortDirection: sortDirection, groupByFeed: groupByFeed)
     }
@@ -71,40 +65,13 @@ extension [Article] {
         return false
     }
 
-    func anyArticleIsReadAndCanMarkUnread() -> Bool {
-        self.anyArticlePassesTest { $0.status.read && $0.isAvailableToMarkUnread }
-    }
-
     func anyArticleIsUnread() -> Bool {
         self.anyArticlePassesTest { !$0.status.read }
-    }
-
-    func anyArticleIsStarred() -> Bool {
-        self.anyArticlePassesTest { $0.status.starred }
-    }
-
-    func anyArticleIsUnstarred() -> Bool {
-        self.anyArticlePassesTest { !$0.status.starred }
     }
 
     func unreadArticles() -> [Article]? {
         let articles = self.filter { !$0.status.read }
         return articles.isEmpty ? nil : articles
-    }
-
-    func representSameArticlesInSameOrder(as otherArticles: [Article]) -> Bool {
-        if self.count != otherArticles.count {
-            return false
-        }
-        var i = 0
-        for article in self {
-            let otherArticle = otherArticles[i]
-            if article.dataStore != otherArticle.dataStore || article.articleID != otherArticle.articleID {
-                return false
-            }
-            i += 1
-        }
-        return true
     }
 
     func articlesAbove(article: Article) -> [Article] {

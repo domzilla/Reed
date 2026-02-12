@@ -6,13 +6,10 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
-import DZFoundation
 import Foundation
 import UIKit
 
 typealias ImageResultBlock = @MainActor (UIImage?) -> Void
-
-private let debugLoggingEnabled = false
 
 extension UIImage {
     static let maxIconSize = 48
@@ -49,27 +46,6 @@ extension UIImage {
             return coloredImage
         } else {
             return nil
-        }
-    }
-
-    /// Tint an image.
-    ///
-    /// - Parameter color: The color to use to tint the image.
-    /// - Returns: The tinted image.
-    @MainActor
-    func tinted(color: UIColor) -> UIImage? {
-        let image = withRenderingMode(.alwaysTemplate)
-        let imageView = UIImageView(image: image)
-        imageView.tintColor = color
-
-        UIGraphicsBeginImageContextWithOptions(image.size, false, 0.0)
-        if let context = UIGraphicsGetCurrentContext() {
-            imageView.layer.render(in: context)
-            let tintedImage = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            return tintedImage
-        } else {
-            return self
         }
     }
 
@@ -113,16 +89,10 @@ extension UIImage {
     ///   - maxPixelSize: The maximum dimension of the image.
     static func scaleImage(_ data: Data, maxPixelSize: Int) -> CGImage? {
         guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
-            if debugLoggingEnabled {
-                DZLog("Image: couldn't create image source")
-            }
             return nil
         }
 
         let numberOfImages = CGImageSourceGetCount(imageSource)
-        if debugLoggingEnabled {
-            DZLog("Image: numberOfImages == \(numberOfImages)")
-        }
         guard numberOfImages > 0 else {
             return nil
         }
@@ -144,10 +114,6 @@ extension UIImage {
             let height = imagePixelHeight.intValue
             let maxDimension = max(width, height)
 
-            if debugLoggingEnabled {
-                DZLog("Image: found width \(width) height \(height) \(maxPixelSize)")
-            }
-
             // Skip invalid dimensions
             guard width > 0, height > 0 else {
                 continue
@@ -156,9 +122,6 @@ extension UIImage {
             // Check for exact match (largest dimension equals maxPixelSize)
             if maxDimension == maxPixelSize {
                 exactMatch = (i, maxDimension)
-                if debugLoggingEnabled {
-                    DZLog("Image: found exact match for maxPixelSize: \(maxPixelSize)")
-                }
                 break // Exact match is best, stop searching
             }
 
@@ -171,9 +134,6 @@ extension UIImage {
                 } else {
                     goodMatch = (i, maxDimension)
                 }
-                if debugLoggingEnabled {
-                    DZLog("Image: found good match \(maxDimension) for maxPixelSize: \(maxPixelSize)")
-                }
             }
 
             // Check for small match (smaller than maxPixelSize)
@@ -185,9 +145,6 @@ extension UIImage {
                 } else {
                     smallMatch = (i, maxDimension)
                 }
-                if debugLoggingEnabled {
-                    DZLog("Image: found small match \(maxDimension) for maxPixelSize: \(maxPixelSize)")
-                }
             }
         }
 
@@ -197,9 +154,6 @@ extension UIImage {
         }
 
         // Fallback to creating a thumbnail
-        if debugLoggingEnabled {
-            DZLog("Image: found no match — calling createThumbnail")
-        }
         return UIImage.createThumbnail(imageSource, maxPixelSize: maxPixelSize)
     }
 
@@ -216,10 +170,6 @@ extension UIImage {
         let count = CGImageSourceGetCount(imageSource)
         guard count > 0 else {
             return nil
-        }
-
-        if debugLoggingEnabled {
-            DZLog("Image: createThumbnail image source count = \(count)")
         }
 
         let options = [

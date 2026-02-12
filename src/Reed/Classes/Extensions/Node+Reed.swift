@@ -10,10 +10,6 @@ import Foundation
 
 @MainActor
 extension [Node] {
-    func sortedAlphabetically() -> [Node] {
-        Node.nodesSortedAlphabetically(self)
-    }
-
     func sortedAlphabeticallyWithFoldersAtEnd() -> [Node] {
         Node.nodesSortedAlphabeticallyWithFoldersAtEnd(self)
     }
@@ -21,22 +17,6 @@ extension [Node] {
 
 @MainActor
 extension Node {
-    fileprivate class func nodesSortedAlphabetically(_ nodes: [Node]) -> [Node] {
-        nodes.sorted { node1, node2 -> Bool in
-            guard
-                let obj1 = node1.representedObject as? DisplayNameProvider,
-                let obj2 = node2.representedObject as? DisplayNameProvider else
-            {
-                return false
-            }
-
-            let name1 = obj1.nameForDisplay
-            let name2 = obj2.nameForDisplay
-
-            return name1.localizedStandardCompare(name2) == .orderedAscending
-        }
-    }
-
     fileprivate class func nodesSortedAlphabeticallyWithFoldersAtEnd(_ nodes: [Node]) -> [Node] {
         nodes.sorted { node1, node2 -> Bool in
             if node1.canHaveChildNodes != node2.canHaveChildNodes {

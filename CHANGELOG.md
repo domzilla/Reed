@@ -50,8 +50,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Removed dead `TransportError` pattern matching from `DataStoreError` (nothing throws `TransportError` after removing `Transport.swift`)
 - Removed 3 unused `AppDefaults` properties (`isDeveloperBuild`, `refreshInterval`, `currentThemeName`) and supporting constant `defaultThemeName`
 - Deleted orphaned `RefreshInterval.swift` — only consumer was the removed `refreshInterval` property
+- Dissolved `readFilterEnabledTable` computed property — callers now use `sidebarItemsHidingReadArticles` `Set` directly instead of converting to `[SidebarItemIdentifier: Bool]` dict
 
 ### Removed
+- Dead notification `DataStoreRefreshDidBegin` — posted but never observed
+- Dead methods from `ArticleArray`: `anyArticleIsStarred()`, `anyArticleIsUnstarred()`, `anyArticleIsReadAndCanMarkUnread()`, `articlesForIndexes(_:)`, `representSameArticlesInSameOrder(as:)`
+- Dead methods from `URL+Reed`: `appendingQueryItem(_:)`, `appendingQueryItems(_:)`, `preparedForOpeningInBrowser()`, `absoluteStringWithHTTPOrHTTPSPrefixRemoved()` and fileprivate `String.stringByRemovingCaseInsensitivePrefix(_:)` helper
+- Dead call chain from `Node+Reed`: `[Node].sortedAlphabetically()` and `Node.nodesSortedAlphabetically()`
+- Dead method `UIImage.tinted(color:)` and always-false `debugLoggingEnabled` constant with 9 dead `if` branches in `UIImage+Reed`
+- Dead method `ArticleStatusSyncTimer.fireOldTimer()`
+- Dead initializer `HTTPConditionalGetInfo.init?(headers:)`
+- 6 unused HTTP header constants: `HTTPRequestHeader.authorization`, `.contentType`, `HTTPResponseHeader.contentType`, `.location`, `.link`, `.date`
+- 3 unused `NetworkMonitor` properties: `connectionType`, `isExpensive`, `isConstrained`
+- ~57 unused `HTTPResponseCode` constants (kept 8 that are referenced)
+- Stale `@IBDesignable` annotations from `ArticleSearchBar`, `IconView`, `InteractiveLabel` (project uses programmatic UI only)
+- Legacy state restoration migration: `StateRestorationInfo.init(legacyState:)` (~90 LOC), `AppDefaults.didMigrateLegacyStateRestorationInfo` property and UserDefaults key
 - 17 unnecessary extension files deleted — 3 entirely dead code (`UniformTypeIdentifiers+RSCore`, `FileManager+RSCore`, `URLComponents+RSWeb`), 11 inlined into callers, 3 merged into existing files
 - Dead code: `IconImage.appIcon`, `UIImage.appIconImage`, `NSAttributedString.adding(font:)`, `Bundle.appName`, `Bundle.buildNumber`
 - Dead vendor module files: 10 unused files deleted (Transport.swift, TransportJSON.swift, MacWebBrowser.swift, Dictionary+RSWeb.swift, HTTPDateInfo.swift, HTTPLinkPagingInfo.swift, MimeType.swift, String+RSWeb.swift, URLRequest+RSWeb.swift, UIStoryboard+RSCore.swift, ModalNavigationController.swift, RSParser/Exports.swift)

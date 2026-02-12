@@ -7,8 +7,8 @@ import UIKit
 import UserNotifications
 
 extension SceneCoordinator {
-    func restoreWindowState(activity: NSUserActivity?) {
-        let stateInfo = StateRestorationInfo(legacyState: activity)
+    func restoreWindowState(activity _: NSUserActivity?) {
+        let stateInfo = StateRestorationInfo()
         self.restoreWindowState(stateInfo)
     }
 
@@ -84,8 +84,8 @@ extension SceneCoordinator {
     func windowState() -> [AnyHashable: Any] {
         let containerExpandedWindowState = self.expandedContainers.map(\.userInfo)
         var readArticlesFilterState = [[AnyHashable: AnyHashable]: Bool]()
-        for key in self.readFilterEnabledTable.keys {
-            readArticlesFilterState[key.userInfo] = self.readFilterEnabledTable[key]
+        for sidebarItemID in self.sidebarItemsHidingReadArticles {
+            readArticlesFilterState[sidebarItemID.userInfo] = true
         }
         return [
             AppConstants.StateRestorationKey.readFeedsFilterState: self.isReadFeedsFiltered,

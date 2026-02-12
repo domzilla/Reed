@@ -13,7 +13,6 @@ import UIKit
 // Main thread only.
 
 extension Notification.Name {
-    static let DataStoreRefreshDidBegin = Notification.Name(rawValue: "DataStoreRefreshDidBegin")
     static let DataStoreRefreshDidFinish = Notification.Name(rawValue: "DataStoreRefreshDidFinish")
     static let DataStoreRefreshProgressDidChange = Notification
         .Name(rawValue: "DataStoreRefreshProgressDidChange")
@@ -231,9 +230,7 @@ final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hash
     var refreshInProgress = false {
         didSet {
             if self.refreshInProgress != oldValue {
-                if self.refreshInProgress {
-                    NotificationCenter.default.post(name: .DataStoreRefreshDidBegin, object: self)
-                } else {
+                if !self.refreshInProgress {
                     NotificationCenter.default.post(name: .DataStoreRefreshDidFinish, object: self)
                     self.opmlFile.markAsDirty()
                 }

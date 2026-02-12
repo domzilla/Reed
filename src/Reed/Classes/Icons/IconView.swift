@@ -8,7 +8,6 @@
 
 import UIKit
 
-@IBDesignable
 final class IconView: UIView {
     var iconImage: IconImage? {
         didSet {

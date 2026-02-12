@@ -61,7 +61,6 @@ final class AppDefaults: Sendable {
         static let sidebarItemsHidingReadArticles = "sidebarItemsHidingReadArticles"
         static let selectedSidebarItem = "selectedSidebarItem"
         static let selectedArticle = "selectedArticle"
-        static let didMigrateLegacyStateRestorationInfo = "didMigrateLegacyStateRestorationInfo"
     }
 
     let isFirstRun: Bool = {
@@ -310,15 +309,6 @@ final class AppDefaults: Sendable {
         }
     }
 
-    var didMigrateLegacyStateRestorationInfo: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: Key.didMigrateLegacyStateRestorationInfo)
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: Key.didMigrateLegacyStateRestorationInfo)
-        }
-    }
-
     @MainActor
     static func registerDefaults() {
         let defaults: [String: Any] = [
@@ -439,98 +429,6 @@ struct StateRestorationInfo {
             expandedContainers: AppDefaults.shared.expandedContainers,
             selectedSidebarItem: AppDefaults.shared.selectedSidebarItem,
             sidebarItemsHidingReadArticles: AppDefaults.shared.sidebarItemsHidingReadArticles,
-            selectedArticle: AppDefaults.shared.selectedArticle,
-            articleWindowScrollY: AppDefaults.shared.articleWindowScrollY,
-            isShowingExtractedArticle: AppDefaults.shared.isShowingExtractedArticle
-        )
-    }
-
-    // TODO: Delete legacy state restoration migration.
-    init(legacyState: NSUserActivity?) {
-        if AppDefaults.shared.didMigrateLegacyStateRestorationInfo {
-            self.init()
-            return
-        }
-
-        AppDefaults.shared.didMigrateLegacyStateRestorationInfo = true
-
-        // Extract legacy window state if available
-        guard
-            let windowState = legacyState?
-                .userInfo?[AppConstants.StateRestorationKey.windowState] as? [AnyHashable: Any] else
-        {
-            self.init()
-            return
-        }
-
-        let hideReadFeeds: Bool = if
-            let legacyValue =
-            windowState[AppConstants.StateRestorationKey.readFeedsFilterState] as? Bool
-        {
-            legacyValue
-        } else {
-            AppDefaults.shared.hideReadFeeds
-        }
-
-        let expandedContainers: Set<ContainerIdentifier>
-        if
-            let legacyState =
-            windowState[AppConstants.StateRestorationKey
-                .containerExpandedWindowState] as? [[AnyHashable: AnyHashable]]
-        {
-            let convertedState = legacyState.compactMap { dict -> [String: String]? in
-                var stringDict = [String: String]()
-                for (key, value) in dict {
-                    if let keyString = key as? String, let valueString = value as? String {
-                        stringDict[keyString] = valueString
-                    }
-                }
-                return stringDict.isEmpty ? nil : stringDict
-            }
-            let containerIdentifiers = convertedState.compactMap { ContainerIdentifier(userInfo: $0) }
-            expandedContainers = Set(containerIdentifiers)
-        } else {
-            expandedContainers = AppDefaults.shared.expandedContainers
-        }
-
-        let sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>
-        if
-            let legacyState =
-            windowState[AppConstants.StateRestorationKey
-                .readArticlesFilterState] as? [[AnyHashable: AnyHashable]: Bool]
-        {
-            let enabledFeeds = legacyState.filter { $0.value == true }
-            let convertedState = enabledFeeds.keys.compactMap { key -> [String: String]? in
-                var stringDict = [String: String]()
-                for (k, v) in key {
-                    if let keyString = k as? String, let valueString = v as? String {
-                        stringDict[keyString] = valueString
-                    }
-                }
-                return stringDict.isEmpty ? nil : stringDict
-            }
-            let feedIdentifiers = convertedState.compactMap { SidebarItemIdentifier(userInfo: $0) }
-            sidebarItemsHidingReadArticles = Set(feedIdentifiers)
-        } else {
-            sidebarItemsHidingReadArticles = AppDefaults.shared.sidebarItemsHidingReadArticles
-        }
-
-        let selectedSidebarItem: SidebarItemIdentifier? = if
-            let legacyState =
-            (windowState[AppConstants.StateRestorationKey.sidebarItemID] ??
-                windowState[AppConstants.StateRestorationKey.feedIdentifier]) as? [String: String],
-            let feedIdentifier = SidebarItemIdentifier(userInfo: legacyState)
-        {
-            feedIdentifier
-        } else {
-            AppDefaults.shared.selectedSidebarItem
-        }
-
-        self.init(
-            hideReadFeeds: hideReadFeeds,
-            expandedContainers: expandedContainers,
-            selectedSidebarItem: selectedSidebarItem,
-            sidebarItemsHidingReadArticles: sidebarItemsHidingReadArticles,
             selectedArticle: AppDefaults.shared.selectedArticle,
             articleWindowScrollY: AppDefaults.shared.articleWindowScrollY,
             isShowingExtractedArticle: AppDefaults.shared.isShowingExtractedArticle

@@ -433,7 +433,7 @@ extension SceneCoordinator {
 
         self.fetchRequestQueue.fetchArticles(
             using: fetchers,
-            readFilterEnabledTable: self.readFilterEnabledTable
+            sidebarItemsHidingReadArticles: self.sidebarItemsHidingReadArticles
         ) { [weak self] articles in
             guard let self, fetchSerialNumber == self.fetchSerialNumber else { return }
             completion(articles)

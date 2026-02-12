@@ -24,12 +24,12 @@ protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvid
 
 @MainActor
 extension SidebarItem {
-    func readFiltered(readFilterEnabledTable: [SidebarItemIdentifier: Bool]) -> Bool {
+    func readFiltered(sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>) -> Bool {
         guard defaultReadFilterType != .alwaysRead else {
             return true
         }
-        if let sidebarItemID, let readFilterEnabled = readFilterEnabledTable[sidebarItemID] {
-            return readFilterEnabled
+        if let sidebarItemID, sidebarItemsHidingReadArticles.contains(sidebarItemID) {
+            return true
         } else {
             return defaultReadFilterType == .read
         }

@@ -17,29 +17,12 @@ final nonisolated class NetworkMonitor: Sendable {
 
     private struct State: Sendable {
         var isConnected = false
-        var connectionType: NWInterface.InterfaceType?
-        var isExpensive = false
-        var isConstrained = false
     }
 
     private let state = OSAllocatedUnfairLock<State>(initialState: State())
 
     var isConnected: Bool {
         self.state.withLock { $0.isConnected }
-    }
-
-    var connectionType: NWInterface.InterfaceType? {
-        self.state.withLock { $0.connectionType }
-    }
-
-    /// Is the connection expensive (cellular data with limited plan, for instance)
-    var isExpensive: Bool {
-        self.state.withLock { $0.isExpensive }
-    }
-
-    /// Is the connection constrained (Low Data Mode enabled, for instance)
-    var isConstrained: Bool {
-        self.state.withLock { $0.isConstrained }
     }
 
     @MainActor private var monitorIsActive = false
@@ -69,9 +52,6 @@ final nonisolated class NetworkMonitor: Sendable {
     private func updateStatus(with path: NWPath) {
         self.state.withLock { state in
             state.isConnected = path.status == .satisfied
-            state.connectionType = path.availableInterfaces.first?.type
-            state.isExpensive = path.isExpensive
-            state.isConstrained = path.isConstrained
         }
     }
 }

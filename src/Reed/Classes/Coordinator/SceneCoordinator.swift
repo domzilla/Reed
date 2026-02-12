@@ -89,13 +89,6 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
 
     // Which SidebarItems have the Read Articles Filter enabled
     var sidebarItemsHidingReadArticles = Set<SidebarItemIdentifier>()
-    var readFilterEnabledTable: [SidebarItemIdentifier: Bool] { // TODO: remove this
-        var d = [SidebarItemIdentifier: Bool]()
-        for sidebarItemIdentifier in self.sidebarItemsHidingReadArticles {
-            d[sidebarItemIdentifier] = true
-        }
-        return d
-    }
 
     // Flattened tree structure for the Sidebar
     var shadowTable = [(sectionID: String, feedNodes: [FeedNode])]()

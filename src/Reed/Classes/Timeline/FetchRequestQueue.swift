@@ -24,7 +24,7 @@ final class FetchRequestQueue {
 
     func fetchArticles(
         using fetchers: [ArticleFetcher],
-        readFilterEnabledTable: [SidebarItemIdentifier: Bool],
+        sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>,
         resultHandler: @escaping (Set<Article>) -> Void
     ) {
         self.cancelAllRequests()
@@ -36,7 +36,7 @@ final class FetchRequestQueue {
                 guard !Task.isCancelled else { return }
 
                 let useUnread = (fetcher as? SidebarItem)?
-                    .readFiltered(readFilterEnabledTable: readFilterEnabledTable) ?? true
+                    .readFiltered(sidebarItemsHidingReadArticles: sidebarItemsHidingReadArticles) ?? true
 
                 if useUnread {
                     if let articles = try? await fetcher.fetchUnreadArticlesAsync() {
