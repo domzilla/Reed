@@ -752,7 +752,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
     @objc
     func feedIconDidBecomeAvailable(_ note: Notification) {
-        guard let feed = note.userInfo?[UserInfoKey.feed] as? Feed else {
+        guard let feed = note.userInfo?[AppConstants.NotificationKey.feed] as? Feed else {
             return
         }
         self.applyToCellsForRepresentedObject(feed, self.configureIcon(_:_:))

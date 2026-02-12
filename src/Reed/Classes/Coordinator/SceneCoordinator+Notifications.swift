@@ -61,7 +61,7 @@ extension SceneCoordinator {
 
     @objc
     func userDidAddFeed(_ notification: Notification) {
-        guard let feed = notification.userInfo?[UserInfoKey.feed] as? Feed else {
+        guard let feed = notification.userInfo?[AppConstants.NotificationKey.feed] as? Feed else {
             return
         }
         self.discloseFeed(feed, animations: [.scroll, .navigation])

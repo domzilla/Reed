@@ -9,7 +9,8 @@
 import Foundation
 
 extension Notification.Name {
-    static let feedIconDidBecomeAvailable = Notification.Name("FeedIconDidBecomeAvailable") // UserInfoKey.feed
+    static let feedIconDidBecomeAvailable = Notification
+        .Name("FeedIconDidBecomeAvailable") // AppConstants.NotificationKey.feed
 }
 
 @MainActor
@@ -108,7 +109,10 @@ final class FeedIconDownloader {
 
     @objc
     func imageDidBecomeAvailable(_ note: Notification) {
-        guard let url = note.userInfo?[UserInfoKey.url] as? String, let feed = waitingForFeedURLs[url] else {
+        guard
+            let url = note.userInfo?[AppConstants.NotificationKey.url] as? String,
+            let feed = waitingForFeedURLs[url] else
+        {
             return
         }
         self.waitingForFeedURLs[url] = nil
@@ -177,7 +181,7 @@ extension FeedIconDownloader {
 
     private func postFeedIconDidBecomeAvailableNotification(_ feed: Feed) {
         DispatchQueue.main.async {
-            let userInfo: [AnyHashable: Any] = [UserInfoKey.feed: feed]
+            let userInfo: [AnyHashable: Any] = [AppConstants.NotificationKey.feed: feed]
             NotificationCenter.default.post(name: .feedIconDidBecomeAvailable, object: self, userInfo: userInfo)
         }
     }

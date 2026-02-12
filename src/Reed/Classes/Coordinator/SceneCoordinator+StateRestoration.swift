@@ -88,16 +88,16 @@ extension SceneCoordinator {
             readArticlesFilterState[key.userInfo] = self.readFilterEnabledTable[key]
         }
         return [
-            UserInfoKey.readFeedsFilterState: self.isReadFeedsFiltered,
-            UserInfoKey.containerExpandedWindowState: containerExpandedWindowState,
-            UserInfoKey.readArticlesFilterState: readArticlesFilterState,
+            AppConstants.StateRestorationKey.readFeedsFilterState: self.isReadFeedsFiltered,
+            AppConstants.StateRestorationKey.containerExpandedWindowState: containerExpandedWindowState,
+            AppConstants.StateRestorationKey.readArticlesFilterState: readArticlesFilterState,
         ]
     }
 
     func handleSelectFeed(_ userInfo: [AnyHashable: Any]?) {
         guard
             let userInfo,
-            let sidebarItemIDUserInfo = userInfo[UserInfoKey.sidebarItemID] as? [String: String],
+            let sidebarItemIDUserInfo = userInfo[AppConstants.StateRestorationKey.sidebarItemID] as? [String: String],
             let sidebarItemID = SidebarItemIdentifier(userInfo: sidebarItemIDUserInfo) else
         {
             return
@@ -164,7 +164,7 @@ extension SceneCoordinator {
         guard let userInfo else { return }
 
         guard
-            let articlePathUserInfo = userInfo[UserInfoKey.articlePath] as? [AnyHashable: Any],
+            let articlePathUserInfo = userInfo[AppConstants.NotificationKey.articlePath] as? [AnyHashable: Any],
             let dataStoreID = articlePathUserInfo[ArticlePathKey.dataStoreID] as? String,
             let dataStoreName = articlePathUserInfo[ArticlePathKey.dataStoreName] as? String,
             let feedID = articlePathUserInfo[ArticlePathKey.feedID] as? String,
@@ -200,7 +200,8 @@ extension SceneCoordinator {
     {
         guard
             let sidebarItemIDUserInfo =
-            (userInfo[UserInfoKey.sidebarItemID] ?? userInfo[UserInfoKey.feedIdentifier]) as? [String: String],
+            (userInfo[AppConstants.StateRestorationKey.sidebarItemID] ??
+                userInfo[AppConstants.StateRestorationKey.feedIdentifier]) as? [String: String],
             let sidebarItemID = SidebarItemIdentifier(userInfo: sidebarItemIDUserInfo) else
         {
             return false

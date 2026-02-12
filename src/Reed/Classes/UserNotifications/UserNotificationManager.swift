@@ -92,7 +92,7 @@ extension UserNotificationManager {
         content.body = ArticleStringFormatter.truncatedSummary(article)
         content.threadIdentifier = feed.feedID
         content.sound = UNNotificationSound.default
-        content.userInfo = [UserInfoKey.articlePath: article.pathUserInfo]
+        content.userInfo = [AppConstants.NotificationKey.articlePath: article.pathUserInfo]
         content.categoryIdentifier = Self.notificationCategory
         if let attachment = thumbnailAttachment(for: article, feed: feed) {
             content.attachments.append(attachment)

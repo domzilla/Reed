@@ -34,4 +34,23 @@ enum AppConstants {
     // MARK: - Deep Links
 
     static let deepLinkScheme = "reed"
+
+    // MARK: - Notification Keys
+
+    enum NotificationKey {
+        static let feed = "feed"
+        static let url = "url"
+        static let articlePath = "articlePath"
+    }
+
+    // MARK: - State Restoration Keys
+
+    enum StateRestorationKey {
+        static let windowState = "windowState"
+        static let containerExpandedWindowState = "containerExpandedWindowState"
+        static let readFeedsFilterState = "readFeedsFilterState"
+        static let readArticlesFilterState = "readArticlesFilterState"
+        static let sidebarItemID = "sidebarItemID"
+        static let feedIdentifier = "feedIdentifier" // legacy
+    }
 }

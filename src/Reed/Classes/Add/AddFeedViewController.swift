@@ -179,7 +179,7 @@ final class AddFeedViewController: UITableViewController {
                     NotificationCenter.default.post(
                         name: .UserDidAddFeed,
                         object: self,
-                        userInfo: [UserInfoKey.feed: feed]
+                        userInfo: [AppConstants.NotificationKey.feed: feed]
                     )
                 case let .failure(error):
                     self.addButton.isEnabled = true

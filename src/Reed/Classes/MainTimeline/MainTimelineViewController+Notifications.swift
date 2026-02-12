@@ -45,7 +45,7 @@ extension MainTimelineViewController {
 
     @objc
     func feedIconDidBecomeAvailable(_ note: Notification) {
-        guard let feed = note.userInfo?[UserInfoKey.feed] as? Feed else {
+        guard let feed = note.userInfo?[AppConstants.NotificationKey.feed] as? Feed else {
             return
         }
         self.tableView.indexPathsForVisibleRows?.forEach { indexPath in
@@ -65,7 +65,7 @@ extension MainTimelineViewController {
 
     @objc
     func avatarDidBecomeAvailable(_ note: Notification) {
-        guard self.showIcons, let avatarURL = note.userInfo?[UserInfoKey.url] as? String else {
+        guard self.showIcons, let avatarURL = note.userInfo?[AppConstants.NotificationKey.url] as? String else {
             return
         }
         self.tableView.indexPathsForVisibleRows?.forEach { indexPath in

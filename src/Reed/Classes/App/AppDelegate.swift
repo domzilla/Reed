@@ -484,7 +484,7 @@ extension AppDelegate {
 
     private func handleStatusNotification(userInfo: [AnyHashable: Any], statusKey: ArticleStatus.Key) {
         guard
-            let articlePathUserInfo = userInfo[UserInfoKey.articlePath] as? [AnyHashable: Any],
+            let articlePathUserInfo = userInfo[AppConstants.NotificationKey.articlePath] as? [AnyHashable: Any],
             let dataStoreID = articlePathUserInfo[ArticlePathKey.dataStoreID] as? String,
             let articleID = articlePathUserInfo[ArticlePathKey.articleID] as? String else
         {

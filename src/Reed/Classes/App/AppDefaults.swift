@@ -487,19 +487,29 @@ struct StateRestorationInfo {
         AppDefaults.shared.didMigrateLegacyStateRestorationInfo = true
 
         // Extract legacy window state if available
-        guard let windowState = legacyState?.userInfo?[UserInfoKey.windowState] as? [AnyHashable: Any] else {
+        guard
+            let windowState = legacyState?
+                .userInfo?[AppConstants.StateRestorationKey.windowState] as? [AnyHashable: Any] else
+        {
             self.init()
             return
         }
 
-        let hideReadFeeds: Bool = if let legacyValue = windowState[UserInfoKey.readFeedsFilterState] as? Bool {
+        let hideReadFeeds: Bool = if
+            let legacyValue =
+            windowState[AppConstants.StateRestorationKey.readFeedsFilterState] as? Bool
+        {
             legacyValue
         } else {
             AppDefaults.shared.hideReadFeeds
         }
 
         let expandedContainers: Set<ContainerIdentifier>
-        if let legacyState = windowState[UserInfoKey.containerExpandedWindowState] as? [[AnyHashable: AnyHashable]] {
+        if
+            let legacyState =
+            windowState[AppConstants.StateRestorationKey
+                .containerExpandedWindowState] as? [[AnyHashable: AnyHashable]]
+        {
             let convertedState = legacyState.compactMap { dict -> [String: String]? in
                 var stringDict = [String: String]()
                 for (key, value) in dict {
@@ -516,7 +526,11 @@ struct StateRestorationInfo {
         }
 
         let sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>
-        if let legacyState = windowState[UserInfoKey.readArticlesFilterState] as? [[AnyHashable: AnyHashable]: Bool] {
+        if
+            let legacyState =
+            windowState[AppConstants.StateRestorationKey
+                .readArticlesFilterState] as? [[AnyHashable: AnyHashable]: Bool]
+        {
             let enabledFeeds = legacyState.filter { $0.value == true }
             let convertedState = enabledFeeds.keys.compactMap { key -> [String: String]? in
                 var stringDict = [String: String]()
@@ -535,8 +549,8 @@ struct StateRestorationInfo {
 
         let selectedSidebarItem: SidebarItemIdentifier? = if
             let legacyState =
-            (windowState[UserInfoKey.sidebarItemID] ??
-                windowState[UserInfoKey.feedIdentifier]) as? [String: String],
+            (windowState[AppConstants.StateRestorationKey.sidebarItemID] ??
+                windowState[AppConstants.StateRestorationKey.feedIdentifier]) as? [String: String],
             let feedIdentifier = SidebarItemIdentifier(userInfo: legacyState)
         {
             feedIdentifier

@@ -10,8 +10,10 @@ import DZFoundation
 import Foundation
 
 extension Notification.Name {
-    static let imageDidBecomeAvailable = Notification.Name("ImageDidBecomeAvailableNotification") // UserInfoKey.url
-    static let avatarDidBecomeAvailable = Notification.Name("AvatarDidBecomeAvailableNotification") // UserInfoKey.url
+    static let imageDidBecomeAvailable = Notification
+        .Name("ImageDidBecomeAvailableNotification") // AppConstants.NotificationKey.url
+    static let avatarDidBecomeAvailable = Notification
+        .Name("AvatarDidBecomeAvailableNotification") // AppConstants.NotificationKey.url
 }
 
 @MainActor
@@ -156,7 +158,11 @@ extension ImageDownloader {
 
     private func postImageDidBecomeAvailableNotification(_ url: String) {
         assert(Thread.isMainThread)
-        NotificationCenter.default.post(name: .imageDidBecomeAvailable, object: self, userInfo: [UserInfoKey.url: url])
+        NotificationCenter.default.post(
+            name: .imageDidBecomeAvailable,
+            object: self,
+            userInfo: [AppConstants.NotificationKey.url: url]
+        )
     }
 
     // MARK: Avatar Support
@@ -193,7 +199,7 @@ extension ImageDownloader {
             NotificationCenter.default.post(
                 name: .avatarDidBecomeAvailable,
                 object: self,
-                userInfo: [UserInfoKey.url: avatarURL]
+                userInfo: [AppConstants.NotificationKey.url: avatarURL]
             )
         }
     }
