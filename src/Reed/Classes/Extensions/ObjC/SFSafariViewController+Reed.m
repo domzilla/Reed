@@ -1,14 +1,14 @@
 //
-//  SFSafariViewController+Extras.m
+//  SFSafariViewController+Reed.m
 //  Reed
 //
 //  Created by Brent Simmons on 11/29/25.
 //  Copyright © 2025 Ranchero Software. All rights reserved.
 //
 
-#import "SFSafariViewController+Extras.h"
+#import "SFSafariViewController+Reed.h"
 
-@implementation SFSafariViewController (Extras)
+@implementation SFSafariViewController (Reed)
 
 /// Safely create an SFSafariViewController.
 ///

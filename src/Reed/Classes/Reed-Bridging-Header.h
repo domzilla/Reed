@@ -2,15 +2,17 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
-#import "SFSafariViewController+Extras.h"
+#import "SFSafariViewController+Reed.h"
 
-// Core ObjC
+// Utilities ObjC
 #import "striphtml.h"
 
-// Database ObjC (FMDB)
+// Vendor FMDB
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
 #import "FMResultSet.h"
+
+// Database ObjC (Reed categories on FMDB)
 #import "FMDatabase+RDExtras.h"
 #import "FMResultSet+RDExtras.h"
 #import "NSString+RDDatabase.h"

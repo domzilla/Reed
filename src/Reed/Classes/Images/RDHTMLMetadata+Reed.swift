@@ -1,5 +1,5 @@
 //
-//  RDHTMLMetadata+Extension.swift
+//  RDHTMLMetadata+Reed.swift
 //  Reed
 //
 //  Created by Brent Simmons on 11/26/17.

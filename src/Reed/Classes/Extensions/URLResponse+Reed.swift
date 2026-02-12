@@ -1,5 +1,5 @@
 //
-//  URLResponse+Web.swift
+//  URLResponse+Reed.swift
 //  Web
 //
 //  Created by Brent Simmons on 8/14/16.

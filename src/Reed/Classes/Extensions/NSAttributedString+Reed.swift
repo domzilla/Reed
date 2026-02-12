@@ -1,5 +1,5 @@
 //
-//  NSAttributedString+Extensions.swift
+//  NSAttributedString+Reed.swift
 //  Reed
 //
 //  Created by Nate Weaver on 2020-04-07.

@@ -1,5 +1,5 @@
 //
-//  UIBarButtonItem+Core.swift
+//  UIBarButtonItem+Reed.swift
 //  NetNewsWire-iOS
 //
 //  Created by Maurice Parker on 4/27/19.

@@ -1,5 +1,5 @@
 //
-//  Array+Core.swift
+//  Array+Reed.swift
 //  Core
 //
 //  Created by Brent Simmons on 2/17/18.

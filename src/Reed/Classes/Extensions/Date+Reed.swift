@@ -1,5 +1,5 @@
 //
-//  Date+Core.swift
+//  Date+Reed.swift
 //  Core
 //
 //  Created by Brent Simmons on 6/21/16.

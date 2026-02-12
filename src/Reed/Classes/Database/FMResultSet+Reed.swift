@@ -1,5 +1,5 @@
 //
-//  FMResultSet+Extras.swift
+//  FMResultSet+Reed.swift
 //
 //
 //  Created by Brent Simmons on 3/10/24.

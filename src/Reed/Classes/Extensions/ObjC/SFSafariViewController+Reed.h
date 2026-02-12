@@ -1,5 +1,5 @@
 //
-//  SFSafariViewControllerExtras.h
+//  SFSafariViewController+Reed.h
 //  Reed
 //
 //  Created by Brent Simmons on 11/29/25.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SFSafariViewController (Extras)
+@interface SFSafariViewController (Reed)
 
 + (nullable SFSafariViewController *)safeSafariViewController:(NSURL *)url;
 
