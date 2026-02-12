@@ -48,6 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Decomposed `CloudKitSyncProvider` (1,439 LOC) into 4 focused extension files — `+FeedOperations` (feed CRUD and cloud sync pipeline), `+FolderOperations` (folder CRUD), `+ArticleStatus` (article status sync and change storage), `+PendingOperations` (offline queue and operation processing); main file retains class declaration, init, lifecycle, and refresh orchestration
 - Inlined vendor RS* modules (RSCore, RSParser, RSWeb, RSDatabase, RSTree, RSMarkdown) into the app target — removed git submodule, 6 package targets, and all cross-module `import`/`public` boilerplate; ObjC headers now go through the bridging header
 - Removed dead `TransportError` pattern matching from `DataStoreError` (nothing throws `TransportError` after removing `Transport.swift`)
+- Removed 3 unused `AppDefaults` properties (`isDeveloperBuild`, `refreshInterval`, `currentThemeName`) and supporting constant `defaultThemeName`
+- Deleted orphaned `RefreshInterval.swift` — only consumer was the removed `refreshInterval` property
 
 ### Removed
 - 17 unnecessary extension files deleted — 3 entirely dead code (`UniformTypeIdentifiers+RSCore`, `FileManager+RSCore`, `URLComponents+RSWeb`), 11 inlined into callers, 3 merged into existing files

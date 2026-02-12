@@ -33,8 +33,6 @@ extension Notification.Name {
 
 final class AppDefaults: Sendable {
     static let shared = AppDefaults()
-    static let defaultThemeName = "Default"
-
     private init() {}
 
     nonisolated(unsafe) static let store: UserDefaults = .init(suiteName: AppConstants.appGroup)!
@@ -54,9 +52,7 @@ final class AppDefaults: Sendable {
         static let addFeedAccountID = "addFeedAccountID"
         static let addFeedFolderName = "addFeedFolderName"
         static let addFolderAccountID = "addFolderAccountID"
-        static let refreshInterval = "refreshInterval"
         static let useSystemBrowser = "useSystemBrowser"
-        static let currentThemeName = "currentThemeName"
         static let articleContentJavascriptEnabled = "articleContentJavascriptEnabled"
         static let hideReadFeeds = "hideReadFeeds"
         static let isShowingExtractedArticle = "isShowingExtractedArticle"
@@ -67,13 +63,6 @@ final class AppDefaults: Sendable {
         static let selectedArticle = "selectedArticle"
         static let didMigrateLegacyStateRestorationInfo = "didMigrateLegacyStateRestorationInfo"
     }
-
-    let isDeveloperBuild: Bool = {
-        if let dev = Bundle.main.object(forInfoDictionaryKey: "DeveloperEntitlements") as? String, dev == "-dev" {
-            return true
-        }
-        return false
-    }()
 
     let isFirstRun: Bool = {
         if let _ = AppDefaults.store.object(forKey: Key.firstRunDate) as? Date {
@@ -120,16 +109,6 @@ final class AppDefaults: Sendable {
         }
         set {
             AppDefaults.setString(for: Key.addFolderAccountID, newValue)
-        }
-    }
-
-    var refreshInterval: RefreshInterval {
-        get {
-            let rawValue = AppDefaults.store.integer(forKey: Key.refreshInterval)
-            return RefreshInterval(rawValue: rawValue) ?? RefreshInterval.everyHour
-        }
-        set {
-            AppDefaults.store.set(newValue.rawValue, forKey: Key.refreshInterval)
         }
     }
 
@@ -234,15 +213,6 @@ final class AppDefaults: Sendable {
         }
         set {
             AppDefaults.store.set(newValue.rawValue, forKey: Key.timelineIconDimension)
-        }
-    }
-
-    var currentThemeName: String? {
-        get {
-            AppDefaults.string(for: Key.currentThemeName)
-        }
-        set {
-            AppDefaults.setString(for: Key.currentThemeName, newValue)
         }
     }
 
@@ -358,11 +328,9 @@ final class AppDefaults: Sendable {
             Key.timelineNumberOfLines: 2,
             Key.timelineIconDimension: IconSize.medium.rawValue,
             Key.timelineSortDirection: ComparisonResult.orderedDescending.rawValue,
-            Key.refreshInterval: RefreshInterval.everyHour.rawValue,
             Key.articleFullscreenAvailable: false,
             Key.articleFullscreenEnabled: false,
             Key.articleContentJavascriptEnabled: true,
-            Key.currentThemeName: Self.defaultThemeName,
         ]
         AppDefaults.store.register(defaults: defaults)
     }
