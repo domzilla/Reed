@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Assertion crash in `DownloadProgress.completeTasks()` — recursive `selectForProcessing()` called `completeTask()` more times than tasks were added
 - "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
 - CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
+- Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
 ### Changed
 - Replaced all NetNewsWire references with Reed throughout codebase (file headers, OPML export comments, Share Extension title, variable names)
@@ -24,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Simplified `markArticles()` from multi-account `DispatchGroup` pattern to single `defaultDataStore` call
 - Renamed `AccountRefreshTimer` → `AutoRefreshTimer`, `LocalAccountRefresher` → `FeedRefresher`
 - Renamed `ExtensionAccount` → `ExtensionDataStore` in Share Extension (preserving on-disk JSON keys for backward compat)
+- Consolidated `SmartFeedDelegate` protocol into direct `SmartFeed` configuration — eliminated 5 delegate files, SmartFeed now takes identifier/name/fetchType/icon/closure directly
+- Replaced `DataStoreManager` singleton with `DataStore.shared` — removed vestigial multi-account manager layer (327 lines), moved manager API directly into `DataStore`
+- Converted `MainThreadOperation` subclasses to `async/await` — replaced `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation` with direct async calls; simplified `WebViewProvider` queue management
 
 ### Removed
 - `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
@@ -36,6 +40,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Dead `AccountBehavior` enum and all behavior-check code paths (`.disallowFeedInRootFolder`, `.disallowFolderManagement`, `.disallowFeedInMultipleFolders`) — behaviors always returned `[]`
 - `Container.account` protocol member and default implementation
 - Multi-account iteration helpers (`accountAndArticlesDictionary()`, `substituteContainerIfNeeded()`)
+- Dead UI classes: `VibrantLabel`, `VibrantButton`, `VibrantBasicTableViewCell`
+- Dead cells: `SettingsComboTableViewCell`, `SelectComboTableViewCell` (never instantiated)
+- Dead file: `CloudKitWebDocumentation.swift` (stale NNW URL)
+- Unused imports: `MessageUI` from `WebViewController`, `SwiftUI` from `SettingsViewController`
+- Unused notifications: `InspectableObjectsDidChange`, `WebInspectorEnabledDidChange`
+- `SmartFeedDelegate` protocol and 4 delegate files (`StarredFeedDelegate`, `TodayFeedDelegate`, `SearchFeedDelegate`, `SearchTimelineFeedDelegate`)
+- `DataStoreManager` class (replaced by `DataStore.shared`)
+- 4 `MainThreadOperation` subclasses: `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation`
 
 ## [January 2026]
 
