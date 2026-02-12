@@ -722,7 +722,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     @objc
     func statusesDidChange(_ note: Notification) {
         guard
-            let articleIDs = note.userInfo?[Account.UserInfoKey.articleIDs] as? Set<String>,
+            let articleIDs = note.userInfo?[DataStore.UserInfoKey.articleIDs] as? Set<String>,
             !articleIDs.isEmpty else
         {
             return

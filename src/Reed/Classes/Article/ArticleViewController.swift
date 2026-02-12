@@ -377,7 +377,7 @@ final class ArticleViewController: UIViewController {
 
     @objc
     func statusesDidChange(_ note: Notification) {
-        guard let articleIDs = note.userInfo?[Account.UserInfoKey.articleIDs] as? Set<String> else {
+        guard let articleIDs = note.userInfo?[DataStore.UserInfoKey.articleIDs] as? Set<String> else {
             return
         }
         guard let article else {

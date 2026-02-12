@@ -1,5 +1,5 @@
 //
-//  AccountRefreshTimer.swift
+//  AutoRefreshTimer.swift
 //  Reed
 //
 //  Created by Maurice Parker on 4/23/19.
@@ -9,7 +9,7 @@
 import Foundation
 
 @MainActor
-final class AccountRefreshTimer {
+final class AutoRefreshTimer {
     var shuttingDown = false
 
     private var internalTimer: Timer?
@@ -78,6 +78,6 @@ final class AccountRefreshTimer {
         self.lastTimedRefresh = Date()
         self.update()
 
-        AccountManager.shared.refreshAllWithoutWaiting()
+        DataStoreManager.shared.refreshAllWithoutWaiting()
     }
 }

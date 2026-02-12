@@ -48,9 +48,9 @@ extension SidebarTreeControllerDelegate {
         topLevelNodes.append(smartFeedsNode)
 
         // Feeds section - show feeds directly from the data store (no account grouping)
-        let account = AccountManager.shared.defaultAccount
-        if account.isActive {
-            let feedsNode = rootNode.existingOrNewChildNode(with: account)
+        let dataStore = DataStoreManager.shared.defaultDataStore
+        if dataStore.isActive {
+            let feedsNode = rootNode.existingOrNewChildNode(with: dataStore)
             feedsNode.canHaveChildNodes = true
             feedsNode.isGroupItem = true
             topLevelNodes.append(feedsNode)

@@ -50,9 +50,6 @@ extension Article {
         DataStoreManager.shared.existingDataStore(dataStoreID: accountID)
     }
 
-    // Backward compatibility alias
-    @MainActor public var account: DataStore? { self.dataStore }
-
     @MainActor public var feed: Feed? {
         self.dataStore?.existingFeed(withFeedID: feedID)
     }

@@ -19,10 +19,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Replaced all NetNewsWire references with Reed throughout codebase (file headers, OPML export comments, Share Extension title, variable names)
+- Removed multi-account legacy layer: ~15 typealiases (`Account`, `AccountType`, `AccountError`, `AccountManager`, `AccountBehavior`), ~10 backward-compat extension shims (`.accountID`, `.account`, `.behaviors`), and notification aliases
+- Replaced all `Account`/`account` references with canonical `DataStore`/`dataStore` names across ~30 source files
+- Simplified `markArticles()` from multi-account `DispatchGroup` pattern to single `defaultDataStore` call
+- Renamed `AccountRefreshTimer` → `AutoRefreshTimer`, `LocalAccountRefresher` → `FeedRefresher`
+- Renamed `ExtensionAccount` → `ExtensionDataStore` in Share Extension (preserving on-disk JSON keys for backward compat)
 
 ### Removed
 - `OrganizationIdentifier` and `AppGroup` keys from Info.plist (replaced by `AppConstants` and `SharedConstants`)
 - Dead `.x-netnewswire-hide` CSS rule from `core.css` (never wired up in rendering pipeline)
+- Dead `AccountBehavior` enum and all behavior-check code paths (`.disallowFeedInRootFolder`, `.disallowFolderManagement`, `.disallowFeedInMultipleFolders`) — behaviors always returned `[]`
+- `Container.account` protocol member and default implementation
+- Multi-account iteration helpers (`accountAndArticlesDictionary()`, `substituteContainerIfNeeded()`)
 
 ## [January 2026]
 

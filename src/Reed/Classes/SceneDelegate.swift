@@ -113,12 +113,12 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidEnterBackground(_: UIScene) {
         ArticleStringFormatter.emptyCaches()
-        appDelegate.prepareAccountsForBackground()
+        appDelegate.prepareDataStoreForBackground()
     }
 
     func sceneWillEnterForeground(_: UIScene) {
         appDelegate.resumeDatabaseProcessingIfNecessary()
-        appDelegate.prepareAccountsForForeground()
+        appDelegate.prepareDataStoreForForeground()
         self.coordinator.resetFocus()
     }
 
@@ -166,8 +166,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 guard let comps = URLComponents(string: urlString) else { return }
                 let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
                 if id != nil {
-                    if AccountManager.shared.isSuspended {
-                        AccountManager.shared.resumeAll()
+                    if DataStoreManager.shared.isSuspended {
+                        DataStoreManager.shared.resumeAll()
                     }
                     self.coordinator.selectAllUnreadFeed {
                         self.coordinator.selectArticleInCurrentFeed(id!)
@@ -182,8 +182,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 guard let comps = URLComponents(string: urlString) else { return }
                 let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
                 if id != nil {
-                    if AccountManager.shared.isSuspended {
-                        AccountManager.shared.resumeAll()
+                    if DataStoreManager.shared.isSuspended {
+                        DataStoreManager.shared.resumeAll()
                     }
                     self.coordinator.selectTodayFeed {
                         self.coordinator.selectArticleInCurrentFeed(id!)
@@ -198,8 +198,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 guard let comps = URLComponents(string: urlString) else { return }
                 let id = comps.queryItems?.first(where: { $0.name == "id" })?.value
                 if id != nil {
-                    if AccountManager.shared.isSuspended {
-                        AccountManager.shared.resumeAll()
+                    if DataStoreManager.shared.isSuspended {
+                        DataStoreManager.shared.resumeAll()
                     }
                     self.coordinator.selectStarredFeed {
                         self.coordinator.selectArticleInCurrentFeed(id!)

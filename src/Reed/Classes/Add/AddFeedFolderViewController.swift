@@ -47,11 +47,11 @@ final class AddFeedFolderViewController: UITableViewController {
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "FolderCell")
 
-        let sortedActiveAccounts = AccountManager.shared.sortedActiveAccounts
+        let sortedActiveDataStores = DataStoreManager.shared.sortedActiveDataStores
 
-        for account in sortedActiveAccounts {
-            self.containers.append(account)
-            if let sortedFolders = account.sortedFolders {
+        for dataStore in sortedActiveDataStores {
+            self.containers.append(dataStore)
+            if let sortedFolders = dataStore.sortedFolders {
                 self.containers.append(contentsOf: sortedFolders)
             }
         }
@@ -69,7 +69,7 @@ final class AddFeedFolderViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let container = self.containers[indexPath.row]
-        let cell: AddComboTableViewCell = if container is Account {
+        let cell: AddComboTableViewCell = if container is DataStore {
             tableView.dequeueReusableCell(withIdentifier: "AccountCell", for: indexPath) as! AddComboTableViewCell
         } else {
             tableView.dequeueReusableCell(withIdentifier: "FolderCell", for: indexPath) as! AddComboTableViewCell
@@ -95,14 +95,10 @@ final class AddFeedFolderViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let container = self.containers[indexPath.row]
 
-        if let account = container as? Account, account.behaviors.contains(.disallowFeedInRootFolder) {
-            tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
-        } else {
-            let cell = tableView.cellForRow(at: indexPath)
-            cell?.accessoryType = .checkmark
-            self.delegate?.didSelect(container: container)
-            dismissViewController()
-        }
+        let cell = tableView.cellForRow(at: indexPath)
+        cell?.accessoryType = .checkmark
+        self.delegate?.didSelect(container: container)
+        dismissViewController()
     }
 
     // MARK: Actions

@@ -12,26 +12,26 @@ import Foundation
 struct ShareDefaultContainer {
     static func defaultContainer(containers: ExtensionContainers) -> ExtensionContainer? {
         if
-            let accountID = ShareAppDefaults.shared.addFeedAccountID,
-            let account = containers.accounts.first(where: { $0.accountID == accountID })
+            let dataStoreID = ShareAppDefaults.shared.addFeedAccountID,
+            let dataStore = containers.dataStores.first(where: { $0.dataStoreID == dataStoreID })
         {
             if
                 let folderName = ShareAppDefaults.shared.addFeedFolderName,
-                let folder = account.folders.first(where: { $0.name == folderName })
+                let folder = dataStore.folders.first(where: { $0.name == folderName })
             {
                 folder
             } else {
-                self.substituteContainerIfNeeded(account: account)
+                self.substituteContainerIfNeeded(dataStore: dataStore)
             }
-        } else if let account = containers.accounts.first {
-            self.substituteContainerIfNeeded(account: account)
+        } else if let dataStore = containers.dataStores.first {
+            self.substituteContainerIfNeeded(dataStore: dataStore)
         } else {
             nil
         }
     }
 
     static func saveDefaultContainer(_ container: ExtensionContainer) {
-        ShareAppDefaults.shared.addFeedAccountID = container.accountID
+        ShareAppDefaults.shared.addFeedAccountID = container.dataStoreID
         if let folder = container as? ExtensionFolder {
             ShareAppDefaults.shared.addFeedFolderName = folder.name
         } else {
@@ -39,11 +39,11 @@ struct ShareDefaultContainer {
         }
     }
 
-    private static func substituteContainerIfNeeded(account: ExtensionAccount) -> ExtensionContainer? {
-        if !account.disallowFeedInRootFolder {
-            account
+    private static func substituteContainerIfNeeded(dataStore: ExtensionDataStore) -> ExtensionContainer? {
+        if !dataStore.disallowFeedInRootFolder {
+            dataStore
         } else {
-            if let folder = account.folders.first {
+            if let folder = dataStore.folders.first {
                 folder
             } else {
                 nil

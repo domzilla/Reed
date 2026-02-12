@@ -13,7 +13,7 @@ import Foundation
 
 @MainActor
 final class UnreadFeed: PseudoFeed {
-    var account: Account?
+    var dataStore: DataStore?
 
     var defaultReadFilterType: ReadFilterType {
         .alwaysRead
@@ -66,10 +66,10 @@ extension UnreadFeed: ArticleFetcher {
     }
 
     func fetchUnreadArticles() throws -> Set<Article> {
-        try AccountManager.shared.fetchArticles(self.fetchType)
+        try DataStoreManager.shared.fetchArticles(self.fetchType)
     }
 
     func fetchUnreadArticlesAsync() async throws -> Set<Article> {
-        try await AccountManager.shared.fetchArticlesAsync(self.fetchType)
+        try await DataStoreManager.shared.fetchArticlesAsync(self.fetchType)
     }
 }

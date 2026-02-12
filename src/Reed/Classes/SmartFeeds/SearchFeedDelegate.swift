@@ -29,7 +29,7 @@ struct SearchFeedDelegate: SmartFeedDelegate {
         self.fetchType = .search(searchString)
     }
 
-    func fetchUnreadCount(account _: Account) async throws -> Int? {
+    func fetchUnreadCount(dataStore _: DataStore) async throws -> Int? {
         // TODO: after 5.0
         nil
     }

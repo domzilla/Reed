@@ -1,5 +1,5 @@
 //
-//  LocalAccountRefresher.swift
+//  FeedRefresher.swift
 //  Reed
 //
 //  Created by Brent Simmons on 9/6/16.
@@ -13,13 +13,13 @@ import RSParser
 import RSWeb
 
 @MainActor
-protocol LocalAccountRefresherDelegate {
-    func localAccountRefresher(_ refresher: LocalAccountRefresher, articleChanges: ArticleChanges)
+protocol FeedRefresherDelegate {
+    func feedRefresher(_ refresher: FeedRefresher, articleChanges: ArticleChanges)
 }
 
 @MainActor
-final class LocalAccountRefresher {
-    var delegate: LocalAccountRefresherDelegate?
+final class FeedRefresher {
+    var delegate: FeedRefresherDelegate?
     var downloadProgress: DownloadProgress {
         self.downloadSession.downloadProgress
     }
@@ -80,15 +80,15 @@ final class LocalAccountRefresher {
 // MARK: - DownloadSessionDelegate
 
 @MainActor
-extension LocalAccountRefresher: DownloadSessionDelegate {
+extension FeedRefresher: DownloadSessionDelegate {
     func downloadSession(_: DownloadSession, conditionalGetInfoFor url: URL) -> HTTPConditionalGetInfo? {
         guard let feed = urlToFeedDictionary[url.absoluteString] else {
-            assertionFailure("LocalAccountRefresher: expected feed for \(url)")
-            DZLog("LocalAccountRefresher: expected feed for \(url)")
+            assertionFailure("FeedRefresher: expected feed for \(url)")
+            DZLog("FeedRefresher: expected feed for \(url)")
             return nil
         }
         guard let conditionalGetInfo = feed.conditionalGetInfo else {
-            DZLog("LocalAccountRefresher: no conditional GET info for \(url)")
+            DZLog("FeedRefresher: no conditional GET info for \(url)")
             return nil
         }
 
@@ -105,7 +105,7 @@ extension LocalAccountRefresher: DownloadSessionDelegate {
                         [SpecialCase.openRSSOrgHostName, SpecialCase.rachelByTheBayHostName]
                     )
                 {
-                    DZLog("LocalAccountRefresher: dropping conditional GET info for \(url) — more than 8 days old")
+                    DZLog("FeedRefresher: dropping conditional GET info for \(url) — more than 8 days old")
                     feed.conditionalGetInfo = nil
                     return nil
                 }
@@ -142,7 +142,7 @@ extension LocalAccountRefresher: DownloadSessionDelegate {
 
         let conditionalGetInfo = HTTPConditionalGetInfo(urlResponse: httpResponse)
         if conditionalGetInfo != feed.conditionalGetInfo {
-            DZLog("LocalAccountRefresher: setting conditionalGetInfo for \(url.absoluteString)")
+            DZLog("FeedRefresher: setting conditionalGetInfo for \(url.absoluteString)")
             feed.conditionalGetInfo = conditionalGetInfo
         }
 
@@ -164,25 +164,25 @@ extension LocalAccountRefresher: DownloadSessionDelegate {
         }
 
         Task { @MainActor in
-            DZLog("LocalAccountRefresher: parsing feed for \(url.absoluteString)")
+            DZLog("FeedRefresher: parsing feed for \(url.absoluteString)")
 
             let parserData = ParserData(url: feed.url, data: data)
             guard let parsedFeed = try? await FeedParser.parse(parserData) else {
                 return
             }
-            guard let account = feed.account else {
+            guard let dataStore = feed.dataStore else {
                 return
             }
 
             assert(Thread.isMainThread)
-            guard let articleChanges = try? await account.updateAsync(feed: feed, parsedFeed: parsedFeed) else {
+            guard let articleChanges = try? await dataStore.updateAsync(feed: feed, parsedFeed: parsedFeed) else {
                 return
             }
 
-            DZLog("LocalAccountRefresher: setting contentHash for \(url.absoluteString)")
+            DZLog("FeedRefresher: setting contentHash for \(url.absoluteString)")
             feed.contentHash = dataHash
 
-            self.delegate?.localAccountRefresher(self, articleChanges: articleChanges)
+            self.delegate?.feedRefresher(self, articleChanges: articleChanges)
         }
     }
 
@@ -203,7 +203,7 @@ extension LocalAccountRefresher: DownloadSessionDelegate {
 
 // MARK: - Private
 
-extension LocalAccountRefresher {
+extension FeedRefresher {
     /// These hosts will never return a feed.
     ///
     /// People may still have feeds pointing to Twitter due to our prior
@@ -222,7 +222,7 @@ extension LocalAccountRefresher {
         for badHost in self.badHosts {
             if lowercaseHost == badHost {
                 DZLog(
-                    "LocalAccountRefresher: Dropping request becasue it’s X/Twitter, which doesn’t provide feeds: \(feed.url)"
+                    "FeedRefresher: Dropping request becasue it’s X/Twitter, which doesn’t provide feeds: \(feed.url)"
                 )
                 return true
             }
@@ -249,7 +249,7 @@ extension LocalAccountRefresher {
             )
         {
             if lastCheckDate > specialCaseCutoffDate {
-                DZLog("LocalAccountRefresher: Dropping request for special case timing reasons: \(feed.url)")
+                DZLog("FeedRefresher: Dropping request for special case timing reasons: \(feed.url)")
                 return true
             }
         }
@@ -266,7 +266,7 @@ extension LocalAccountRefresher {
         // intentional, and we should honor those.
         if SpecialCase.urlStringContainSpecialCase(feed.url, [SpecialCase.openRSSOrgHostName]) {
             if let cacheControlInfo = feed.cacheControlInfo, !cacheControlInfo.canResume {
-                DZLog("LocalAccountRefresher: Dropping request for special case Cache-Control reasons: \(feed.url)")
+                DZLog("FeedRefresher: Dropping request for special case Cache-Control reasons: \(feed.url)")
                 return true
             }
         }

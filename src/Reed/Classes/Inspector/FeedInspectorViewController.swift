@@ -259,7 +259,8 @@ final class FeedInspectorViewController: UITableViewController {
             cell.textLabel?.text = NSLocalizedString("Folder", comment: "Folder")
             cell.textLabel?.font = .preferredFont(forTextStyle: .body)
             cell.textLabel?.adjustsFontForContentSizeCategory = true
-            cell.detailTextLabel?.text = (self.container as? DisplayNameProvider)?.nameForDisplay ?? self.feed.account?
+            cell.detailTextLabel?.text = (self.container as? DisplayNameProvider)?.nameForDisplay ?? self.feed
+                .dataStore?
                 .nameForDisplay
             cell.detailTextLabel?.font = .preferredFont(forTextStyle: .body)
             cell.detailTextLabel?.adjustsFontForContentSizeCategory = true
@@ -435,7 +436,7 @@ extension FeedInspectorViewController: AddFeedFolderViewControllerDelegate {
         guard let sourceContainer = container, sourceContainer !== newContainer else { return }
 
         BatchUpdate.shared.start()
-        sourceContainer.account?.moveFeed(self.feed, from: sourceContainer, to: newContainer) { [weak self] result in
+        sourceContainer.dataStore?.moveFeed(self.feed, from: sourceContainer, to: newContainer) { [weak self] result in
             BatchUpdate.shared.end()
             Task { @MainActor in
                 switch result {

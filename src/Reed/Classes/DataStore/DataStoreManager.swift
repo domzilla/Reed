@@ -447,30 +447,3 @@ extension DataStoreManager {
         }
     }
 }
-
-// MARK: - Type Alias for Backward Compatibility
-
-public typealias AccountManager = DataStoreManager
-
-// MARK: - Backward Compatibility Extensions
-
-extension DataStoreManager {
-    /// Backward compatible alias - returns active data stores
-    public var activeAccounts: [DataStore] { self.activeDataStores }
-
-    /// Backward compatible alias - returns sorted active data stores
-    public var sortedActiveAccounts: [DataStore] { self.sortedActiveDataStores }
-
-    /// Backward compatible alias - returns the default data store
-    public var defaultAccount: DataStore { self.defaultDataStore }
-
-    /// Backward compatible method alias
-    public func existingAccount(accountID: String) -> DataStore? {
-        self.existingDataStore(dataStoreID: accountID)
-    }
-
-    /// Backward compatible method alias
-    public func fetchArticle(accountID: String, articleID: String) -> Article? {
-        self.fetchArticle(dataStoreID: accountID, articleID: articleID)
-    }
-}

@@ -49,10 +49,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         super.init()
         appDelegate = self
 
-        // Start iCloud account monitoring BEFORE AccountManager to ensure status is known
+        // Start iCloud account monitoring BEFORE DataStoreManager to ensure status is known
         iCloudAccountMonitor.shared.start()
 
-        AccountManager.shared.start()
+        DataStoreManager.shared.start()
 
         NotificationCenter.default.addObserver(
             self,
@@ -62,8 +62,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(self.accountRefreshDidFinish(_:)),
-            name: .AccountRefreshDidFinish,
+            selector: #selector(self.dataStoreRefreshDidFinish(_:)),
+            name: .DataStoreRefreshDidFinish,
             object: nil
         )
     }
@@ -82,7 +82,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         initializeHomeScreenQuickActions()
 
         DispatchQueue.main.async {
-            self.unreadCount = AccountManager.shared.unreadCount
+            self.unreadCount = DataStoreManager.shared.unreadCount
             // Force the badge to update on launch.
             self.updateBadge()
         }
@@ -116,7 +116,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
     ) {
         Task { @MainActor in
             self.resumeDatabaseProcessingIfNecessary()
-            await AccountManager.shared.receiveRemoteNotification(userInfo: userInfo)
+            await DataStoreManager.shared.receiveRemoteNotification(userInfo: userInfo)
             self.suspendApplication()
             completionHandler(.newData)
         }
@@ -132,7 +132,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
     }
 
     private func updateBadge() {
-        assert(self.unreadCount == AccountManager.shared.unreadCount)
+        assert(self.unreadCount == DataStoreManager.shared.unreadCount)
         UNUserNotificationCenter.current().setBadgeCount(self.unreadCount)
     }
 
@@ -140,13 +140,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
 
     @objc
     func unreadCountDidChange(_ note: Notification) {
-        if note.object is AccountManager {
-            self.unreadCount = AccountManager.shared.unreadCount
+        if note.object is DataStoreManager {
+            self.unreadCount = DataStoreManager.shared.unreadCount
         }
     }
 
     @objc
-    func accountRefreshDidFinish(_: Notification) {
+    func dataStoreRefreshDidFinish(_: Notification) {
         AppDefaults.shared.lastRefresh = Date()
     }
 
@@ -156,17 +156,17 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         for connectedScene in UIApplication.shared.connectedScenes.compactMap({ $0.delegate as? SceneDelegate }) {
             connectedScene.cleanUp(conditional: true)
         }
-        AccountManager.shared.refreshAllWithoutWaiting(errorHandler: errorHandler)
+        DataStoreManager.shared.refreshAllWithoutWaiting(errorHandler: errorHandler)
     }
 
     func resumeDatabaseProcessingIfNecessary() {
-        if AccountManager.shared.isSuspended {
-            AccountManager.shared.resumeAll()
+        if DataStoreManager.shared.isSuspended {
+            DataStoreManager.shared.resumeAll()
             DZLog("Application processing resumed.")
         }
     }
 
-    func prepareAccountsForBackground() {
+    func prepareDataStoreForBackground() {
         self.updateBadge()
         ExtensionFeedAddRequestFile.shared.suspend()
         ArticleStatusSyncTimer.shared.invalidate()
@@ -177,19 +177,19 @@ final class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationC
         IconImageCache.shared.emptyCache()
     }
 
-    func prepareAccountsForForeground() {
+    func prepareDataStoreForForeground() {
         self.updateBadge()
         ExtensionFeedAddRequestFile.shared.resume()
         ArticleStatusSyncTimer.shared.update()
 
         if let lastRefresh = AppDefaults.shared.lastRefresh {
             if Date() > lastRefresh.addingTimeInterval(15 * 60) {
-                AccountManager.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
+                DataStoreManager.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
             } else {
-                AccountManager.shared.syncArticleStatusAllWithoutWaiting()
+                DataStoreManager.shared.syncArticleStatusAllWithoutWaiting()
             }
         } else {
-            AccountManager.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
+            DataStoreManager.shared.refreshAllWithoutWaiting(errorHandler: ErrorHandler.log)
         }
     }
 
@@ -297,7 +297,7 @@ extension AppDelegate {
             Task { @MainActor in
                 self.completeProcessing(true)
             }
-            DZLog("Accounts wait for progress terminated for running too long.")
+            DZLog("Data store wait for progress terminated for running too long.")
         }
 
         DispatchQueue.main.async { [weak self] in
@@ -315,7 +315,7 @@ extension AppDelegate {
         }
 
         if
-            AccountManager.shared.refreshInProgress || self.isSyncArticleStatusRunning || WidgetDataEncoder.shared?
+            DataStoreManager.shared.refreshInProgress || self.isSyncArticleStatusRunning || WidgetDataEncoder.shared?
                 .isRunning ?? false
         {
             DZLog("Waiting for sync to finish…")
@@ -346,11 +346,11 @@ extension AppDelegate {
             Task { @MainActor [weak self] in
                 self?.completeSyncProcessing()
             }
-            DZLog("Accounts sync processing terminated for running too long.")
+            DZLog("Data store sync processing terminated for running too long.")
         }
 
         Task { @MainActor in
-            await AccountManager.shared.syncArticleStatusAll()
+            await DataStoreManager.shared.syncArticleStatusAll()
             self.completeSyncProcessing()
         }
     }
@@ -364,8 +364,8 @@ extension AppDelegate {
     private func suspendApplication() {
         guard UIApplication.shared.applicationState == .background else { return }
 
-        AccountManager.shared.suspendNetworkAll()
-        AccountManager.shared.suspendDatabaseAll()
+        DataStoreManager.shared.suspendNetworkAll()
+        DataStoreManager.shared.suspendDatabaseAll()
 
         CoalescingQueue.standard.performCallsImmediately()
         for scene in UIApplication.shared.connectedScenes {
@@ -416,11 +416,11 @@ extension AppDelegate {
         DZLog("Performing background refresh.")
 
         Task { @MainActor in
-            if AccountManager.shared.isSuspended {
-                AccountManager.shared.resumeAll()
+            if DataStoreManager.shared.isSuspended {
+                DataStoreManager.shared.resumeAll()
             }
-            await AccountManager.shared.refreshAll(errorHandler: ErrorHandler.log)
-            if !AccountManager.shared.isSuspended {
+            await DataStoreManager.shared.refreshAll(errorHandler: ErrorHandler.log)
+            if !DataStoreManager.shared.isSuspended {
                 self.suspendApplication()
                 DZLog("Background refresh completed.")
                 task.setTaskCompleted(success: true)
@@ -452,7 +452,7 @@ extension AppDelegate {
     private func handleStatusNotification(userInfo: [AnyHashable: Any], statusKey: ArticleStatus.Key) {
         guard
             let articlePathUserInfo = userInfo[UserInfoKey.articlePath] as? [AnyHashable: Any],
-            let accountID = articlePathUserInfo[ArticlePathKey.accountID] as? String,
+            let dataStoreID = articlePathUserInfo[ArticlePathKey.dataStoreID] as? String,
             let articleID = articlePathUserInfo[ArticlePathKey.articleID] as? String else
         {
             return
@@ -460,24 +460,24 @@ extension AppDelegate {
 
         self.resumeDatabaseProcessingIfNecessary()
 
-        guard let account = AccountManager.shared.existingAccount(accountID: accountID) else {
-            assertionFailure("Expected account with \(accountID)")
-            DZLog("No account with accountID \(accountID) found from status notification")
+        guard let dataStore = DataStoreManager.shared.existingDataStore(dataStoreID: dataStoreID) else {
+            assertionFailure("Expected data store with \(dataStoreID)")
+            DZLog("No data store with dataStoreID \(dataStoreID) found from status notification")
             return
         }
 
-        guard let singleArticleSet = try? account.fetchArticles(.articleIDs([articleID])) else {
+        guard let singleArticleSet = try? dataStore.fetchArticles(.articleIDs([articleID])) else {
             assertionFailure("Expected article with \(articleID)")
             DZLog("No article with articleID found \(articleID) from status notification")
             return
         }
 
         assert(singleArticleSet.count == 1)
-        account.markArticles(singleArticleSet, statusKey: statusKey, flag: true) { _ in }
+        dataStore.markArticles(singleArticleSet, statusKey: statusKey, flag: true) { _ in }
 
         Task { @MainActor in
-            try? await account.syncArticleStatus()
-            self.prepareAccountsForBackground()
+            try? await dataStore.syncArticleStatus()
+            self.prepareDataStoreForBackground()
             self.suspendApplication()
         }
     }

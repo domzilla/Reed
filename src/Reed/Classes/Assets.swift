@@ -105,8 +105,8 @@ enum Assets {
     }
 
     @MainActor
-    static func accountImage(_ accountType: AccountType) -> UIImage {
-        switch accountType {
+    static func dataStoreImage(_ dataStoreType: DataStoreType) -> UIImage {
+        switch dataStoreType {
         case .onMyMac:
             if UIDevice.current.userInterfaceIdiom == .pad {
                 Assets.Images.accountLocalPadImage

@@ -13,26 +13,26 @@ final class AddFolderViewController: UITableViewController {
     static let preferredContentSizeForFormSheetDisplay = CGSize(width: 460.0, height: 400.0)
 
     private var shouldDisplayPicker: Bool {
-        self.accounts.count > 1
+        self.dataStores.count > 1
     }
 
-    private var accounts: [Account]! {
+    private var dataStores: [DataStore]! {
         didSet {
             if
-                let predefinedAccount = accounts
-                    .first(where: { $0.accountID == AppDefaults.shared.addFolderAccountID })
+                let predefinedDataStore = dataStores
+                    .first(where: { $0.dataStoreID == AppDefaults.shared.addFolderAccountID })
             {
-                self.selectedAccount = predefinedAccount
+                self.selectedDataStore = predefinedDataStore
             } else {
-                self.selectedAccount = self.accounts[0]
+                self.selectedDataStore = self.dataStores[0]
             }
         }
     }
 
-    private var selectedAccount: Account! {
+    private var selectedDataStore: DataStore! {
         didSet {
-            guard self.selectedAccount != oldValue else { return }
-            self.accountLabel.text = self.selectedAccount.flatMap { ($0 as DisplayNameProvider).nameForDisplay }
+            guard self.selectedDataStore != oldValue else { return }
+            self.accountLabel.text = self.selectedDataStore.flatMap { ($0 as DisplayNameProvider).nameForDisplay }
         }
     }
 
@@ -101,9 +101,7 @@ final class AddFolderViewController: UITableViewController {
         )
         navigationItem.rightBarButtonItem = self.addButton
 
-        self.accounts = AccountManager.shared
-            .sortedActiveAccounts
-            .filter { !$0.behaviors.contains(.disallowFolderManagement) }
+        self.dataStores = DataStoreManager.shared.sortedActiveDataStores
 
         self.nameTextField.delegate = self
 
@@ -111,7 +109,7 @@ final class AddFolderViewController: UITableViewController {
             self.accountPickerView.dataSource = self
             self.accountPickerView.delegate = self
 
-            if let index = accounts.firstIndex(of: selectedAccount) {
+            if let index = dataStores.firstIndex(of: selectedDataStore) {
                 self.accountPickerView.selectRow(index, inComponent: 0, animated: false)
             }
         }
@@ -132,9 +130,9 @@ final class AddFolderViewController: UITableViewController {
 
     // MARK: - Actions
 
-    private func didSelect(_ account: Account) {
-        AppDefaults.shared.addFolderAccountID = account.accountID
-        self.selectedAccount = account
+    private func didSelect(_ dataStore: DataStore) {
+        AppDefaults.shared.addFolderAccountID = dataStore.dataStoreID
+        self.selectedDataStore = dataStore
     }
 
     @objc
@@ -153,7 +151,7 @@ final class AddFolderViewController: UITableViewController {
                 dismiss(animated: true)
             }
             do {
-                try await self.selectedAccount.addFolder(folderName)
+                try await self.selectedDataStore.addFolder(folderName)
             } catch {
                 presentError(error)
             }
@@ -255,15 +253,15 @@ extension AddFolderViewController: UIPickerViewDataSource, UIPickerViewDelegate 
     }
 
     func pickerView(_: UIPickerView, numberOfRowsInComponent _: Int) -> Int {
-        self.accounts.count
+        self.dataStores.count
     }
 
     func pickerView(_: UIPickerView, titleForRow row: Int, forComponent _: Int) -> String? {
-        (self.accounts[row] as DisplayNameProvider).nameForDisplay
+        (self.dataStores[row] as DisplayNameProvider).nameForDisplay
     }
 
     func pickerView(_: UIPickerView, didSelectRow row: Int, inComponent _: Int) {
-        self.didSelect(self.accounts[row])
+        self.didSelect(self.dataStores[row])
     }
 }
 

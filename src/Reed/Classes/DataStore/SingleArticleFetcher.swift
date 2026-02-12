@@ -9,27 +9,27 @@
 import Foundation
 
 public struct SingleArticleFetcher: ArticleFetcher {
-    private let account: Account
+    private let dataStore: DataStore
     private let articleID: String
 
-    public init(account: Account, articleID: String) {
-        self.account = account
+    public init(dataStore: DataStore, articleID: String) {
+        self.dataStore = dataStore
         self.articleID = articleID
     }
 
     public func fetchArticles() throws -> Set<Article> {
-        try self.account.fetchArticles(.articleIDs(Set([self.articleID])))
+        try self.dataStore.fetchArticles(.articleIDs(Set([self.articleID])))
     }
 
     public func fetchArticlesAsync() async throws -> Set<Article> {
-        try await self.account.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+        try await self.dataStore.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
     }
 
     public func fetchUnreadArticles() throws -> Set<Article> {
-        try self.account.fetchArticles(.articleIDs(Set([self.articleID])))
+        try self.dataStore.fetchArticles(.articleIDs(Set([self.articleID])))
     }
 
     public func fetchUnreadArticlesAsync() async throws -> Set<Article> {
-        try await self.account.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
+        try await self.dataStore.fetchArticlesAsync(.articleIDs(Set([self.articleID])))
     }
 }

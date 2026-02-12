@@ -11,8 +11,8 @@ import UIKit
 
 extension UIViewController {
     func presentError(_ error: Error, dismiss: (() -> Void)? = nil) {
-        if let accountError = error as? AccountError, accountError.isCredentialsError {
-            presentAccountError(accountError, dismiss: dismiss)
+        if let dataStoreError = error as? DataStoreError, dataStoreError.isCredentialsError {
+            presentDataStoreError(dataStoreError, dismiss: dismiss)
         } else if let decodingError = error as? DecodingError {
             let errorTitle = NSLocalizedString("Error", comment: "Error")
             var informativeText = ""
@@ -85,7 +85,7 @@ extension UIViewController {
 }
 
 extension UIViewController {
-    private func presentAccountError(_ error: AccountError, dismiss: (() -> Void)? = nil) {
+    private func presentDataStoreError(_ error: DataStoreError, dismiss: (() -> Void)? = nil) {
         let title = NSLocalizedString("Account Error", comment: "Account Error")
         let alertController = UIAlertController(
             title: title,

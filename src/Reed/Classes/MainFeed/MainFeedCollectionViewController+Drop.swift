@@ -58,14 +58,14 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
         {
             container
         } else {
-            // If we got here, we are trying to drop on an empty section header. Go and find the Account for this
+            // If we got here, we are trying to drop on an empty section header. Go and find the DataStore for this
             // section
-            self.coordinator.rootNode.childAtIndex(destIndexPath.section)?.representedObject as? Account
+            self.coordinator.rootNode.childAtIndex(destIndexPath.section)?.representedObject as? DataStore
         }
 
         guard let destination = destinationContainer, let feed = dragNode.representedObject as? Feed else { return }
 
-        if source.account == destination.account {
+        if source.dataStore == destination.dataStore {
             self.moveFeedInAccount(feed: feed, sourceContainer: source, destinationContainer: destination)
         } else {
             self.moveFeedBetweenAccounts(feed: feed, sourceContainer: source, destinationContainer: destination)
@@ -91,18 +91,8 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
 
         guard
             let destFeed = coordinator.nodeFor(destIndexPath)?.representedObject as? SidebarItem,
-            let destAccount = destFeed.account,
+            destFeed.dataStore != nil,
             let destCell = collectionView.cellForItem(at: destIndexPath) else
-        {
-            return UICollectionViewDropProposal(operation: .forbidden)
-        }
-
-        // Validate account specific behaviors...
-        if
-            destAccount.behaviors.contains(.disallowFeedInMultipleFolders),
-            let sourceNode = session.localDragSession?.items.first?.localObject as? Node,
-            let sourceFeed = sourceNode.representedObject as? Feed,
-            sourceFeed.account?.accountID != destAccount.accountID, destAccount.hasFeed(withURL: sourceFeed.url)
         {
             return UICollectionViewDropProposal(operation: .forbidden)
         }
@@ -129,7 +119,7 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
         guard sourceContainer !== destinationContainer else { return }
 
         BatchUpdate.shared.start()
-        sourceContainer.account?.moveFeed(feed, from: sourceContainer, to: destinationContainer) { result in
+        sourceContainer.dataStore?.moveFeed(feed, from: sourceContainer, to: destinationContainer) { result in
             BatchUpdate.shared.end()
             switch result {
             case .success:
@@ -141,12 +131,12 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
     }
 
     func moveFeedBetweenAccounts(feed: Feed, sourceContainer: Container, destinationContainer: Container) {
-        if let existingFeed = destinationContainer.account?.existingFeed(withURL: feed.url) {
+        if let existingFeed = destinationContainer.dataStore?.existingFeed(withURL: feed.url) {
             BatchUpdate.shared.start()
-            destinationContainer.account?.addFeed(existingFeed, to: destinationContainer) { result in
+            destinationContainer.dataStore?.addFeed(existingFeed, to: destinationContainer) { result in
                 switch result {
                 case .success:
-                    sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
+                    sourceContainer.dataStore?.removeFeed(feed, from: sourceContainer) { result in
                         BatchUpdate.shared.end()
                         switch result {
                         case .success:
@@ -163,7 +153,7 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
 
         } else {
             BatchUpdate.shared.start()
-            destinationContainer.account?.createFeed(
+            destinationContainer.dataStore?.createFeed(
                 url: feed.url,
                 name: feed.editedName,
                 container: destinationContainer,
@@ -171,7 +161,7 @@ extension MainFeedCollectionViewController: UICollectionViewDropDelegate {
             ) { result in
                 switch result {
                 case .success:
-                    sourceContainer.account?.removeFeed(feed, from: sourceContainer) { result in
+                    sourceContainer.dataStore?.removeFeed(feed, from: sourceContainer) { result in
                         BatchUpdate.shared.end()
                         switch result {
                         case .success:

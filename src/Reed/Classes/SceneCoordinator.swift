@@ -369,8 +369,8 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(self.accountDidDownloadArticles(_:)),
-            name: .AccountDidDownloadArticles,
+            selector: #selector(self.dataStoreDidDownloadArticles(_:)),
+            name: .DataStoreDidDownloadArticles,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -443,8 +443,8 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
         }
 
         let article = self.articles.article(matching: articleSpecifier) ??
-            AccountManager.shared.fetchArticle(
-                accountID: articleSpecifier.accountID,
+            DataStoreManager.shared.fetchArticle(
+                dataStoreID: articleSpecifier.accountID,
                 articleID: articleSpecifier.articleID
             )
 
@@ -496,7 +496,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
 
     @objc
     func unreadCountDidInitialize(_ notification: Notification) {
-        guard notification.object is AccountManager else {
+        guard notification.object is DataStoreManager else {
             return
         }
 
@@ -508,7 +508,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     @objc
     func unreadCountDidChange(_: Notification) {
         // We will handle the filtering of unread feeds in unreadCountDidInitialize after they have all be calculated
-        guard AccountManager.shared.areUnreadCountsInitialized else {
+        guard DataStoreManager.shared.areUnreadCountsInitialized else {
             return
         }
 
@@ -561,8 +561,8 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     }
 
     @objc
-    func accountDidDownloadArticles(_ note: Notification) {
-        guard let feeds = note.userInfo?[Account.UserInfoKey.feeds] as? Set<Feed> else {
+    func dataStoreDidDownloadArticles(_ note: Notification) {
+        guard let feeds = note.userInfo?[DataStore.UserInfoKey.feeds] as? Set<Feed> else {
             return
         }
 
@@ -604,15 +604,15 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     /// - Parameter note: Optional `Notification`
     @objc
     func updateNavigationBarSubtitles(_: Notification?) {
-        let progress = AccountManager.shared.combinedRefreshProgress
+        let progress = DataStoreManager.shared.combinedRefreshProgress
 
         if progress.isComplete {
-            if let accountLastArticleFetchEndTime = AccountManager.shared.lastArticleFetchEndTime {
-                if Date.now > accountLastArticleFetchEndTime.addingTimeInterval(60) {
+            if let lastArticleFetchEndTime = DataStoreManager.shared.lastArticleFetchEndTime {
+                if Date.now > lastArticleFetchEndTime.addingTimeInterval(60) {
                     let relativeDateTimeFormatter = RelativeDateTimeFormatter()
                     relativeDateTimeFormatter.dateTimeStyle = .named
                     let refreshed = relativeDateTimeFormatter.localizedString(
-                        for: accountLastArticleFetchEndTime,
+                        for: lastArticleFetchEndTime,
                         relativeTo: Date()
                     )
                     let localizedRefreshText = NSLocalizedString("Updated %@", comment: "Updated")
@@ -829,8 +829,8 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     }
 
     func refreshTimeline(resetScroll: Bool) {
-        if let article = self.currentArticle, let account = article.account {
-            self.exceptionArticleFetcher = SingleArticleFetcher(account: account, articleID: article.articleID)
+        if let article = self.currentArticle, let dataStore = article.dataStore {
+            self.exceptionArticleFetcher = SingleArticleFetcher(dataStore: dataStore, articleID: article.articleID)
         }
         fetchAndReplaceArticlesAsync(animated: true) {
             self.mainTimelineViewController?.reinitializeArticles(resetScroll: resetScroll)
@@ -1291,14 +1291,14 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
             self.mainTimelineViewController?.hideSearch()
         }
 
-        guard let account = feed.account else {
+        guard let dataStore = feed.dataStore else {
             completion?()
             return
         }
 
-        let parentFolder = account.sortedFolders?.first(where: { $0.objectIsChild(feed) })
+        let parentFolder = dataStore.sortedFolders?.first(where: { $0.objectIsChild(feed) })
 
-        markExpanded(account)
+        markExpanded(dataStore)
         if let parentFolder {
             markExpanded(parentFolder)
         }
@@ -1365,7 +1365,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     func showFeedInspector(for feed: Feed, in container: Container? = nil) {
         let feedInspectorController = FeedInspectorViewController()
         feedInspectorController.feed = feed
-        feedInspectorController.container = container ?? feed.account
+        feedInspectorController.container = container ?? feed.dataStore
 
         let feedInspectorNavController = UINavigationController(rootViewController: feedInspectorController)
         feedInspectorNavController.modalPresentationStyle = .formSheet
@@ -1642,11 +1642,11 @@ extension SceneCoordinator {
             if sidebarItem is SmartFeed {
                 self.treeControllerDelegate.addFilterException(sidebarItemID)
             } else if let folderFeed = sidebarItem as? Folder {
-                if folderFeed.account?.existingFolder(withID: folderFeed.folderID) != nil {
+                if folderFeed.dataStore?.existingFolder(withID: folderFeed.folderID) != nil {
                     self.treeControllerDelegate.addFilterException(sidebarItemID)
                 }
             } else if let feed = sidebarItem as? Feed {
-                if feed.account?.existingFeed(withFeedID: feed.feedID) != nil {
+                if feed.dataStore?.existingFeed(withFeedID: feed.feedID) != nil {
                     self.treeControllerDelegate.addFilterException(sidebarItemID)
                     self.addParentFolderToFilterExceptions(feed)
                 }
@@ -1723,7 +1723,7 @@ extension SceneCoordinator {
                 }
             }
 
-            let sectionID = (sectionNode.representedObject as? Account)?.accountID ?? ""
+            let sectionID = (sectionNode.representedObject as? DataStore)?.dataStoreID ?? ""
             newShadowTable.append((sectionID: sectionID, feedNodes: feedNodes))
         }
 
@@ -2193,7 +2193,7 @@ extension SceneCoordinator {
                 if !unsortedArticleIDs.contains(article.articleID) {
                     updatedArticles.insert(article)
                 }
-                if article.account?.existingFeed(withFeedID: article.feedID) == nil {
+                if article.dataStore?.existingFeed(withFeedID: article.feedID) == nil {
                     updatedArticles.remove(article)
                 }
             }
@@ -2332,19 +2332,19 @@ extension SceneCoordinator {
 
         case let .folder(accountID, folderName):
             guard
-                let accountNode = self.findAccountNode(accountID: accountID),
-                let account = accountNode.representedObject as? Account else
+                let dataStoreNode = self.findDataStoreNode(dataStoreID: accountID),
+                let dataStore = dataStoreNode.representedObject as? DataStore else
             {
                 return
             }
 
-            self.markExpanded(account)
+            self.markExpanded(dataStore)
 
             self.rebuildBackingStores(initialLoad: true, completion: {
                 self.treeControllerDelegate.resetFilterExceptions()
 
                 if
-                    let folderNode = self.findFolderNode(folderName: folderName, beginningAt: accountNode),
+                    let folderNode = self.findFolderNode(folderName: folderName, beginningAt: dataStoreNode),
                     let indexPath = self.indexPathFor(folderNode)
                 {
                     self.selectFeed(indexPath: indexPath) {
@@ -2355,9 +2355,9 @@ extension SceneCoordinator {
 
         case let .feed(accountID, feedID):
             guard
-                let accountNode = findAccountNode(accountID: accountID),
-                let account = accountNode.representedObject as? Account,
-                let feed = account.existingFeed(withFeedID: feedID) else
+                let dataStoreNode = findDataStoreNode(dataStoreID: accountID),
+                let dataStore = dataStoreNode.representedObject as? DataStore,
+                let feed = dataStore.existingFeed(withFeedID: feedID) else
             {
                 return
             }
@@ -2373,23 +2373,23 @@ extension SceneCoordinator {
 
         guard
             let articlePathUserInfo = userInfo[UserInfoKey.articlePath] as? [AnyHashable: Any],
-            let accountID = articlePathUserInfo[ArticlePathKey.accountID] as? String,
-            let accountName = articlePathUserInfo[ArticlePathKey.accountName] as? String,
+            let dataStoreID = articlePathUserInfo[ArticlePathKey.dataStoreID] as? String,
+            let dataStoreName = articlePathUserInfo[ArticlePathKey.dataStoreName] as? String,
             let feedID = articlePathUserInfo[ArticlePathKey.feedID] as? String,
             let articleID = articlePathUserInfo[ArticlePathKey.articleID] as? String,
-            let accountNode = findAccountNode(accountID: accountID, accountName: accountName),
-            let account = accountNode.representedObject as? Account else
+            let dataStoreNode = findDataStoreNode(dataStoreID: dataStoreID, dataStoreName: dataStoreName),
+            let dataStore = dataStoreNode.representedObject as? DataStore else
         {
             return
         }
 
-        self.exceptionArticleFetcher = SingleArticleFetcher(account: account, articleID: articleID)
+        self.exceptionArticleFetcher = SingleArticleFetcher(dataStore: dataStore, articleID: articleID)
 
-        if self.restoreFeedSelection(userInfo, accountID: accountID, feedID: feedID, articleID: articleID) {
+        if self.restoreFeedSelection(userInfo, dataStoreID: dataStoreID, feedID: feedID, articleID: articleID) {
             return
         }
 
-        guard let feed = account.existingFeed(withFeedID: feedID) else {
+        guard let feed = dataStore.existingFeed(withFeedID: feedID) else {
             return
         }
 
@@ -2400,7 +2400,7 @@ extension SceneCoordinator {
 
     private func restoreFeedSelection(
         _ userInfo: [AnyHashable: Any],
-        accountID _: String,
+        dataStoreID _: String,
         feedID _: String,
         articleID: String
     )
@@ -2455,18 +2455,18 @@ extension SceneCoordinator {
         }
     }
 
-    private func findAccountNode(accountID: String, accountName: String? = nil) -> Node? {
+    private func findDataStoreNode(dataStoreID: String, dataStoreName: String? = nil) -> Node? {
         if
             let node = treeController.rootNode
-                .descendantNode(where: { ($0.representedObject as? Account)?.accountID == accountID })
+                .descendantNode(where: { ($0.representedObject as? DataStore)?.dataStoreID == dataStoreID })
         {
             return node
         }
 
         if
-            let accountName,
+            let dataStoreName,
             let node = treeController.rootNode
-                .descendantNode(where: { ($0.representedObject as? Account)?.nameForDisplay == accountName })
+                .descendantNode(where: { ($0.representedObject as? DataStore)?.nameForDisplay == dataStoreName })
         {
             return node
         }

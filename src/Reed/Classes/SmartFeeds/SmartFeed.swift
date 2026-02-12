@@ -11,7 +11,7 @@ import Foundation
 
 @MainActor
 final class SmartFeed: PseudoFeed {
-    var account: Account?
+    var dataStore: DataStore?
 
     var defaultReadFilterType: ReadFilterType {
         .none
@@ -60,21 +60,21 @@ final class SmartFeed: PseudoFeed {
 
     @objc
     func fetchUnreadCounts() {
-        let activeAccounts = AccountManager.shared.activeAccounts
+        let activeDataStores = DataStoreManager.shared.activeDataStores
 
-        // Remove any accounts that are no longer active or have been deleted
-        let activeAccountIDs = activeAccounts.map(\.accountID)
-        for accountID in self.unreadCounts.keys {
-            if !activeAccountIDs.contains(accountID) {
-                self.unreadCounts.removeValue(forKey: accountID)
+        // Remove any data stores that are no longer active or have been deleted
+        let activeDataStoreIDs = activeDataStores.map(\.dataStoreID)
+        for dataStoreID in self.unreadCounts.keys {
+            if !activeDataStoreIDs.contains(dataStoreID) {
+                self.unreadCounts.removeValue(forKey: dataStoreID)
             }
         }
 
-        if activeAccounts.isEmpty {
+        if activeDataStores.isEmpty {
             updateUnreadCount()
         } else {
-            for account in activeAccounts {
-                fetchUnreadCount(account: account)
+            for dataStore in activeDataStores {
+                fetchUnreadCount(dataStore: dataStore)
             }
         }
     }
@@ -103,20 +103,20 @@ extension SmartFeed {
         CoalescingQueue.standard.add(self, #selector(self.fetchUnreadCounts))
     }
 
-    private func fetchUnreadCount(account: Account) {
+    private func fetchUnreadCount(dataStore: DataStore) {
         Task { @MainActor in
-            guard let unreadCount = try? await delegate.fetchUnreadCount(account: account) else {
+            guard let unreadCount = try? await delegate.fetchUnreadCount(dataStore: dataStore) else {
                 return
             }
-            self.unreadCounts[account.accountID] = unreadCount
+            self.unreadCounts[dataStore.dataStoreID] = unreadCount
             self.updateUnreadCount()
         }
     }
 
     private func updateUnreadCount() {
         var updatedUnreadCount = 0
-        for account in AccountManager.shared.activeAccounts {
-            if let oneUnreadCount = unreadCounts[account.accountID] {
+        for dataStore in DataStoreManager.shared.activeDataStores {
+            if let oneUnreadCount = unreadCounts[dataStore.dataStoreID] {
                 updatedUnreadCount += oneUnreadCount
             }
         }

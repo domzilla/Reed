@@ -33,7 +33,7 @@ final class CloudKitSyncProvider: SyncProvider {
     private let articlesZone: CloudKitArticlesZone
 
     private let mainThreadOperationQueue = MainThreadOperationQueue()
-    private let refresher: LocalAccountRefresher
+    private let refresher: FeedRefresher
 
     weak var dataStore: DataStore?
 
@@ -56,7 +56,7 @@ final class CloudKitSyncProvider: SyncProvider {
         let databaseFilePath = (dataFolder as NSString).appendingPathComponent("Sync.sqlite3")
         self.syncDatabase = SyncDatabase(databasePath: databaseFilePath)
 
-        self.refresher = LocalAccountRefresher()
+        self.refresher = FeedRefresher()
         self.refresher.delegate = self
 
         // Listen for iCloud account status changes
@@ -1362,8 +1362,8 @@ extension CloudKitSyncProvider {
     }
 }
 
-extension CloudKitSyncProvider: LocalAccountRefresherDelegate {
-    func localAccountRefresher(_: LocalAccountRefresher, articleChanges: ArticleChanges) {
+extension CloudKitSyncProvider: FeedRefresherDelegate {
+    func feedRefresher(_: FeedRefresher, articleChanges: ArticleChanges) {
         Task {
             await self.storeArticleChanges(
                 new: articleChanges.new,

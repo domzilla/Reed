@@ -19,7 +19,7 @@ public nonisolated enum ReadFilterType: Sendable {
 public protocol SidebarItem: SidebarItemIdentifiable, ArticleFetcher, DisplayNameProvider,
     UnreadCountProvider
 {
-    @MainActor var account: Account? { get }
+    @MainActor var dataStore: DataStore? { get }
     @MainActor var defaultReadFilterType: ReadFilterType { get }
 }
 

@@ -99,7 +99,7 @@ extension [Article] {
         var i = 0
         for article in self {
             let otherArticle = otherArticles[i]
-            if article.account != otherArticle.account || article.articleID != otherArticle.articleID {
+            if article.dataStore != otherArticle.dataStore || article.articleID != otherArticle.articleID {
                 return false
             }
             i += 1

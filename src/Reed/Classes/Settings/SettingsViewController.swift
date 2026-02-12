@@ -324,9 +324,9 @@ final class SettingsViewController: UITableViewController {
 
 extension SettingsViewController: UIDocumentPickerDelegate {
     func documentPicker(_: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        let account = AccountManager.shared.defaultAccount
+        let dataStore = DataStoreManager.shared.defaultDataStore
         for url in urls {
-            account.importOPML(url) { result in
+            dataStore.importOPML(url) { result in
                 switch result {
                 case .success:
                     break
@@ -381,11 +381,11 @@ extension SettingsViewController {
     }
 
     private func exportOPMLDocumentPicker() {
-        let account = AccountManager.shared.defaultAccount
+        let dataStore = DataStoreManager.shared.defaultDataStore
 
         let filename = "Subscriptions.opml"
         let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        let opmlString = OPMLExporter.OPMLString(with: account, title: filename)
+        let opmlString = OPMLExporter.OPMLString(with: dataStore, title: filename)
         do {
             try opmlString.write(to: tempFile, atomically: true, encoding: String.Encoding.utf8)
         } catch {

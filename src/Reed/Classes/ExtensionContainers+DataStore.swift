@@ -7,11 +7,11 @@
 
 import Foundation
 
-extension ExtensionAccount {
+extension ExtensionDataStore {
     @MainActor
     init(dataStore: DataStore) {
         self.name = dataStore.nameForDisplay
-        self.accountID = dataStore.dataStoreID
+        self.dataStoreID = dataStore.dataStoreID
         self.type = .cloudKit // CloudKit sync support
         self.disallowFeedInRootFolder = false // Feeds allowed in root folder
         self.containerID = dataStore.containerID
@@ -22,8 +22,8 @@ extension ExtensionAccount {
 extension ExtensionFolder {
     @MainActor
     init(folder: Folder) {
-        self.accountName = folder.dataStore?.nameForDisplay ?? ""
-        self.accountID = folder.dataStore?.dataStoreID ?? ""
+        self.dataStoreName = folder.dataStore?.nameForDisplay ?? ""
+        self.dataStoreID = folder.dataStore?.dataStoreID ?? ""
         self.name = folder.nameForDisplay
         self.containerID = folder.containerID
     }

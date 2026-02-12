@@ -371,8 +371,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
             return headerView
         }
 
-        if let account = sectionNode.representedObject as? Account {
-            headerView.unreadCount = account.unreadCount
+        if let dataStore = sectionNode.representedObject as? DataStore {
+            headerView.unreadCount = dataStore.unreadCount
         } else {
             headerView.unreadCount = 0
         }
@@ -543,7 +543,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         } else {
             self.setFilterButtonToInactive()
         }
-        self.addNewItemButton.isEnabled = !AccountManager.shared.activeAccounts.isEmpty
+        self.addNewItemButton.isEnabled = !DataStoreManager.shared.activeDataStores.isEmpty
 
         self.configureContextMenu()
     }
@@ -719,9 +719,9 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         }
     }
 
-    private func headerViewForAccount(_ account: Account) -> MainFeedCollectionHeaderReusableView? {
+    private func headerViewForDataStore(_ dataStore: DataStore) -> MainFeedCollectionHeaderReusableView? {
         guard
-            let node = coordinator.rootNode.childNodeRepresentingObject(account),
+            let node = coordinator.rootNode.childNodeRepresentingObject(dataStore),
             let sectionIndex = coordinator.rootNode.indexOfChild(node) else
         {
             return nil
@@ -769,9 +769,9 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
             return
         }
 
-        if let account = unreadCountProvider as? Account {
-            if let headerView = headerViewForAccount(account) {
-                headerView.unreadCount = account.unreadCount
+        if let dataStore = unreadCountProvider as? DataStore {
+            if let headerView = headerViewForDataStore(dataStore) {
+                headerView.unreadCount = dataStore.unreadCount
             }
             return
         }
@@ -952,7 +952,7 @@ extension MainFeedCollectionViewController: UIContextMenuInteractionDelegate {
         guard
             let sectionIndex = interaction.view?.tag,
             let sectionNode = coordinator.rootNode.childAtIndex(sectionIndex),
-            let account = sectionNode.representedObject as? Account else
+            let dataStore = sectionNode.representedObject as? DataStore else
         {
             return nil
         }
@@ -961,7 +961,7 @@ extension MainFeedCollectionViewController: UIContextMenuInteractionDelegate {
             var menuElements = [UIMenuElement]()
 
             // Just show Mark All as Read - no account management needed
-            if let markAllAction = self.markAllAsReadAction(account: account, contentView: interaction.view) {
+            if let markAllAction = self.markAllAsReadAction(dataStore: dataStore, contentView: interaction.view) {
                 menuElements.append(UIMenu(title: "", options: .displayInline, children: [markAllAction]))
             }
 
@@ -1308,18 +1308,21 @@ extension MainFeedCollectionViewController {
         return action
     }
 
-    func markAllAsReadAction(account: Account, contentView: UIView?) -> UIAction? {
-        guard account.unreadCount > 0, let contentView else {
+    func markAllAsReadAction(dataStore: DataStore, contentView: UIView?) -> UIAction? {
+        guard dataStore.unreadCount > 0, let contentView else {
             return nil
         }
 
         let localizedMenuText = NSLocalizedString("Mark All as Read in “%@”", comment: "Command")
-        let title = NSString.localizedStringWithFormat(localizedMenuText as NSString, account.nameForDisplay) as String
+        let title = NSString.localizedStringWithFormat(
+            localizedMenuText as NSString,
+            dataStore.nameForDisplay
+        ) as String
         let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] _ in
             MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
                 // If you don't have this delay the screen flashes when it executes this code
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    if let articles = try? account.fetchArticles(.unread()) {
+                    if let articles = try? dataStore.fetchArticles(.unread()) {
                         self?.coordinator.markAllAsRead(Array(articles))
                     }
                 }
@@ -1459,7 +1462,7 @@ extension MainFeedCollectionViewController: AddFeedFolderViewControllerDelegate 
 
         self.feedIndexPathBeingMoved = nil
 
-        if sourceContainer.account == container.account {
+        if sourceContainer.dataStore == container.dataStore {
             moveFeedInAccount(feed: feed, sourceContainer: sourceContainer, destinationContainer: container)
         } else {
             moveFeedBetweenAccounts(feed: feed, sourceContainer: sourceContainer, destinationContainer: container)

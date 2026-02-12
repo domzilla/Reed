@@ -11,7 +11,7 @@ import RSCore
 
 @MainActor
 struct OPMLExporter {
-    static func OPMLString(with account: Account, title: String) -> String {
+    static func OPMLString(with dataStore: DataStore, title: String) -> String {
         let escapedTitle = title.escapingSpecialXMLCharacters
         let openingText =
             """
@@ -25,7 +25,7 @@ struct OPMLExporter {
 
             """
 
-        let middleText = account.OPMLString(indentLevel: 0)
+        let middleText = dataStore.OPMLString(indentLevel: 0)
 
         let closingText =
             """

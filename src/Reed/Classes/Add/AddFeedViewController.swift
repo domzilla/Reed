@@ -151,15 +151,15 @@ final class AddFeedViewController: UITableViewController {
 
         guard let container else { return }
 
-        var account: Account?
-        if let containerAccount = container as? Account {
-            account = containerAccount
-        } else if let containerFolder = container as? Folder, let containerAccount = containerFolder.account {
-            account = containerAccount
+        var dataStore: DataStore?
+        if let containerDataStore = container as? DataStore {
+            dataStore = containerDataStore
+        } else if let containerFolder = container as? Folder, let containerDataStore = containerFolder.dataStore {
+            dataStore = containerDataStore
         }
 
-        if account!.hasFeed(withURL: url.absoluteString) {
-            presentError(AccountError.createErrorAlreadySubscribed)
+        if dataStore!.hasFeed(withURL: url.absoluteString) {
+            presentError(DataStoreError.createErrorAlreadySubscribed)
             return
         }
 
@@ -172,7 +172,7 @@ final class AddFeedViewController: UITableViewController {
 
         BatchUpdate.shared.start()
 
-        account!
+        dataStore!
             .createFeed(url: url.absoluteString, name: feedName, container: container, validateFeed: true) { result in
                 BatchUpdate.shared.end()
 
@@ -291,7 +291,7 @@ extension AddFeedViewController {
     private func updateFolderLabel() {
         if let containerName = (container as? DisplayNameProvider)?.nameForDisplay {
             if self.container is Folder {
-                self.folderLabel = "\(self.container?.account?.nameForDisplay ?? "") / \(containerName)"
+                self.folderLabel = "\(self.container?.dataStore?.nameForDisplay ?? "") / \(containerName)"
             } else {
                 self.folderLabel = containerName
             }

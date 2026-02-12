@@ -67,9 +67,9 @@ extension ExtensionContainersFile {
 
         fileCoordinator.coordinate(writingItemAt: fileURL, options: [], error: errorPointer, byAccessor: { writeURL in
             do {
-                let extensionAccounts = DataStoreManager.shared.sortedActiveDataStores
-                    .map { ExtensionAccount(dataStore: $0) }
-                let extensionContainers = ExtensionContainers(accounts: extensionAccounts)
+                let extensionDataStores = DataStoreManager.shared.sortedActiveDataStores
+                    .map { ExtensionDataStore(dataStore: $0) }
+                let extensionContainers = ExtensionContainers(dataStores: extensionDataStores)
                 let data = try encoder.encode(extensionContainers)
                 try data.write(to: writeURL)
             } catch let error as NSError {

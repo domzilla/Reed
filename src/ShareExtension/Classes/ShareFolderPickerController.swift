@@ -20,7 +20,7 @@ final class ShareFolderPickerController: UITableViewController {
     weak var delegate: ShareFolderPickerControllerDelegate?
 
     override func viewDidLoad() {
-        self.tableView.register(ShareFolderPickerCell.self, forCellReuseIdentifier: "AccountCell")
+        self.tableView.register(ShareFolderPickerCell.self, forCellReuseIdentifier: "DataStoreCell")
         self.tableView.register(ShareFolderPickerCell.self, forCellReuseIdentifier: "FolderCell")
     }
 
@@ -34,14 +34,14 @@ final class ShareFolderPickerController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let container = self.containers?[indexPath.row]
-        let cell: ShareFolderPickerCell = if container is ExtensionAccount {
-            tableView.dequeueReusableCell(withIdentifier: "AccountCell", for: indexPath) as! ShareFolderPickerCell
+        let cell: ShareFolderPickerCell = if container is ExtensionDataStore {
+            tableView.dequeueReusableCell(withIdentifier: "DataStoreCell", for: indexPath) as! ShareFolderPickerCell
         } else {
             tableView.dequeueReusableCell(withIdentifier: "FolderCell", for: indexPath) as! ShareFolderPickerCell
         }
 
-        if let account = container as? ExtensionAccount {
-            cell.iconImageView.image = ShareAssets.accountImage(account.type)
+        if let dataStore = container as? ExtensionDataStore {
+            cell.iconImageView.image = ShareAssets.dataStoreImage(dataStore.type)
         } else {
             cell.iconImageView.image = ShareAssets.Images.mainFolder.image
         }
@@ -60,7 +60,7 @@ final class ShareFolderPickerController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let container = containers?[indexPath.row] else { return }
 
-        if let account = container as? ExtensionAccount, account.disallowFeedInRootFolder {
+        if let dataStore = container as? ExtensionDataStore, dataStore.disallowFeedInRootFolder {
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
         } else {
             let cell = tableView.cellForRow(at: indexPath)

@@ -12,7 +12,7 @@ import RSCore
 
 final class DataStoreMetadataFile {
     private let fileURL: URL
-    private let dataStore: Account
+    private let dataStore: DataStore
 
     @MainActor private var isDirty = false {
         didSet {
@@ -22,7 +22,7 @@ final class DataStoreMetadataFile {
 
     private let saveQueue = CoalescingQueue(name: "Save Queue", interval: 0.5)
 
-    init(filename: String, dataStore: Account) {
+    init(filename: String, dataStore: DataStore) {
         self.fileURL = URL(fileURLWithPath: filename)
         self.dataStore = dataStore
     }
@@ -54,7 +54,7 @@ final class DataStoreMetadataFile {
             try data.write(to: self.fileURL)
         } catch let error as NSError {
             DZLog(
-                "DataStoreMetadataFile dataStoreID: \(self.dataStore.accountID) save to disk failed: \(error.localizedDescription)"
+                "DataStoreMetadataFile dataStoreID: \(self.dataStore.dataStoreID) save to disk failed: \(error.localizedDescription)"
             )
         }
     }

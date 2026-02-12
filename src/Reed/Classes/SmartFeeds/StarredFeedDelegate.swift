@@ -21,7 +21,7 @@ struct StarredFeedDelegate: SmartFeedDelegate {
         Assets.Images.starredFeed
     }
 
-    func fetchUnreadCount(account: Account) async throws -> Int? {
-        try await account.fetchUnreadCountForStarredArticlesAsync()
+    func fetchUnreadCount(dataStore: DataStore) async throws -> Int? {
+        try await dataStore.fetchUnreadCountForStarredArticlesAsync()
     }
 }

@@ -12,17 +12,17 @@ import Foundation
 @MainActor
 protocol SmartFeedDelegate: SidebarItemIdentifiable, DisplayNameProvider, ArticleFetcher, SmallIconProvider {
     var fetchType: FetchType { get }
-    func fetchUnreadCount(account: Account) async throws -> Int?
+    func fetchUnreadCount(dataStore: DataStore) async throws -> Int?
 }
 
 @MainActor
 extension SmartFeedDelegate {
     func fetchArticles() throws -> Set<Article> {
-        try AccountManager.shared.fetchArticles(fetchType)
+        try DataStoreManager.shared.fetchArticles(fetchType)
     }
 
     func fetchArticlesAsync() async throws -> Set<Article> {
-        try await AccountManager.shared.fetchArticlesAsync(fetchType)
+        try await DataStoreManager.shared.fetchArticlesAsync(fetchType)
     }
 
     func fetchUnreadArticles() throws -> Set<Article> {

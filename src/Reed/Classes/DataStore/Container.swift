@@ -21,9 +21,6 @@ public protocol Container: AnyObject, ContainerIdentifiable {
     var folders: Set<Folder>? { get set }
     var externalID: String? { get set }
 
-    // Backward compatibility - can be removed after all callers are updated
-    var account: DataStore? { get }
-
     func hasAtLeastOneFeed() -> Bool
     func objectIsChild(_ object: AnyObject) -> Bool
 
@@ -52,9 +49,6 @@ public protocol Container: AnyObject, ContainerIdentifiable {
 
 @MainActor
 extension Container {
-    // Default implementation for backward compatibility
-    public var account: DataStore? { dataStore }
-
     public func hasAtLeastOneFeed() -> Bool {
         topLevelFeeds.count > 0
     }

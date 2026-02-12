@@ -176,10 +176,10 @@ final class ShareViewController: SLComposeServiceViewController, ShareFolderPick
 
 extension ShareViewController {
     private func updateFolderItemValue() {
-        if let account = selectedContainer as? ExtensionAccount {
-            self.folderItem.value = account.name
+        if let dataStore = selectedContainer as? ExtensionDataStore {
+            self.folderItem.value = dataStore.name
         } else if let folder = selectedContainer as? ExtensionFolder {
-            self.folderItem.value = "\(folder.accountName) / \(folder.name)"
+            self.folderItem.value = "\(folder.dataStoreName) / \(folder.name)"
         }
     }
 }

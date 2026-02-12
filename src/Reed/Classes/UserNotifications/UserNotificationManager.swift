@@ -32,8 +32,8 @@ final class UserNotificationManager {
 
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(self.accountDidDownloadArticles(_:)),
-            name: .AccountDidDownloadArticles,
+            selector: #selector(self.dataStoreDidDownloadArticles(_:)),
+            name: .DataStoreDidDownloadArticles,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -48,8 +48,8 @@ final class UserNotificationManager {
     }
 
     @objc
-    func accountDidDownloadArticles(_ note: Notification) {
-        guard let articles = note.userInfo?[Account.UserInfoKey.newArticles] as? Set<Article> else {
+    func dataStoreDidDownloadArticles(_ note: Notification) {
+        guard let articles = note.userInfo?[DataStore.UserInfoKey.newArticles] as? Set<Article> else {
             return
         }
 
@@ -62,16 +62,16 @@ final class UserNotificationManager {
 
     @objc
     func statusesDidChange(_ note: Notification) {
-        if let statuses = note.userInfo?[Account.UserInfoKey.statuses] as? Set<ArticleStatus>, !statuses.isEmpty {
+        if let statuses = note.userInfo?[DataStore.UserInfoKey.statuses] as? Set<ArticleStatus>, !statuses.isEmpty {
             let identifiers = statuses.filter(\.read).map { "articleID:\($0.articleID)" }
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
             return
         }
 
         if
-            let articleIDs = note.userInfo?[Account.UserInfoKey.articleIDs] as? Set<String>,
-            let statusKey = note.userInfo?[Account.UserInfoKey.statusKey] as? ArticleStatus.Key,
-            let flag = note.userInfo?[Account.UserInfoKey.statusFlag] as? Bool,
+            let articleIDs = note.userInfo?[DataStore.UserInfoKey.articleIDs] as? Set<String>,
+            let statusKey = note.userInfo?[DataStore.UserInfoKey.statusKey] as? ArticleStatus.Key,
+            let flag = note.userInfo?[DataStore.UserInfoKey.statusFlag] as? Bool,
             statusKey == .read,
             flag == true
         {

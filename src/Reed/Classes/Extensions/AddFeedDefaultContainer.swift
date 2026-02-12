@@ -11,43 +11,25 @@ import Foundation
 @MainActor
 struct AddFeedDefaultContainer {
     static var defaultContainer: Container? {
+        let dataStore = DataStoreManager.shared.defaultDataStore
+        guard dataStore.isActive else { return nil }
+
         if
-            let accountID = AppDefaults.shared.addFeedAccountID,
-            let account = AccountManager.shared.activeAccounts.first(where: { $0.accountID == accountID })
+            let folderName = AppDefaults.shared.addFeedFolderName,
+            let folder = dataStore.existingFolder(withDisplayName: folderName)
         {
-            if
-                let folderName = AppDefaults.shared.addFeedFolderName,
-                let folder = account.existingFolder(withDisplayName: folderName)
-            {
-                folder
-            } else {
-                substituteContainerIfNeeded(account: account)
-            }
-        } else if let account = AccountManager.shared.sortedActiveAccounts.first {
-            substituteContainerIfNeeded(account: account)
-        } else {
-            nil
+            return folder
         }
+
+        return dataStore
     }
 
     static func saveDefaultContainer(_ container: Container) {
-        AppDefaults.shared.addFeedAccountID = container.account?.accountID
+        AppDefaults.shared.addFeedAccountID = container.dataStore?.dataStoreID
         if let folder = container as? Folder {
             AppDefaults.shared.addFeedFolderName = folder.nameForDisplay
         } else {
             AppDefaults.shared.addFeedFolderName = nil
-        }
-    }
-
-    private static func substituteContainerIfNeeded(account: Account) -> Container? {
-        if !account.behaviors.contains(.disallowFeedInRootFolder) {
-            account
-        } else {
-            if let folder = account.sortedFolders?.first {
-                folder
-            } else {
-                nil
-            }
         }
     }
 }

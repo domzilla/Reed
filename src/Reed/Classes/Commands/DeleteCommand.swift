@@ -98,7 +98,7 @@ final class DeleteCommand: UndoableCommand {
 
 @MainActor
 private struct SidebarItemSpecifier {
-    private weak var account: Account?
+    private weak var dataStore: DataStore?
     private let parentFolder: Folder?
     private let folder: Folder?
     private let feed: Feed?
@@ -109,35 +109,35 @@ private struct SidebarItemSpecifier {
         if let parentFolder {
             return parentFolder
         }
-        if let account {
-            return account
+        if let dataStore {
+            return dataStore
         }
         return nil
     }
 
     @MainActor
     init?(node: Node, errorHandler: @escaping (Error) -> Void) {
-        var account: Account?
+        var dataStore: DataStore?
 
         self.parentFolder = node.parentFolder()
 
         if let feed = node.representedObject as? Feed {
             self.feed = feed
             self.folder = nil
-            account = feed.account
+            dataStore = feed.dataStore
         } else if let folder = node.representedObject as? Folder {
             self.feed = nil
             self.folder = folder
-            account = folder.account
+            dataStore = folder.dataStore
         } else {
             return nil
         }
-        if account == nil {
+        if dataStore == nil {
             return nil
         }
 
-        self.account = account!
-        self.path = ContainerPath(account: account!, folders: node.containingFolders())
+        self.dataStore = dataStore!
+        self.path = ContainerPath(dataStore: dataStore!, folders: node.containingFolders())
 
         self.errorHandler = errorHandler
     }
@@ -150,7 +150,7 @@ private struct SidebarItemSpecifier {
             }
 
             BatchUpdate.shared.start()
-            self.account?.removeFeed(feed, from: container) { result in
+            self.dataStore?.removeFeed(feed, from: container) { result in
                 BatchUpdate.shared.end()
                 completion()
                 self.checkResult(result)
@@ -158,7 +158,7 @@ private struct SidebarItemSpecifier {
 
         } else if let folder {
             BatchUpdate.shared.start()
-            self.account?.removeFolder(folder) { result in
+            self.dataStore?.removeFolder(folder) { result in
                 BatchUpdate.shared.end()
                 completion()
                 self.checkResult(result)
@@ -175,24 +175,24 @@ private struct SidebarItemSpecifier {
     }
 
     private func restoreFeed() {
-        guard let account, let feed, let container = path.resolveContainer() else {
+        guard let dataStore, let feed, let container = path.resolveContainer() else {
             return
         }
 
         BatchUpdate.shared.start()
-        account.restoreFeed(feed, container: container) { result in
+        dataStore.restoreFeed(feed, container: container) { result in
             BatchUpdate.shared.end()
             self.checkResult(result)
         }
     }
 
     private func restoreFolder() {
-        guard let account, let folder else {
+        guard let dataStore, let folder else {
             return
         }
 
         BatchUpdate.shared.start()
-        account.restoreFolder(folder) { result in
+        dataStore.restoreFolder(folder) { result in
             BatchUpdate.shared.end()
             self.checkResult(result)
         }

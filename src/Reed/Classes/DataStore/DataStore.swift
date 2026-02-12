@@ -23,12 +23,6 @@ extension Notification.Name {
         .Name(rawValue: "DataStoreRefreshProgressDidChange")
     public static let DataStoreDidDownloadArticles = Notification.Name(rawValue: "DataStoreDidDownloadArticles")
     public static let StatusesDidChange = Notification.Name(rawValue: "StatusesDidChange")
-
-    // Backward compatibility aliases
-    public static let AccountRefreshDidBegin = DataStoreRefreshDidBegin
-    public static let AccountRefreshDidFinish = DataStoreRefreshDidFinish
-    public static let AccountRefreshProgressDidChange = DataStoreRefreshProgressDidChange
-    public static let AccountDidDownloadArticles = DataStoreDidDownloadArticles
 }
 
 public enum FetchType {
@@ -1454,37 +1448,4 @@ public nonisolated enum DataStoreType: Int, Codable, Sendable {
     // Raw values should not change since they're stored on disk.
     case onMyMac = 1
     case cloudKit = 2
-}
-
-// MARK: - Type Aliases for Backward Compatibility
-
-public typealias Account = DataStore
-public typealias AccountType = DataStoreType
-public typealias AccountError = DataStoreError
-
-// Backward compatibility - AccountBehaviors stub (all features supported)
-public typealias AccountBehaviors = [AccountBehavior]
-public enum AccountBehavior: Equatable {
-    case disallowFeedCopyInRootFolder
-    case disallowFeedInRootFolder
-    case disallowFeedInMultipleFolders
-    case disallowFolderManagement
-    case disallowOPMLImports
-    case disallowMarkAsUnreadAfterPeriod(Int)
-}
-
-// Backward compatibility extensions
-extension DataStore {
-    public var accountID: String { self.dataStoreID }
-    public var behaviors: AccountBehaviors { [] } // All features supported
-}
-
-extension Feed {
-    public var accountID: String { dataStoreID }
-    public var account: DataStore? { dataStore }
-}
-
-extension Folder {
-    public var accountID: String { dataStoreID }
-    public var account: DataStore? { dataStore }
 }

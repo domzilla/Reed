@@ -20,15 +20,12 @@ public nonisolated enum DataStoreType: Int, Codable, Sendable {
     }
 }
 
-// Backward compatibility alias
-public typealias AccountType = DataStoreType
-
 // MARK: - ContainerIdentifier
 
 public enum ContainerIdentifier: Hashable, Equatable, Sendable {
     case smartFeedController
-    case account(String) // accountID
-    case folder(String, String) // accountID, folderName
+    case dataStore(String) // dataStoreID
+    case folder(String, String) // dataStoreID, folderName
 
     public var userInfo: [AnyHashable: AnyHashable] {
         switch self {
@@ -36,15 +33,15 @@ public enum ContainerIdentifier: Hashable, Equatable, Sendable {
             [
                 "type": "smartFeedController",
             ]
-        case let .account(accountID):
+        case let .dataStore(dataStoreID):
             [
-                "type": "account",
-                "accountID": accountID,
+                "type": "dataStore",
+                "dataStoreID": dataStoreID,
             ]
-        case let .folder(accountID, folderName):
+        case let .folder(dataStoreID, folderName):
             [
                 "type": "folder",
-                "accountID": accountID,
+                "dataStoreID": dataStoreID,
                 "folderName": folderName,
             ]
         }
@@ -56,14 +53,14 @@ public enum ContainerIdentifier: Hashable, Equatable, Sendable {
         switch type {
         case "smartFeedController":
             self = ContainerIdentifier.smartFeedController
-        case "account":
-            guard let accountID = userInfo["accountID"] as? String else { return nil }
-            self = ContainerIdentifier.account(accountID)
+        case "dataStore", "account":
+            guard let dataStoreID = (userInfo["dataStoreID"] ?? userInfo["accountID"]) as? String else { return nil }
+            self = ContainerIdentifier.dataStore(dataStoreID)
         case "folder":
             guard
-                let accountID = userInfo["accountID"] as? String,
+                let dataStoreID = (userInfo["dataStoreID"] ?? userInfo["accountID"]) as? String,
                 let folderName = userInfo["folderName"] as? String else { return nil }
-            self = ContainerIdentifier.folder(accountID, folderName)
+            self = ContainerIdentifier.folder(dataStoreID, folderName)
         default:
             return nil
         }
@@ -73,7 +70,7 @@ public enum ContainerIdentifier: Hashable, Equatable, Sendable {
 extension ContainerIdentifier: Encodable {
     enum CodingKeys: CodingKey {
         case type
-        case accountID
+        case dataStoreID
         case folderName
     }
 
@@ -82,32 +79,41 @@ extension ContainerIdentifier: Encodable {
         switch self {
         case .smartFeedController:
             try container.encode("smartFeedController", forKey: .type)
-        case let .account(accountID):
-            try container.encode("account", forKey: .type)
-            try container.encode(accountID, forKey: .accountID)
-        case let .folder(accountID, folderName):
+        case let .dataStore(dataStoreID):
+            try container.encode("dataStore", forKey: .type)
+            try container.encode(dataStoreID, forKey: .dataStoreID)
+        case let .folder(dataStoreID, folderName):
             try container.encode("folder", forKey: .type)
-            try container.encode(accountID, forKey: .accountID)
+            try container.encode(dataStoreID, forKey: .dataStoreID)
             try container.encode(folderName, forKey: .folderName)
         }
     }
 }
 
 extension ContainerIdentifier: Decodable {
+    private enum DecodingKeys: String, CodingKey {
+        case type
+        case dataStoreID
+        case accountID // backward compat
+        case folderName
+    }
+
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
 
         switch type {
         case "smartFeedController":
             self = .smartFeedController
-        case "account":
-            let accountID = try container.decode(String.self, forKey: .accountID)
-            self = .account(accountID)
+        case "dataStore", "account":
+            let dataStoreID = try (container.decodeIfPresent(String.self, forKey: .dataStoreID)
+                ?? container.decode(String.self, forKey: .accountID))
+            self = .dataStore(dataStoreID)
         default:
-            let accountID = try container.decode(String.self, forKey: .accountID)
+            let dataStoreID = try (container.decodeIfPresent(String.self, forKey: .dataStoreID)
+                ?? container.decode(String.self, forKey: .accountID))
             let folderName = try container.decode(String.self, forKey: .folderName)
-            self = .folder(accountID, folderName)
+            self = .folder(dataStoreID, folderName)
         }
     }
 }

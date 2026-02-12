@@ -9,8 +9,6 @@
 import Foundation
 import RSCore
 
-// These handle multiple accounts.
-
 @MainActor
 func markArticles(
     _ articles: Set<Article>,
@@ -18,28 +16,9 @@ func markArticles(
     flag: Bool,
     completion: (() -> Void)? = nil
 ) {
-    let d: [String: Set<Article>] = accountAndArticlesDictionary(articles)
-
-    let group = DispatchGroup()
-
-    for (accountID, accountArticles) in d {
-        guard let account = AccountManager.shared.existingAccount(accountID: accountID) else {
-            continue
-        }
-        group.enter()
-        account.markArticles(accountArticles, statusKey: statusKey, flag: flag) { _ in
-            group.leave()
-        }
-    }
-
-    group.notify(queue: .main) {
+    DataStoreManager.shared.defaultDataStore.markArticles(articles, statusKey: statusKey, flag: flag) { _ in
         completion?()
     }
-}
-
-private func accountAndArticlesDictionary(_ articles: Set<Article>) -> [String: Set<Article>] {
-    let d = Dictionary(grouping: articles, by: { $0.accountID })
-    return d.mapValues { Set($0) }
 }
 
 @MainActor
@@ -97,24 +76,7 @@ extension Article {
     }
 
     var isAvailableToMarkUnread: Bool {
-        guard
-            let markUnreadWindow = account?.behaviors.compactMap({ behavior -> Int? in
-                switch behavior {
-                case let .disallowMarkAsUnreadAfterPeriod(days):
-                    return days
-                default:
-                    return nil
-                }
-            }).first else
-        {
-            return true
-        }
-
-        if self.logicalDatePublished.byAdding(days: markUnreadWindow) > Date() {
-            return true
-        } else {
-            return false
-        }
+        true
     }
 
     func iconImage() -> IconImage? {
@@ -185,8 +147,8 @@ extension Article {
 // MARK: Path
 
 enum ArticlePathKey {
-    static let accountID = "accountID"
-    static let accountName = "accountName"
+    static let dataStoreID = "accountID"
+    static let dataStoreName = "accountName"
     static let feedID = "feedID"
     static let articleID = "articleID"
 }
@@ -195,8 +157,8 @@ enum ArticlePathKey {
 extension Article {
     public var pathUserInfo: [AnyHashable: Any] {
         [
-            ArticlePathKey.accountID: accountID,
-            ArticlePathKey.accountName: account?.nameForDisplay ?? "",
+            ArticlePathKey.dataStoreID: accountID,
+            ArticlePathKey.dataStoreName: dataStore?.nameForDisplay ?? "",
             ArticlePathKey.feedID: feedID,
             ArticlePathKey.articleID: articleID,
         ]
