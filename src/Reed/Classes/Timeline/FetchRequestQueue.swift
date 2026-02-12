@@ -10,48 +10,47 @@ import Foundation
 
 @MainActor
 final class FetchRequestQueue {
-    private var pendingRequests = [FetchRequestOperation]()
-    private var currentRequest: FetchRequestOperation?
+    private var currentTask: Task<Void, Never>?
 
     var isAnyCurrentRequest: Bool {
-        if let currentRequest {
-            return !currentRequest.isCanceled
-        }
-        return false
+        guard let currentTask else { return false }
+        return !currentTask.isCancelled
     }
 
     func cancelAllRequests() {
-        precondition(Thread.isMainThread)
-        self.pendingRequests.forEach { $0.isCanceled = true }
-        self.currentRequest?.isCanceled = true
-        self.pendingRequests = [FetchRequestOperation]()
+        self.currentTask?.cancel()
+        self.currentTask = nil
     }
 
-    func add(_ fetchRequestOperation: FetchRequestOperation) {
-        precondition(Thread.isMainThread)
-        self.pendingRequests.append(fetchRequestOperation)
-        runNextRequestIfNeeded()
-    }
-}
+    func fetchArticles(
+        using fetchers: [ArticleFetcher],
+        readFilterEnabledTable: [SidebarItemIdentifier: Bool],
+        resultHandler: @escaping (Set<Article>) -> Void
+    ) {
+        self.cancelAllRequests()
 
-extension FetchRequestQueue {
-    private func runNextRequestIfNeeded() {
-        precondition(Thread.isMainThread)
-        self.removeCanceledAndFinishedRequests()
-        guard self.currentRequest == nil, let requestToRun = pendingRequests.first else {
-            return
+        self.currentTask = Task {
+            var fetchedArticles = Set<Article>()
+
+            for fetcher in fetchers {
+                guard !Task.isCancelled else { return }
+
+                let useUnread = (fetcher as? SidebarItem)?
+                    .readFiltered(readFilterEnabledTable: readFilterEnabledTable) ?? true
+
+                if useUnread {
+                    if let articles = try? await fetcher.fetchUnreadArticlesAsync() {
+                        fetchedArticles.formUnion(articles)
+                    }
+                } else {
+                    if let articles = try? await fetcher.fetchArticlesAsync() {
+                        fetchedArticles.formUnion(articles)
+                    }
+                }
+            }
+
+            guard !Task.isCancelled else { return }
+            resultHandler(fetchedArticles)
         }
-
-        self.currentRequest = requestToRun
-        self.pendingRequests.removeFirst()
-        self.currentRequest!.run { fetchRequestOperation in
-            precondition(fetchRequestOperation === self.currentRequest)
-            self.currentRequest = nil
-            self.runNextRequestIfNeeded()
-        }
-    }
-
-    private func removeCanceledAndFinishedRequests() {
-        self.pendingRequests = self.pendingRequests.filter { !$0.isCanceled && !$0.isFinished }
     }
 }

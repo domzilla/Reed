@@ -2245,24 +2245,20 @@ extension SceneCoordinator {
 
     private func fetchUnsortedArticlesAsync(for representedObjects: [Any], completion: @escaping ArticleSetBlock) {
         // The callback will *not* be called if the fetch is no longer relevant — that is,
-        // if it’s been superseded by a newer fetch, or the timeline was emptied, etc., it won’t get called.
+        // if it's been superseded by a newer fetch, or the timeline was emptied, etc., it won't get called.
         precondition(Thread.isMainThread)
         self.cancelPendingAsyncFetches()
 
         let fetchers = representedObjects.compactMap { $0 as? ArticleFetcher }
-        let fetchOperation = FetchRequestOperation(
-            id: fetchSerialNumber,
-            readFilterEnabledTable: readFilterEnabledTable,
-            fetchers: fetchers
-        ) { [weak self] articles, operation in
-            precondition(Thread.isMainThread)
-            guard !operation.isCanceled, let strongSelf = self, operation.id == strongSelf.fetchSerialNumber else {
-                return
-            }
+        let fetchSerialNumber = self.fetchSerialNumber
+
+        self.fetchRequestQueue.fetchArticles(
+            using: fetchers,
+            readFilterEnabledTable: self.readFilterEnabledTable
+        ) { [weak self] articles in
+            guard let self, fetchSerialNumber == self.fetchSerialNumber else { return }
             completion(articles)
         }
-
-        self.fetchRequestQueue.add(fetchOperation)
     }
 
     private func timelineFetcherContainsAnyPseudoFeed() -> Bool {

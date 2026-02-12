@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Consolidated `SmartFeedDelegate` protocol into direct `SmartFeed` configuration — eliminated 5 delegate files, SmartFeed now takes identifier/name/fetchType/icon/closure directly
 - Replaced `DataStoreManager` singleton with `DataStore.shared` — removed vestigial multi-account manager layer (327 lines), moved manager API directly into `DataStore`
 - Converted `MainThreadOperation` subclasses to `async/await` — replaced `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation` with direct async calls; simplified `WebViewProvider` queue management
+- Replaced `FetchRequestOperation` + `FetchRequestQueue` operation-based pattern with `Task`-based cancellation — deleted `FetchRequestOperation` (105 LOC), simplified `FetchRequestQueue` to a single `Task<Void, Never>?` with cancel-and-replace semantics
 
 ### Removed
 - `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
