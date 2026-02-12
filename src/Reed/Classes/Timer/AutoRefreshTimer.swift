@@ -78,6 +78,6 @@ final class AutoRefreshTimer {
         self.lastTimedRefresh = Date()
         self.update()
 
-        DataStoreManager.shared.refreshAllWithoutWaiting()
+        DataStore.shared.refreshAllWithoutWaiting()
     }
 }

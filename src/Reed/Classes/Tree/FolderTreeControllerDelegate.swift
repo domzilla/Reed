@@ -20,7 +20,7 @@ final class FolderTreeControllerDelegate: TreeControllerDelegate {
 @MainActor
 extension FolderTreeControllerDelegate {
     private func childNodesForRootNode(_ node: Node) -> [Node]? {
-        let dataStoreNodes: [Node] = DataStoreManager.shared.sortedActiveDataStores.map { dataStore in
+        let dataStoreNodes: [Node] = DataStore.shared.sortedActiveDataStores.map { dataStore in
             let dataStoreNode = Node(representedObject: dataStore, parent: node)
             dataStoreNode.canHaveChildNodes = true
             return dataStoreNode

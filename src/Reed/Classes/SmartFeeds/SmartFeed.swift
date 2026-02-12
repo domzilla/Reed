@@ -68,7 +68,7 @@ final class SmartFeed: PseudoFeed {
 
     @objc
     func fetchUnreadCounts() {
-        let activeDataStores = DataStoreManager.shared.activeDataStores
+        let activeDataStores = DataStore.shared.activeDataStores
 
         let activeDataStoreIDs = activeDataStores.map(\.dataStoreID)
         for dataStoreID in self.unreadCounts.keys {
@@ -91,11 +91,11 @@ final class SmartFeed: PseudoFeed {
 
 extension SmartFeed: ArticleFetcher {
     func fetchArticles() throws -> Set<Article> {
-        try DataStoreManager.shared.fetchArticles(self.fetchType)
+        try DataStore.shared.fetchArticles(self.fetchType)
     }
 
     func fetchArticlesAsync() async throws -> Set<Article> {
-        try await DataStoreManager.shared.fetchArticlesAsync(self.fetchType)
+        try await DataStore.shared.fetchArticlesAsync(self.fetchType)
     }
 
     func fetchUnreadArticles() throws -> Set<Article> {
@@ -127,7 +127,7 @@ extension SmartFeed {
 
     private func updateUnreadCount() {
         var updatedUnreadCount = 0
-        for dataStore in DataStoreManager.shared.activeDataStores {
+        for dataStore in DataStore.shared.activeDataStores {
             if let oneUnreadCount = unreadCounts[dataStore.dataStoreID] {
                 updatedUnreadCount += oneUnreadCount
             }

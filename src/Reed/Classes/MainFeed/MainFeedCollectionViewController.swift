@@ -543,7 +543,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         } else {
             self.setFilterButtonToInactive()
         }
-        self.addNewItemButton.isEnabled = !DataStoreManager.shared.activeDataStores.isEmpty
+        self.addNewItemButton.isEnabled = !DataStore.shared.activeDataStores.isEmpty
 
         self.configureContextMenu()
     }

@@ -40,6 +40,31 @@ public enum FetchType {
 /// Syncs automatically via CloudKit when available.
 @MainActor
 public final class DataStore: DisplayNameProvider, UnreadCountProvider, Container, Hashable {
+    // MARK: - Singleton
+
+    public static var shared: DataStore = {
+        let dataStoresFolder = AppConfig.dataSubfolder(named: "DataStores").path
+        let iCloudIdentifier = "iCloud"
+        let iCloudFolder = (dataStoresFolder as NSString).appendingPathComponent(iCloudIdentifier)
+        do {
+            try FileManager.default.createDirectory(
+                atPath: iCloudFolder,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+        } catch {
+            assertionFailure("Could not create folder for data store.")
+            abort()
+        }
+        return DataStore(dataFolder: iCloudFolder, dataStoreID: iCloudIdentifier)
+    }()
+
+    // MARK: - Manager State
+
+    public var isSuspended = false
+    public let combinedRefreshProgress = CombinedRefreshProgress()
+
+    public typealias ErrorHandlerCallback = @Sendable (Error) -> Void
     public enum UserInfoKey {
         public static let dataStore = "dataStore"
         public static let newArticles = "newArticles" // DataStoreDidDownloadArticles
@@ -1439,5 +1464,176 @@ extension DataStore: OPMLRepresentable {
             s += folder.OPMLString(indentLevel: indentLevel + 1, allowCustomAttributes: allowCustomAttributes)
         }
         return s
+    }
+}
+
+// MARK: - Manager API (formerly DataStoreManager)
+
+extension DataStore {
+    /// Returns the single data store in an array (backward compat)
+    public var activeDataStores: [DataStore] {
+        self.isActive ? [self] : []
+    }
+
+    /// Returns the single data store in an array (backward compat)
+    public var sortedActiveDataStores: [DataStore] {
+        self.activeDataStores
+    }
+
+    public var lastArticleFetchEndTime: Date? {
+        self.metadata.lastArticleFetchEndTime
+    }
+
+    private var isManagerActive: Bool {
+        get { self._isManagerActive }
+        set { self._isManagerActive = newValue }
+    }
+
+    private static var _managerActive = false
+
+    private var _isManagerActive: Bool {
+        get { Self._managerActive }
+        set { Self._managerActive = newValue }
+    }
+
+    /// Start listening for unread count changes. Called once from AppDelegate.
+    public func startManager() {
+        guard !self.isManagerActive else {
+            assertionFailure("startManager called when already active")
+            return
+        }
+        self.isManagerActive = true
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.managerUnreadCountDidInitialize(_:)),
+            name: .UnreadCountDidInitialize,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.managerUnreadCountDidChange(_:)),
+            name: .UnreadCountDidChange,
+            object: nil
+        )
+
+        DispatchQueue.main.async {
+            // Force an initial unread count notification
+            self.postUnreadCountDidChangeNotification()
+        }
+    }
+
+    @MainActor @objc
+    private func managerUnreadCountDidInitialize(_ notification: Notification) {
+        guard notification.object is DataStore else { return }
+        if self.areUnreadCountsInitialized {
+            postUnreadCountDidInitializeNotification()
+        }
+    }
+
+    @MainActor @objc
+    private func managerUnreadCountDidChange(_ notification: Notification) {
+        guard notification.object is DataStore else { return }
+        // Already handled by existing DataStore notifications
+    }
+
+    public func existingDataStore(dataStoreID: String) -> DataStore? {
+        dataStoreID == self.dataStoreID ? self : nil
+    }
+
+    public func existingContainer(with containerID: ContainerIdentifier) -> Container? {
+        switch containerID {
+        case let .dataStore(dataStoreID):
+            self.existingDataStore(dataStoreID: dataStoreID)
+        case let .folder(_, folderName):
+            self.existingFolder(with: folderName)
+        default:
+            nil
+        }
+    }
+
+    public func existingFeed(with sidebarItemID: SidebarItemIdentifier) -> SidebarItem? {
+        switch sidebarItemID {
+        case let .folder(_, folderName):
+            self.existingFolder(with: folderName)
+        case let .feed(_, feedID):
+            self.existingFeed(withFeedID: feedID)
+        default:
+            nil
+        }
+    }
+
+    public func suspendAll() {
+        self.isSuspended = true
+        self.suspendNetwork()
+        self.suspendDatabase()
+    }
+
+    public func resumeAll() {
+        self.isSuspended = false
+        self.resumeDatabaseAndDelegate()
+        self.resume()
+    }
+
+    public func refreshAllWithoutWaiting(errorHandler: ErrorHandlerCallback? = nil) {
+        Task { @MainActor in
+            await self.refreshAllManaged(errorHandler: errorHandler)
+        }
+    }
+
+    public func refreshAllManaged(errorHandler: ErrorHandlerCallback? = nil) async {
+        guard NetworkMonitor.shared.isConnected else {
+            DZLog("DataStore: skipping refreshAll — not connected to internet.")
+            return
+        }
+
+        self.combinedRefreshProgress.start()
+        defer {
+            combinedRefreshProgress.stop()
+        }
+
+        guard self.isActive else { return }
+
+        do {
+            try await self.refreshAll()
+        } catch {
+            errorHandler?(error)
+        }
+    }
+
+    public func sendArticleStatusAll() async {
+        guard self.isActive else { return }
+        try? await self.sendArticleStatus()
+    }
+
+    public func syncArticleStatusAllWithoutWaiting() {
+        Task { @MainActor in
+            await self.syncArticleStatusAll()
+        }
+    }
+
+    public func syncArticleStatusAll() async {
+        guard self.isActive else { return }
+        try? await self.syncArticleStatus()
+    }
+
+    public func fetchArticle(dataStoreID: String, articleID: String) -> Article? {
+        precondition(Thread.isMainThread)
+
+        guard self.existingDataStore(dataStoreID: dataStoreID) != nil else {
+            return nil
+        }
+
+        do {
+            let articles = try self.fetchArticles(.articleIDs(Set([articleID])))
+            return articles.first
+        } catch {
+            return nil
+        }
+    }
+
+    public func anyDataStoreHasFeedWithURL(_ urlString: String) -> Bool {
+        guard self.isActive else { return false }
+        return self.existingFeed(withURL: urlString) != nil
     }
 }

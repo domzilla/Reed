@@ -443,7 +443,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
         }
 
         let article = self.articles.article(matching: articleSpecifier) ??
-            DataStoreManager.shared.fetchArticle(
+            DataStore.shared.fetchArticle(
                 dataStoreID: articleSpecifier.accountID,
                 articleID: articleSpecifier.articleID
             )
@@ -496,7 +496,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
 
     @objc
     func unreadCountDidInitialize(_ notification: Notification) {
-        guard notification.object is DataStoreManager else {
+        guard notification.object is DataStore else {
             return
         }
 
@@ -508,7 +508,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     @objc
     func unreadCountDidChange(_: Notification) {
         // We will handle the filtering of unread feeds in unreadCountDidInitialize after they have all be calculated
-        guard DataStoreManager.shared.areUnreadCountsInitialized else {
+        guard DataStore.shared.areUnreadCountsInitialized else {
             return
         }
 
@@ -604,10 +604,10 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     /// - Parameter note: Optional `Notification`
     @objc
     func updateNavigationBarSubtitles(_: Notification?) {
-        let progress = DataStoreManager.shared.combinedRefreshProgress
+        let progress = DataStore.shared.combinedRefreshProgress
 
         if progress.isComplete {
-            if let lastArticleFetchEndTime = DataStoreManager.shared.lastArticleFetchEndTime {
+            if let lastArticleFetchEndTime = DataStore.shared.lastArticleFetchEndTime {
                 if Date.now > lastArticleFetchEndTime.addingTimeInterval(60) {
                     let relativeDateTimeFormatter = RelativeDateTimeFormatter()
                     relativeDateTimeFormatter.dateTimeStyle = .named

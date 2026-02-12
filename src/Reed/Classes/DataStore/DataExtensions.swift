@@ -47,7 +47,7 @@ extension Feed {
 
 extension Article {
     @MainActor public var dataStore: DataStore? {
-        DataStoreManager.shared.existingDataStore(dataStoreID: accountID)
+        DataStore.shared.existingDataStore(dataStoreID: accountID)
     }
 
     @MainActor public var feed: Feed? {

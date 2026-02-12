@@ -11,7 +11,7 @@ import Foundation
 @MainActor
 struct AddFeedDefaultContainer {
     static var defaultContainer: Container? {
-        let dataStore = DataStoreManager.shared.defaultDataStore
+        let dataStore = DataStore.shared
         guard dataStore.isActive else { return nil }
 
         if

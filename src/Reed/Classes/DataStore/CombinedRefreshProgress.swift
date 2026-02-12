@@ -57,7 +57,7 @@ public final class CombinedRefreshProgress {
 
         var didMakeChange = false
 
-        let downloadProgresses = DataStoreManager.shared.activeDataStores.map(\.refreshProgress)
+        let downloadProgresses = DataStore.shared.activeDataStores.map(\.refreshProgress)
         for downloadProgress in downloadProgresses {
             let progressInfo = downloadProgress.progressInfo
             updatedNumberOfTasks += progressInfo.numberOfTasks

@@ -106,7 +106,7 @@ extension ExtensionFeedAddRequestFile {
 
         guard
             let dataStoreID = destinationDataStoreID,
-            let dataStore = DataStoreManager.shared.existingDataStore(dataStoreID: dataStoreID) else
+            let dataStore = DataStore.shared.existingDataStore(dataStoreID: dataStoreID) else
         {
             return
         }

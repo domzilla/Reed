@@ -69,7 +69,7 @@ final class RefreshProgressView: UIView {
     }
 
     func update() {
-        if !DataStoreManager.shared.combinedRefreshProgress.isComplete {
+        if !DataStore.shared.combinedRefreshProgress.isComplete {
             progressChanged(animated: false)
         } else {
             updateRefreshLabel()
@@ -105,7 +105,7 @@ extension RefreshProgressView {
         // https://github.com/Ranchero-Software/NetNewsWire/issues/1764
         let isInViewHierarchy = self.superview != nil
 
-        let progress = DataStoreManager.shared.combinedRefreshProgress
+        let progress = DataStore.shared.combinedRefreshProgress
 
         if progress.isComplete {
             if isInViewHierarchy {
@@ -114,7 +114,7 @@ extension RefreshProgressView {
 
             func completeLabel() {
                 // Check that there are no pending downloads.
-                if DataStoreManager.shared.combinedRefreshProgress.isComplete {
+                if DataStore.shared.combinedRefreshProgress.isComplete {
                     self.updateRefreshLabel()
                     self.label.isHidden = false
                     self.progressView.isHidden = true
@@ -146,7 +146,7 @@ extension RefreshProgressView {
     }
 
     private func updateRefreshLabel() {
-        if let lastArticleFetchEndTime = DataStoreManager.shared.lastArticleFetchEndTime {
+        if let lastArticleFetchEndTime = DataStore.shared.lastArticleFetchEndTime {
             if Date() > lastArticleFetchEndTime.addingTimeInterval(60) {
                 let relativeDateTimeFormatter = RelativeDateTimeFormatter()
                 relativeDateTimeFormatter.dateTimeStyle = .named

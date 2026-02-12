@@ -16,7 +16,7 @@ func markArticles(
     flag: Bool,
     completion: (() -> Void)? = nil
 ) {
-    DataStoreManager.shared.defaultDataStore.markArticles(articles, statusKey: statusKey, flag: flag) { _ in
+    DataStore.shared.markArticles(articles, statusKey: statusKey, flag: flag) { _ in
         completion?()
     }
 }

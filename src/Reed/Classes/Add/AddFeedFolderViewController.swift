@@ -47,7 +47,7 @@ final class AddFeedFolderViewController: UITableViewController {
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "FolderCell")
 
-        let sortedActiveDataStores = DataStoreManager.shared.sortedActiveDataStores
+        let sortedActiveDataStores = DataStore.shared.sortedActiveDataStores
 
         for dataStore in sortedActiveDataStores {
             self.containers.append(dataStore)

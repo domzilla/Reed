@@ -96,19 +96,19 @@ final class WidgetDataEncoder {
 @MainActor
 extension WidgetDataEncoder {
     private func fetchWidgetData() async throws -> WidgetData {
-        let fetchedUnreadArticles = try await DataStoreManager.shared.fetchArticlesAsync(.unread(self.fetchLimit))
+        let fetchedUnreadArticles = try await DataStore.shared.fetchArticlesAsync(.unread(self.fetchLimit))
         let unreadArticles = self.sortedLatestArticles(fetchedUnreadArticles)
 
-        let fetchedStarredArticles = try await DataStoreManager.shared.fetchArticlesAsync(.starred(self.fetchLimit))
+        let fetchedStarredArticles = try await DataStore.shared.fetchArticlesAsync(.starred(self.fetchLimit))
         let starredArticles = self.sortedLatestArticles(fetchedStarredArticles)
 
-        let fetchedTodayArticles = try await DataStoreManager.shared.fetchArticlesAsync(.today(self.fetchLimit))
+        let fetchedTodayArticles = try await DataStore.shared.fetchArticlesAsync(.today(self.fetchLimit))
         let todayArticles = self.sortedLatestArticles(fetchedTodayArticles)
 
         let latestData = WidgetData(
             currentUnreadCount: SmartFeedsController.shared.unreadFeed.unreadCount,
             currentTodayCount: SmartFeedsController.shared.todayFeed.unreadCount,
-            currentStarredCount: (try? DataStoreManager.shared.fetchCountForStarredArticles()) ??
+            currentStarredCount: (try? DataStore.shared.fetchCountForStarredArticles()) ??
                 0,
             unreadArticles: unreadArticles,
             starredArticles: starredArticles,

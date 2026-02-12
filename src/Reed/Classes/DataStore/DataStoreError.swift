@@ -40,7 +40,7 @@ public enum DataStoreError: LocalizedError {
     @MainActor
     public static func dataStore(from error: DataStoreError?) -> DataStore? {
         if case let .wrappedError(_, dataStoreID, _) = error {
-            return DataStoreManager.shared.existingDataStore(dataStoreID: dataStoreID)
+            return DataStore.shared.existingDataStore(dataStoreID: dataStoreID)
         }
         return nil
     }

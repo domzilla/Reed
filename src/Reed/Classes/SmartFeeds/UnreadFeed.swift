@@ -66,10 +66,10 @@ extension UnreadFeed: ArticleFetcher {
     }
 
     func fetchUnreadArticles() throws -> Set<Article> {
-        try DataStoreManager.shared.fetchArticles(self.fetchType)
+        try DataStore.shared.fetchArticles(self.fetchType)
     }
 
     func fetchUnreadArticlesAsync() async throws -> Set<Article> {
-        try await DataStoreManager.shared.fetchArticlesAsync(self.fetchType)
+        try await DataStore.shared.fetchArticlesAsync(self.fetchType)
     }
 }

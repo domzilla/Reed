@@ -101,7 +101,7 @@ final class AddFolderViewController: UITableViewController {
         )
         navigationItem.rightBarButtonItem = self.addButton
 
-        self.dataStores = DataStoreManager.shared.sortedActiveDataStores
+        self.dataStores = DataStore.shared.sortedActiveDataStores
 
         self.nameTextField.delegate = self
 

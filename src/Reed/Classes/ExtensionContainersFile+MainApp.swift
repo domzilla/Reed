@@ -67,7 +67,7 @@ extension ExtensionContainersFile {
 
         fileCoordinator.coordinate(writingItemAt: fileURL, options: [], error: errorPointer, byAccessor: { writeURL in
             do {
-                let extensionDataStores = DataStoreManager.shared.sortedActiveDataStores
+                let extensionDataStores = DataStore.shared.sortedActiveDataStores
                     .map { ExtensionDataStore(dataStore: $0) }
                 let extensionContainers = ExtensionContainers(dataStores: extensionDataStores)
                 let data = try encoder.encode(extensionContainers)

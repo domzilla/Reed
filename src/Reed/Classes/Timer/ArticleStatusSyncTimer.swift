@@ -83,6 +83,6 @@ final class ArticleStatusSyncTimer {
         self.lastTimedRefresh = Date()
         self.update()
 
-        DataStoreManager.shared.syncArticleStatusAllWithoutWaiting()
+        DataStore.shared.syncArticleStatusAllWithoutWaiting()
     }
 }
