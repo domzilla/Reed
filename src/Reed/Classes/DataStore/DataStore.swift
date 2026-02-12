@@ -1504,37 +1504,10 @@ extension DataStore {
         }
         self.isManagerActive = true
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(self.managerUnreadCountDidInitialize(_:)),
-            name: .UnreadCountDidInitialize,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(self.managerUnreadCountDidChange(_:)),
-            name: .UnreadCountDidChange,
-            object: nil
-        )
-
         DispatchQueue.main.async {
             // Force an initial unread count notification
             self.postUnreadCountDidChangeNotification()
         }
-    }
-
-    @MainActor @objc
-    private func managerUnreadCountDidInitialize(_ notification: Notification) {
-        guard notification.object is DataStore else { return }
-        if self.areUnreadCountsInitialized {
-            postUnreadCountDidInitializeNotification()
-        }
-    }
-
-    @MainActor @objc
-    private func managerUnreadCountDidChange(_ notification: Notification) {
-        guard notification.object is DataStore else { return }
-        // Already handled by existing DataStore notifications
     }
 
     public func existingDataStore(dataStoreID: String) -> DataStore? {
