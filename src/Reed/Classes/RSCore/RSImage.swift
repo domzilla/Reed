@@ -6,8 +6,8 @@
 //  Copyright © 2019 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os.log
 
 #if os(macOS)
 import AppKit
@@ -23,7 +23,6 @@ typealias RSImage = UIImage
 
 typealias ImageResultBlock = @MainActor (RSImage?) -> Void
 
-private let RSImageLogger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "RSImage")
 private let debugLoggingEnabled = false
 
 extension RSImage {
@@ -149,14 +148,14 @@ extension RSImage {
     static func scaleImage(_ data: Data, maxPixelSize: Int) -> CGImage? {
         guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
             if debugLoggingEnabled {
-                RSImageLogger.debug("RSImageLogger: couldn’t create image source")
+                DZLog("RSImage: couldn't create image source")
             }
             return nil
         }
 
         let numberOfImages = CGImageSourceGetCount(imageSource)
         if debugLoggingEnabled {
-            RSImageLogger.debug("RSImageLogger: numberOfImages == \(numberOfImages, privacy: .public)")
+            DZLog("RSImage: numberOfImages == \(numberOfImages)")
         }
         guard numberOfImages > 0 else {
             return nil
@@ -180,10 +179,7 @@ extension RSImage {
             let maxDimension = max(width, height)
 
             if debugLoggingEnabled {
-                RSImageLogger
-                    .debug(
-                        "RSImageLogger: found width \(width, privacy: .public) height \(height, privacy: .public) \(maxPixelSize, privacy: .public)"
-                    )
+                DZLog("RSImage: found width \(width) height \(height) \(maxPixelSize)")
             }
 
             // Skip invalid dimensions
@@ -195,8 +191,7 @@ extension RSImage {
             if maxDimension == maxPixelSize {
                 exactMatch = (i, maxDimension)
                 if debugLoggingEnabled {
-                    RSImageLogger
-                        .debug("RSImageLogger: found exact match for maxPixelSize: \(maxPixelSize, privacy: .public)")
+                    DZLog("RSImage: found exact match for maxPixelSize: \(maxPixelSize)")
                 }
                 break // Exact match is best, stop searching
             }
@@ -211,10 +206,7 @@ extension RSImage {
                     goodMatch = (i, maxDimension)
                 }
                 if debugLoggingEnabled {
-                    RSImageLogger
-                        .debug(
-                            "RSImageLogger: found good match \(maxDimension, privacy: .public) for maxPixelSize: \(maxPixelSize, privacy: .public)"
-                        )
+                    DZLog("RSImage: found good match \(maxDimension) for maxPixelSize: \(maxPixelSize)")
                 }
             }
 
@@ -228,10 +220,7 @@ extension RSImage {
                     smallMatch = (i, maxDimension)
                 }
                 if debugLoggingEnabled {
-                    RSImageLogger
-                        .debug(
-                            "RSImageLogger: found small match \(maxDimension, privacy: .public) for maxPixelSize: \(maxPixelSize, privacy: .public)"
-                        )
+                    DZLog("RSImage: found small match \(maxDimension) for maxPixelSize: \(maxPixelSize)")
                 }
             }
         }
@@ -243,7 +232,7 @@ extension RSImage {
 
         // Fallback to creating a thumbnail
         if debugLoggingEnabled {
-            RSImageLogger.debug("RSImageLogger: found no match — calling createThumbnail")
+            DZLog("RSImage: found no match — calling createThumbnail")
         }
         return RSImage.createThumbnail(imageSource, maxPixelSize: maxPixelSize)
     }
@@ -264,7 +253,7 @@ extension RSImage {
         }
 
         if debugLoggingEnabled {
-            RSImageLogger.debug("RSImageLogger: createThumbnail image source count = \(count, privacy: .public)")
+            DZLog("RSImage: createThumbnail image source count = \(count)")
         }
 
         let options = [

@@ -6,8 +6,8 @@
 //  Copyright © 2019 Brent Simmons. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os
 import SQLite3
 import Synchronization
 
@@ -30,10 +30,8 @@ final class DatabaseQueue: Sendable {
     private let databasePath: String
     private let serialDispatchQueue: DispatchQueue
 
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DatabaseQueue")
-
     init(databasePath: String) {
-        Self.logger.debug("DatabaseQueue: creating with database path \(databasePath)")
+        DZLog("DatabaseQueue: creating with database path \(databasePath)")
 
         self.serialDispatchQueue = DispatchQueue(label: "DatabaseQueue (Serial) - \(databasePath)")
 
@@ -56,7 +54,7 @@ final class DatabaseQueue: Sendable {
     /// On Mac, suspend() and resume() are no-ops, since there isn’t a need for them.
     func suspend() {
         #if os(iOS)
-        Self.logger.info("DatabaseQueue: suspending")
+        DZLog("DatabaseQueue: suspending")
         self.state.withLock { state in
             guard !state.isSuspended else {
                 assertionFailure("DatabaseQueue: suspend called when already suspended")
@@ -74,7 +72,7 @@ final class DatabaseQueue: Sendable {
     /// iOS only — does nothing on macOS.
     func resume() {
         #if os(iOS)
-        Self.logger.info("DatabaseQueue: resuming")
+        DZLog("DatabaseQueue: resuming")
         self.state.withLock { state in
             guard state.isSuspended else {
                 assertionFailure("DatabaseQueue: resume called when already resumed")
@@ -139,7 +137,7 @@ final class DatabaseQueue: Sendable {
         nonisolated(unsafe) var error: DatabaseError? = nil
 
         self.runInDatabaseSync { result in
-            Self.logger.debug("DatabaseQueue: runCreateStatements")
+            DZLog("DatabaseQueue: runCreateStatements")
 
             switch result {
             case let .success(database):
@@ -166,7 +164,7 @@ final class DatabaseQueue: Sendable {
     /// vacuumIfNeeded instead.
     func vacuum() {
         self.runInDatabase { result in
-            Self.logger.debug("DatabaseQueue: vacuum")
+            DZLog("DatabaseQueue: vacuum")
             guard let database = try? result.get() else {
                 return
             }

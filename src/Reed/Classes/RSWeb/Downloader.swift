@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os
 
 typealias DownloadCallback = @MainActor (Data?, URLResponse?, Error?) -> Swift.Void
 
@@ -20,8 +20,6 @@ final class Downloader {
     private let urlSession: URLSession
     private var callbacks = [URL: [DownloadCallback]]()
     private let cache = DownloadCache.shared
-
-    private nonisolated static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Downloader")
 
     private init() {
         let sessionConfiguration = URLSessionConfiguration.ephemeral
@@ -63,12 +61,12 @@ final class Downloader {
         assert(Thread.isMainThread)
 
         guard let url = urlRequest.url else {
-            Self.logger.fault("Downloader: skipping download for URLRequest without a URL")
+            DZLog("Downloader: skipping download for URLRequest without a URL")
             return
         }
 
         guard url.isHTTPOrHTTPSURL() else {
-            Self.logger.debug("Downloader: skipping download for non-http/https URL: \(url)")
+            DZLog("Downloader: skipping download for non-http/https URL: \(url)")
             callback(nil, nil, nil)
             return
         }
@@ -78,7 +76,7 @@ final class Downloader {
         // Return cached record if available.
         if isCacheableRequest {
             if let cachedRecord = cache[url.absoluteString] {
-                Self.logger.debug("Downloader: returning cached record for \(url)")
+                DZLog("Downloader: returning cached record for \(url)")
                 callback(cachedRecord.data, cachedRecord.response, nil)
                 return
             }
@@ -86,12 +84,12 @@ final class Downloader {
 
         // Add callback. If there is already a download in progress for this URL, return early.
         if self.callbacks[url] == nil {
-            Self.logger.debug("Downloader: downloading \(url)")
+            DZLog("Downloader: downloading \(url)")
             self.callbacks[url] = [callback]
         } else {
             // A download is already be in progress for this URL. Don’t start a separate download.
             // Add the callback to the callbacks array for this URL.
-            Self.logger.debug("Downloader: download in progress for \(url) — adding callback")
+            DZLog("Downloader: download in progress for \(url) — adding callback")
             self.callbacks[url]?.append(callback)
             return
         }
@@ -101,7 +99,7 @@ final class Downloader {
 
         let task = self.urlSession.dataTask(with: urlRequestToUse) { data, response, error in
             if isCacheableRequest {
-                Self.logger.debug("Downloader: caching response for \(url)")
+                DZLog("Downloader: caching response for \(url)")
                 self.cache.add(url.absoluteString, data: data, response: response)
             }
 
@@ -128,15 +126,15 @@ extension Downloader {
 
         guard let callbacksForURL = callbacks[url] else {
             assertionFailure("Downloader: downloaded URL \(url) but no callbacks found")
-            Self.logger.fault("Downloader: downloaded URL \(url) but no callbacks found")
+            DZLog("Downloader: downloaded URL \(url) but no callbacks found")
             return
         }
 
         let count = callbacksForURL.count
         if count == 1 {
-            Self.logger.debug("Downloader: calling 1 callback for URL \(url)")
+            DZLog("Downloader: calling 1 callback for URL \(url)")
         } else {
-            Self.logger.debug("Downloader: calling \(count) callbacks for URL \(url)")
+            DZLog("Downloader: calling \(count) callbacks for URL \(url)")
         }
 
         for callback in callbacksForURL {

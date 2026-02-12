@@ -6,6 +6,7 @@
 //  Copyright © 2017 Ranchero Software. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
 import os
 
@@ -14,26 +15,24 @@ import os
 final nonisolated class HTMLMetadataDownloader: Sendable {
     static let shared = HTMLMetadataDownloader()
 
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "HTMLMetadataDownloader")
-
     private let cache = HTMLMetadataCache()
     private let attemptDatesLock = OSAllocatedUnfairLock(initialState: [String: Date]())
     private let urlsReturning4xxsLock = OSAllocatedUnfairLock(initialState: Set<String>())
 
     func cachedMetadata(for url: String) -> RSHTMLMetadata? {
         if Self.shouldSkipDownloadingMetadata(url) {
-            Self.logger.debug("HTMLMetadataDownloader: Skipping requested cached metadata for \(url)")
+            DZLog("HTMLMetadataDownloader: Skipping requested cached metadata for \(url)")
             return nil
         }
 
-        Self.logger.debug("HTMLMetadataDownloader requested cached metadata for \(url)")
+        DZLog("HTMLMetadataDownloader requested cached metadata for \(url)")
 
         guard let htmlMetadata = cache[url] else {
             downloadMetadataIfNeeded(url)
             return nil
         }
 
-        Self.logger.debug("HTMLMetadataDownloader returning cached metadata for \(url)")
+        DZLog("HTMLMetadataDownloader returning cached metadata for \(url)")
         return htmlMetadata
     }
 }
@@ -47,10 +46,9 @@ nonisolated extension HTMLMetadataDownloader {
 
     private func downloadMetadataIfNeeded(_ url: String) {
         if self.urlShouldBeSkippedDueToPrevious4xxResponse(url) {
-            Self.logger
-                .debug(
-                    "HTMLMetadataDownloader skipping download for \(url) because an earlier request returned a 4xx response."
-                )
+            DZLog(
+                "HTMLMetadataDownloader skipping download for \(url) because an earlier request returned a 4xx response."
+            )
             return
         }
 
@@ -63,10 +61,9 @@ nonisolated extension HTMLMetadataDownloader {
                 let attemptDate = attemptDates[url],
                 attemptDate > currentDate.bySubtracting(hours: hoursBetweenAttempts)
             {
-                Self.logger
-                    .debug(
-                        "HTMLMetadataDownloader skipping download for \(url) because an attempt was made less than an hour ago."
-                    )
+                DZLog(
+                    "HTMLMetadataDownloader skipping download for \(url) because an attempt was made less than an hour ago."
+                )
                 return false
             }
 
@@ -81,12 +78,11 @@ nonisolated extension HTMLMetadataDownloader {
 
     private func downloadMetadata(_ url: String) {
         guard let actualURL = URL(string: url) else {
-            Self.logger
-                .debug("HTMLMetadataDownloader skipping download for \(url) because it couldn’t construct a URL.")
+            DZLog("HTMLMetadataDownloader skipping download for \(url) because it couldn’t construct a URL.")
             return
         }
 
-        Self.logger.debug("HTMLMetadataDownloader downloading for \(url)")
+        DZLog("HTMLMetadataDownloader downloading for \(url)")
 
         Task { @MainActor in
             do {
@@ -96,7 +92,7 @@ nonisolated extension HTMLMetadataDownloader {
                     let urlToUse = response.url ?? actualURL
                     let parserData = ParserData(url: urlToUse.absoluteString, data: data)
                     let htmlMetadata = RSHTMLMetadataParser.htmlMetadata(with: parserData)
-                    Self.logger.debug("HTMLMetadataDownloader caching parsed metadata for \(url)")
+                    DZLog("HTMLMetadataDownloader caching parsed metadata for \(url)")
                     self.cache[url] = htmlMetadata
                     return
                 }
@@ -106,10 +102,9 @@ nonisolated extension HTMLMetadataDownloader {
                     self.noteURLDidReturn4xx(url)
                 }
 
-                Self.logger.debug("HTMLMetadataDownloader failed download for \(url) statusCode: \(statusCode)")
+                DZLog("HTMLMetadataDownloader failed download for \(url) statusCode: \(statusCode)")
             } catch {
-                Self.logger
-                    .debug("HTMLMetadataDownloader failed download for \(url) error: \(error.localizedDescription)")
+                DZLog("HTMLMetadataDownloader failed download for \(url) error: \(error.localizedDescription)")
             }
         }
     }

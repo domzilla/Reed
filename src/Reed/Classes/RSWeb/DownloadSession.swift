@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ranchero Software, LLC. All rights reserved.
 //
 
+import DZFoundation
 import Foundation
-import os
 
 // Create a DownloadSessionDelegate, then create a DownloadSession.
 // To download things: call download with a set of URLs. DownloadSession will call the various delegate methods.
@@ -55,8 +55,6 @@ final class DownloadSession: NSObject {
     /// URLs with 400-499 responses (except for 429).
     /// These URLs are skipped for a period of time.
     private var http4xxResponses = [URL: HTTP4xxResponse]()
-
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "DownloadSession")
 
     init(delegate: DownloadSessionDelegate) {
         self.delegate = delegate
@@ -122,15 +120,15 @@ extension DownloadSession: @preconcurrency URLSessionTaskDelegate {
 
             guard let info = infoForTask(task) else {
                 if let url = task.originalRequest?.url {
-                    Self.logger.debug("DownloadSession: no task info found for \(url)")
+                    DZLog("DownloadSession: no task info found for \(url)")
                 } else {
-                    Self.logger.debug("DownloadSession: no task info found for unknown URL")
+                    DZLog("DownloadSession: no task info found for unknown URL")
                 }
                 return
             }
 
             if let url = task.originalRequest?.url, error == nil {
-                Self.logger.debug("DownloadSession: Caching response for \(url)")
+                DZLog("DownloadSession: Caching response for \(url)")
                 self.cache.add(url.absoluteString, data: info.data as Data, response: info.urlResponse)
             }
 
@@ -198,12 +196,12 @@ extension DownloadSession: @preconcurrency URLSessionDataDelegate {
             if statusCode >= 400 {
                 if statusCode != HTTPResponseCode.tooManyRequests {
                     if let urlString = response.url?.absoluteString {
-                        Self.logger.debug("DownloadSession: Caching >= 400 response for \(urlString)")
+                        DZLog("DownloadSession: Caching >= 400 response for \(urlString)")
                         self.cache.add(urlString, data: nil, response: response)
                     }
                 }
 
-                Self.logger.debug("DownloadSession: canceling task due to >= 400 response \(response)")
+                DZLog("DownloadSession: canceling task due to >= 400 response \(response)")
 
                 completionHandler(.cancel)
                 removeTask(dataTask)
@@ -254,20 +252,19 @@ extension DownloadSession {
         let urlToUse = self.cachedRedirect(for: url) ?? url
 
         if self.requestShouldBeDroppedDueToActive429(urlToUse) {
-            Self.logger.info("DownloadSession: Dropping request for previous 429: \(urlToUse)")
+            DZLog("DownloadSession: Dropping request for previous 429: \(urlToUse)")
             return
         }
         if self.requestShouldBeDroppedDueToPrevious400(urlToUse) {
-            Self.logger.info("DownloadSession: Dropping request for previous 400-499: \(urlToUse)")
+            DZLog("DownloadSession: Dropping request for previous 400-499: \(urlToUse)")
             return
         }
 
         // Check cache
         if let cachedResponse = cache[urlToUse.absoluteString] {
-            Self.logger
-                .info(
-                    "DownloadSession: using cached response for \(urlToUse) - \(cachedResponse.response?.forcedStatusCode ?? -1)"
-                )
+            DZLog(
+                "DownloadSession: using cached response for \(urlToUse) - \(cachedResponse.response?.forcedStatusCode ?? -1)"
+            )
             self.delegate.downloadSession(
                 self,
                 downloadDidComplete: url,
@@ -287,7 +284,7 @@ extension DownloadSession {
             return request
         }()
 
-        Self.logger.debug("DownloadSession: adding dataTask for \(urlToUse)")
+        DZLog("DownloadSession: adding dataTask for \(urlToUse)")
         let task = self.urlSession.dataTask(with: urlRequest)
 
         let info = DownloadInfo(url)
