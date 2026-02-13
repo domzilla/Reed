@@ -1,5 +1,5 @@
 //
-//  NSString+RDParser.h
+//  NSString+Parser.h
 //  RDParser
 //
 //  Created by Brent Simmons on 9/25/15.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSString (RDParser)
+@interface NSString (Parser)
 
 - (NSString *)rdparser_stringByDecodingHTMLEntities;
 

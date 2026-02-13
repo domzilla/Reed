@@ -1,13 +1,13 @@
 //
-//  FMDatabase+QSKit.m
+//  FMDatabase+Reed.m
 //  RDDatabase
 //
 //  Created by Brent Simmons on 3/3/14.
 //  Copyright (c) 2014 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "FMDatabase+RDExtras.h"
-#import "NSString+RDDatabase.h"
+#import "FMDatabase+Reed.h"
+#import "NSString+Database.h"
 
 
 #define LOG_SQL 0
@@ -19,7 +19,7 @@ static void logSQL(NSString *sql) {
 }
 
 
-@implementation FMDatabase (RDExtras)
+@implementation FMDatabase (Reed)
 
 
 #pragma mark - Deleting

@@ -11,7 +11,7 @@
 #import "RDSAXParser.h"
 #import "RDParsedFeed.h"
 #import "RDParsedArticle.h"
-#import "NSString+RDParser.h"
+#import "NSString+Parser.h"
 #import "RDDateParser.h"
 #import "ParserData.h"
 #import "RDParsedEnclosure.h"

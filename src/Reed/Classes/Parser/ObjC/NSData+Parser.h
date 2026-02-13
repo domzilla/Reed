@@ -1,5 +1,5 @@
 //
-//  NSData+RDParser.h
+//  NSData+Parser.h
 //  RDParser
 //
 //  Created by Brent Simmons on 6/24/17.
@@ -9,7 +9,7 @@
 @import Foundation;
 
 
-@interface NSData (RDParser)
+@interface NSData (Parser)
 
 - (BOOL)isProbablyHTML;
 - (BOOL)isProbablyXML;

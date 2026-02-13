@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "NSString+RDParser.h"
+#import "NSString+Parser.h"
 
 #import "RDParsedAuthor.h"
 

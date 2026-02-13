@@ -1,5 +1,5 @@
 //
-//  NSString+RDDatabase.h
+//  NSString+Database.h
 //	RDDatabase
 //
 //  Created by Brent Simmons on 3/27/15.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSString (RDDatabase)
+@interface NSString (Database)
 
 
 /*Returns @"(?, ?, ?)" -- where number of ? spots is specified by numberOfValues.

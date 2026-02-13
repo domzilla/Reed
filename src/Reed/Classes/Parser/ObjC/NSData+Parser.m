@@ -1,12 +1,12 @@
 //
-//  NSData+RDParser.m
+//  NSData+Parser.m
 //  RDParser
 //
 //  Created by Brent Simmons on 6/24/17.
 //  Copyright © 2017 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "NSData+RDParser.h"
+#import "NSData+Parser.h"
 
 
 
@@ -17,7 +17,7 @@ static BOOL bytesAreProbablyHTML(const char *bytes, NSUInteger numberOfBytes);
 static BOOL bytesAreProbablyXML(const char *bytes, NSUInteger numberOfBytes);
 static BOOL bytesStartWithStringIgnoringWhitespace(const char *string, const char *bytes, NSUInteger numberOfBytes);
 static BOOL didFindString(const char *string, const char *bytes, NSUInteger numberOfBytes);
-@implementation NSData (RDParser)
+@implementation NSData (Parser)
 
 - (BOOL)isProbablyHTML {
 

@@ -1,5 +1,5 @@
 //
-//  FMDatabase+QSKit.h
+//  FMDatabase+Reed.h
 //  RDDatabase
 //
 //  Created by Brent Simmons on 3/3/14.
@@ -18,7 +18,7 @@ typedef NS_ENUM(NSInteger, RDDatabaseInsertType) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FMDatabase (RDExtras)
+@interface FMDatabase (Reed)
 
 
 // Keys and table names are assumed to be trusted. Values are not.

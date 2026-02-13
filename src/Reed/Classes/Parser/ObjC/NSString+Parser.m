@@ -1,25 +1,25 @@
 //
-//  NSString+RDParser.m
+//  NSString+Parser.m
 //  RDParser
 //
 //  Created by Brent Simmons on 9/25/15.
 //  Copyright © 2015 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "NSString+RDParser.h"
+#import "NSString+Parser.h"
 #import <CommonCrypto/CommonDigest.h>
 
 
 
 
-@interface NSScanner (RDParser)
+@interface NSScanner (Parser)
 
 - (BOOL)rd_scanEntityValue:(NSString * _Nullable * _Nullable)decodedEntity;
 
 @end
 
 
-@implementation NSString (RDParser)
+@implementation NSString (Parser)
 
 - (BOOL)rdparser_contains:(NSString *)s {
 
@@ -159,7 +159,7 @@ static NSString *RDParserStringWithValue(uint32_t value);
 
 @end
 
-@implementation NSScanner (RDParser)
+@implementation NSScanner (Parser)
 
 - (BOOL)rd_scanEntityValue:(NSString * _Nullable * _Nullable)decodedEntity {
 	

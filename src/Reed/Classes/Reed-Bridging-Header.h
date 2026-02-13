@@ -13,9 +13,9 @@
 #import "FMResultSet.h"
 
 // Database ObjC (Reed categories on FMDB)
-#import "FMDatabase+RDExtras.h"
-#import "FMResultSet+RDExtras.h"
-#import "NSString+RDDatabase.h"
+#import "FMDatabase+Reed.h"
+#import "FMResultSet+Reed.h"
+#import "NSString+Database.h"
 
 // Parser ObjC
 #import "ParserData.h"
@@ -38,5 +38,5 @@
 #import "RDHTMLMetadataParser.h"
 #import "RDHTMLLinkParser.h"
 #import "RDHTMLTag.h"
-#import "NSData+RDParser.h"
-#import "NSString+RDParser.h"
+#import "NSData+Parser.h"
+#import "NSString+Parser.h"

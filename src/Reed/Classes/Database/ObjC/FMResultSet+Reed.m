@@ -1,15 +1,15 @@
 //
-//  FMResultSet+RDExtras.m
+//  FMResultSet+Reed.m
 //  RDDatabase
 //
 //  Created by Brent Simmons on 2/19/13.
 //  Copyright (c) 2013 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "FMResultSet+RDExtras.h"
+#import "FMResultSet+Reed.h"
 
 
-@implementation FMResultSet (RDExtras)
+@implementation FMResultSet (Reed)
 
 
 - (id)valueForKey:(NSString *)key {

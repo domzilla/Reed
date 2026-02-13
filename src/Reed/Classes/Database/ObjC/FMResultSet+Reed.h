@@ -1,5 +1,5 @@
 //
-//  FMResultSet+RDExtras.h
+//  FMResultSet+Reed.h
 //  RDDatabase
 //
 //  Created by Brent Simmons on 2/19/13.
@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FMResultSet (RDExtras)
+@interface FMResultSet (Reed)
 
 
 - (NSArray *)rd_arrayForSingleColumnResultSet; // Doesn't handle dates.

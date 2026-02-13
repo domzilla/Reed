@@ -1,15 +1,15 @@
 //
-//  NSString+RDDatabase.m
+//  NSString+Database.m
 //	RDDatabase
 //
 //  Created by Brent Simmons on 3/27/15.
 //  Copyright (c) 2015 Ranchero Software, LLC. All rights reserved.
 //
 
-#import "NSString+RDDatabase.h"
+#import "NSString+Database.h"
 
 
-@implementation NSString (RDDatabase)
+@implementation NSString (Database)
 
 
 + (NSString *)rd_SQLValueListWithPlaceholders:(NSUInteger)numberOfValues {

@@ -9,7 +9,7 @@
 
 #import "RDParsedArticle.h"
 #import "RDParserInternal.h"
-#import "NSString+RDParser.h"
+#import "NSString+Parser.h"
 #import "RDParsedAuthor.h"
 #import "RDParsedEnclosure.h"
 
