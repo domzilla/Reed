@@ -58,9 +58,10 @@ extension MainFeedCollectionViewController {
         }
 
         let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
-        MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
+        let alert = UIAlertController.markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
             self?.coordinator.markAllAsReadInTimeline()
         }
+        self.present(alert, animated: true)
     }
 
     @objc

@@ -245,15 +245,19 @@ extension MainFeedCollectionViewController {
         }
 
         let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
-            MarkAsReadAlertController.confirm(
-                self,
+            guard let self else {
+                cancel()
+                return
+            }
+            let alert = UIAlertController.markAsReadActionSheet(
                 confirmTitle: title,
-                sourceType: contentView,
-                cancelCompletion: cancel
+                source: contentView,
+                onCancel: cancel
             ) { [weak self] in
                 self?.coordinator.markAllAsRead(Array(articles))
                 completion(true)
             }
+            self.present(alert, animated: true)
         }
         return action
     }
@@ -323,11 +327,14 @@ extension MainFeedCollectionViewController {
             sidebarItem.nameForDisplay
         ) as String
         let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] _ in
-            MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
-                if let articles = try? sidebarItem.fetchUnreadArticles() {
-                    self?.coordinator.markAllAsRead(Array(articles))
+            guard let self else { return }
+            let alert = UIAlertController
+                .markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
+                    if let articles = try? sidebarItem.fetchUnreadArticles() {
+                        self?.coordinator.markAllAsRead(Array(articles))
+                    }
                 }
-            }
+            self.present(alert, animated: true)
         }
 
         return action
@@ -344,14 +351,17 @@ extension MainFeedCollectionViewController {
             dataStore.nameForDisplay
         ) as String
         let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] _ in
-            MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
-                // If you don't have this delay the screen flashes when it executes this code
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    if let articles = try? dataStore.fetchArticles(.unread()) {
-                        self?.coordinator.markAllAsRead(Array(articles))
+            guard let self else { return }
+            let alert = UIAlertController
+                .markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
+                    // If you don't have this delay the screen flashes when it executes this code
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if let articles = try? dataStore.fetchArticles(.unread()) {
+                            self?.coordinator.markAllAsRead(Array(articles))
+                        }
                     }
                 }
-            }
+            self.present(alert, animated: true)
         }
 
         return action

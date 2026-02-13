@@ -341,9 +341,10 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
 
         if let source = sender as? UIBarButtonItem {
-            MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: source) { [weak self] in
+            let alert = UIAlertController.markAsReadActionSheet(confirmTitle: title, source: source) { [weak self] in
                 self?.markAllAsReadInTimeline()
             }
+            self.present(alert, animated: true)
         }
 
         if let _ = sender as? UIKeyCommand {
@@ -354,9 +355,11 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
                 return
             }
 
-            MarkAsReadAlertController.confirm(self, confirmTitle: title, sourceType: contentView) { [weak self] in
-                self?.markAllAsReadInTimeline()
-            }
+            let alert = UIAlertController
+                .markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
+                    self?.markAllAsReadInTimeline()
+                }
+            self.present(alert, animated: true)
         }
     }
 
