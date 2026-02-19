@@ -75,6 +75,42 @@ final class FeedInspectorViewController: UITableViewController {
         return label
     }()
 
+    private func makeHomePageAccessoryView() -> UIView {
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 14)
+
+        let copyButton = UIButton(type: .system)
+        copyButton.setImage(UIImage(systemName: "doc.on.doc", withConfiguration: symbolConfig), for: .normal)
+        copyButton.tintColor = .secondaryLabel
+        copyButton.addTarget(self, action: #selector(self.copyHomePageURL), for: .touchUpInside)
+        copyButton.sizeToFit()
+
+        let openButton = UIButton(type: .system)
+        openButton.setImage(UIImage(systemName: "arrow.up.forward.app", withConfiguration: symbolConfig), for: .normal)
+        openButton.tintColor = .secondaryLabel
+        openButton.addTarget(self, action: #selector(self.openHomePageURL), for: .touchUpInside)
+        openButton.sizeToFit()
+
+        let stack = UIStackView(arrangedSubviews: [copyButton, openButton])
+        stack.axis = .horizontal
+        stack.spacing = 12
+
+        let totalWidth = copyButton.bounds.width + 12 + openButton.bounds.width
+        let maxHeight = max(copyButton.bounds.height, openButton.bounds.height)
+        stack.frame = CGRect(x: 0, y: 0, width: totalWidth, height: maxHeight)
+        return stack
+    }
+
+    private func makeFeedURLAccessoryView() -> UIView {
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 14)
+
+        let copyButton = UIButton(type: .system)
+        copyButton.setImage(UIImage(systemName: "doc.on.doc", withConfiguration: symbolConfig), for: .normal)
+        copyButton.tintColor = .secondaryLabel
+        copyButton.addTarget(self, action: #selector(self.copyFeedURL), for: .touchUpInside)
+        copyButton.sizeToFit()
+        return copyButton
+    }
+
     // MARK: - Initialization
 
     init() {
@@ -187,6 +223,26 @@ final class FeedInspectorViewController: UITableViewController {
         dismiss(animated: true)
     }
 
+    @objc
+    func copyHomePageURL() {
+        guard let homePageURL = feed.homePageURL, let url = URL(string: homePageURL) else { return }
+        UIPasteboard.general.url = url
+    }
+
+    @objc
+    func openHomePageURL() {
+        guard let homePageURL = feed.homePageURL, let url = URL(string: homePageURL) else { return }
+        let safari = SFSafariViewController(url: url)
+        safari.modalPresentationStyle = .pageSheet
+        present(safari, animated: true)
+    }
+
+    @objc
+    func copyFeedURL() {
+        guard let url = URL(string: feed.url) else { return }
+        UIPasteboard.general.url = url
+    }
+
     // MARK: - Table view data source
 
     override func numberOfSections(in _: UITableView) -> Int {
@@ -268,15 +324,11 @@ final class FeedInspectorViewController: UITableViewController {
             return cell
 
         case (1, 0):
-            // Home Page URL (external link icon to match storyboard)
+            // Home Page URL with copy and open buttons
             let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-            cell.selectionStyle = .default
-            // Use external link icon instead of chevron to match storyboard
-            let linkImage = UIImage(systemName: "arrow.up.forward.app")
-            let linkImageView = UIImageView(image: linkImage)
-            linkImageView.tintColor = .secondaryLabel
-            cell.accessoryView = linkImageView
+            cell.selectionStyle = .none
+            cell.accessoryView = self.makeHomePageAccessoryView()
             cell.contentView.addSubview(self.homePageLabel)
             NSLayoutConstraint.activate([
                 self.homePageLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
@@ -288,10 +340,11 @@ final class FeedInspectorViewController: UITableViewController {
             return cell
 
         case (2, 0):
-            // Feed URL
+            // Feed URL with copy button
             let cell = tableView.dequeueReusableCell(withIdentifier: "LabelCell", for: indexPath)
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
             cell.selectionStyle = .none
+            cell.accessoryView = self.makeFeedURLAccessoryView()
             cell.contentView.addSubview(self.feedURLLabel)
             NSLayoutConstraint.activate([
                 self.feedURLLabel.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
@@ -339,17 +392,7 @@ final class FeedInspectorViewController: UITableViewController {
             return
         }
 
-        if
-            actualSection == 1,
-            let homePageUrlString = feed.homePageURL,
-            let homePageUrl = URL(string: homePageUrlString)
-        {
-            let safari = SFSafariViewController(url: homePageUrl)
-            safari.modalPresentationStyle = .pageSheet
-            present(safari, animated: true) {
-                tableView.deselectRow(at: indexPath, animated: true)
-            }
-        }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 
     private func showFolderPicker() {

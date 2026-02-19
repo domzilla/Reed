@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 - Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
 
+### Changed
+- Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
+
 ### Fixed
 - CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
 - Widget deep links using `nnw://` scheme instead of `reed://`
