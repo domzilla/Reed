@@ -70,6 +70,8 @@ class MainTimelineIconFeedCell: UITableViewCell {
 
     private var iconWidthConstraint: NSLayoutConstraint?
     private var iconHeightConstraint: NSLayoutConstraint?
+    private var titleLeadingWithIcon: NSLayoutConstraint?
+    private var titleLeadingWithoutIcon: NSLayoutConstraint?
 
     var cellData: MainTimelineCellData! {
         didSet {
@@ -99,6 +101,10 @@ class MainTimelineIconFeedCell: UITableViewCell {
 
         self.iconWidthConstraint = self.iconView.widthAnchor.constraint(equalToConstant: 48)
         self.iconHeightConstraint = self.iconView.heightAnchor.constraint(equalToConstant: 48)
+        self.titleLeadingWithIcon = self.articleTitle.leadingAnchor
+            .constraint(equalTo: self.iconView.trailingAnchor, constant: 8)
+        self.titleLeadingWithoutIcon = self.articleTitle.leadingAnchor
+            .constraint(equalTo: self.indicatorView.trailingAnchor, constant: 8)
 
         NSLayoutConstraint.activate([
             self.indicatorView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
@@ -107,12 +113,12 @@ class MainTimelineIconFeedCell: UITableViewCell {
             self.indicatorView.heightAnchor.constraint(equalToConstant: 10),
 
             self.iconView.leadingAnchor.constraint(equalTo: self.indicatorView.trailingAnchor, constant: 8),
-            self.iconView.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
+            self.iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             self.iconWidthConstraint!,
             self.iconHeightConstraint!,
 
             self.articleTitle.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
-            self.articleTitle.leadingAnchor.constraint(equalTo: self.iconView.trailingAnchor, constant: 8),
+            self.titleLeadingWithIcon!,
             self.articleTitle.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
 
             self.articleSummary.topAnchor.constraint(equalTo: self.articleTitle.bottomAnchor, constant: 2),
@@ -157,7 +163,16 @@ class MainTimelineIconFeedCell: UITableViewCell {
             self.authorByLine.text = ""
         }
 
-        self.setIconImage(cellData.iconImage, with: cellData.iconSize)
+        if cellData.showIcon {
+            self.iconView.isHidden = false
+            self.titleLeadingWithoutIcon?.isActive = false
+            self.titleLeadingWithIcon?.isActive = true
+            self.setIconImage(cellData.iconImage, with: cellData.iconSize)
+        } else {
+            self.iconView.isHidden = true
+            self.titleLeadingWithIcon?.isActive = false
+            self.titleLeadingWithoutIcon?.isActive = true
+        }
 
         self.articleDate.text = cellData.dateString
     }

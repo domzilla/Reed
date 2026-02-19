@@ -512,7 +512,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
                 self.selectArticle(nil)
             }
 
-            self.updateShowNamesAndIcons()
+            self.updateShowFeedNames()
             self.updateUnreadCount()
             self.mainTimelineViewController?.reloadArticles(animated: animated)
         }
@@ -535,7 +535,7 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
         self.replaceArticles(with: Set(self.articles), animated: true)
     }
 
-    private func updateShowNamesAndIcons() {
+    private func updateShowFeedNames() {
         if self.timelineFeed is Feed {
             self.showFeedNames = {
                 for article in self.articles {
@@ -545,32 +545,11 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
                 }
                 return .none
             }()
+            self.showIcons = false
         } else {
             self.showFeedNames = .feed
-        }
-
-        if self.showFeedNames == .feed {
             self.showIcons = true
-            return
         }
-
-        if self.showFeedNames == .none {
-            self.showIcons = false
-            return
-        }
-
-        for article in self.articles {
-            if let authors = article.authors {
-                for author in authors {
-                    if author.avatarURL != nil {
-                        self.showIcons = true
-                        return
-                    }
-                }
-            }
-        }
-
-        self.showIcons = false
     }
 }
 

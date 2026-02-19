@@ -53,6 +53,10 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         return self.coordinator?.timelineFeed
     }
 
+    var showIcons: Bool {
+        self.coordinator?.showIcons ?? false
+    }
+
     private var currentArticle: Article? {
         assert(self.coordinator != nil)
         return self.coordinator?.currentArticle
@@ -820,7 +824,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     func configure(article: Article) -> MainTimelineCellData {
         let iconImage = self.iconImageFor(article)
         let showFeedNames = self.coordinator?.showFeedNames ?? ShowFeedName.none
-        let showIcon = iconImage != nil
+        let showIcon = self.showIcons && iconImage != nil
         let isCompact = traitCollection.horizontalSizeClass == .compact
         let cellData = MainTimelineCellData(
             article: article,
@@ -836,7 +840,8 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     }
 
     func iconImageFor(_ article: Article) -> IconImage? {
-        article.iconImage()
+        guard self.showIcons else { return nil }
+        return article.iconImage()
     }
 }
 
