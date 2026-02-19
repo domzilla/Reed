@@ -56,7 +56,6 @@ final class AppDefaults: Sendable {
         static let isShowingExtractedArticle = "isShowingExtractedArticle"
         static let articleWindowScrollY = "articleWindowScrollY"
         static let expandedContainers = "expandedContainers"
-        static let sidebarItemsHidingReadArticles = "sidebarItemsHidingReadArticles"
         static let selectedSidebarItem = "selectedSidebarItem"
         static let selectedArticle = "selectedArticle"
     }
@@ -239,23 +238,6 @@ final class AppDefaults: Sendable {
         }
     }
 
-    var sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier> {
-        get {
-            guard
-                let rawIdentifiers = UserDefaults.standard
-                    .array(forKey: Key.sidebarItemsHidingReadArticles) as? [[String: String]] else
-            {
-                return Set<SidebarItemIdentifier>()
-            }
-            let feedIdentifiers = rawIdentifiers.compactMap { SidebarItemIdentifier(userInfo: $0) }
-            return Set(feedIdentifiers)
-        }
-        set {
-            let feedIdentifierUserInfos = newValue.compactMap(\.userInfo)
-            UserDefaults.standard.set(feedIdentifierUserInfos, forKey: Key.sidebarItemsHidingReadArticles)
-        }
-    }
-
     var selectedSidebarItem: SidebarItemIdentifier? {
         get {
             guard let userInfo = UserDefaults.standard.dictionary(forKey: Key.selectedSidebarItem) as? [String: String] else {
@@ -366,7 +348,6 @@ struct StateRestorationInfo {
     let hideReadFeeds: Bool
     let expandedContainers: Set<ContainerIdentifier>
     let selectedSidebarItem: SidebarItemIdentifier?
-    let sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>
     let selectedArticle: ArticleSpecifier?
     let articleWindowScrollY: Int
     let isShowingExtractedArticle: Bool
@@ -375,7 +356,6 @@ struct StateRestorationInfo {
         hideReadFeeds: Bool,
         expandedContainers: Set<ContainerIdentifier>,
         selectedSidebarItem: SidebarItemIdentifier?,
-        sidebarItemsHidingReadArticles: Set<SidebarItemIdentifier>,
         selectedArticle: ArticleSpecifier?,
         articleWindowScrollY: Int,
         isShowingExtractedArticle: Bool
@@ -383,7 +363,6 @@ struct StateRestorationInfo {
         self.hideReadFeeds = hideReadFeeds
         self.expandedContainers = expandedContainers
         self.selectedSidebarItem = selectedSidebarItem
-        self.sidebarItemsHidingReadArticles = sidebarItemsHidingReadArticles
         self.selectedArticle = selectedArticle
         self.articleWindowScrollY = articleWindowScrollY
         self.isShowingExtractedArticle = isShowingExtractedArticle
@@ -391,12 +370,11 @@ struct StateRestorationInfo {
         // Break out interpolations to avoid OSLogMessage ambiguity.
         let expandedContainersDescription = String(describing: expandedContainers)
         let selectedSidebarItemUserInfo: [AnyHashable: AnyHashable] = selectedSidebarItem?.userInfo ?? [:]
-        let sidebarItemsHidingDescription = String(describing: sidebarItemsHidingReadArticles)
         let selectedArticleDictionary: [String: String] = selectedArticle?.dictionary ?? [:]
         let isShowingExtractedArticleString = isShowingExtractedArticle ? "true" : "false"
 
         DZLog(
-            "AppDefaults: StateRestorationInfo:\nexpandedContainers: \(expandedContainersDescription)\nselectedSidebarItem: \(selectedSidebarItemUserInfo)\nsidebarItemsHidingReadArticles: \(sidebarItemsHidingDescription)\nselectedArticle: \(selectedArticleDictionary)\narticleWindowScrollY: \(articleWindowScrollY)\nisShowingExtractedArticle: \(isShowingExtractedArticleString)"
+            "AppDefaults: StateRestorationInfo:\nexpandedContainers: \(expandedContainersDescription)\nselectedSidebarItem: \(selectedSidebarItemUserInfo)\nselectedArticle: \(selectedArticleDictionary)\narticleWindowScrollY: \(articleWindowScrollY)\nisShowingExtractedArticle: \(isShowingExtractedArticleString)"
         )
     }
 
@@ -405,7 +383,6 @@ struct StateRestorationInfo {
             hideReadFeeds: AppDefaults.shared.hideReadFeeds,
             expandedContainers: AppDefaults.shared.expandedContainers,
             selectedSidebarItem: AppDefaults.shared.selectedSidebarItem,
-            sidebarItemsHidingReadArticles: AppDefaults.shared.sidebarItemsHidingReadArticles,
             selectedArticle: AppDefaults.shared.selectedArticle,
             articleWindowScrollY: AppDefaults.shared.articleWindowScrollY,
             isShowingExtractedArticle: AppDefaults.shared.isShowingExtractedArticle

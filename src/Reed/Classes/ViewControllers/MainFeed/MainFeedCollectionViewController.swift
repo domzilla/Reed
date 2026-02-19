@@ -675,6 +675,7 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     }
 
     func setFilterButtonToActive() {
+        self.filterButton.style = .prominent
         self.filterButton.tintColor = Assets.Colors.primaryAccent
         self.filterButton.accLabelText = NSLocalizedString(
             "Selected - Filter Read Feeds",
@@ -683,7 +684,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     }
 
     func setFilterButtonToInactive() {
-        self.filterButton.tintColor = .label
+        self.filterButton.style = .plain
+        self.filterButton.tintColor = nil
         self.filterButton.accLabelText = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
     }
 

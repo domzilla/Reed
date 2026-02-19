@@ -34,8 +34,6 @@ extension SceneCoordinator {
             self.expandedContainers = stateInfo.expandedContainers
         }
 
-        self.sidebarItemsHidingReadArticles.formUnion(stateInfo.sidebarItemsHidingReadArticles)
-
         rebuildBackingStores(initialLoad: true)
 
         // You can't assign the Feeds Read Filter until we've built the backing stores at least once or there is nothing
@@ -83,14 +81,9 @@ extension SceneCoordinator {
 
     func windowState() -> [AnyHashable: Any] {
         let containerExpandedWindowState = self.expandedContainers.map(\.userInfo)
-        var readArticlesFilterState = [[AnyHashable: AnyHashable]: Bool]()
-        for sidebarItemID in self.sidebarItemsHidingReadArticles {
-            readArticlesFilterState[sidebarItemID.userInfo] = true
-        }
         return [
             AppConstants.StateRestorationKey.readFeedsFilterState: self.isReadFeedsFiltered,
             AppConstants.StateRestorationKey.containerExpandedWindowState: containerExpandedWindowState,
-            AppConstants.StateRestorationKey.readArticlesFilterState: readArticlesFilterState,
         ]
     }
 

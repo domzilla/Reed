@@ -87,9 +87,6 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     // Which Containers used to be expanded. Reset by rebuilding the Shadow Table.
     var lastExpandedContainers = Set<ContainerIdentifier>()
 
-    // Which SidebarItems have the Read Articles Filter enabled
-    var sidebarItemsHidingReadArticles = Set<SidebarItemIdentifier>()
-
     // Flattened tree structure for the Sidebar
     var shadowTable = [(sectionID: String, feedNodes: [FeedNode])]()
 
@@ -144,10 +141,10 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     }
 
     var isReadArticlesFiltered: Bool {
-        if let sidebarItemID = timelineFeed?.sidebarItemID {
-            return self.sidebarItemsHidingReadArticles.contains(sidebarItemID)
+        if self.timelineDefaultReadFilterType == .alwaysRead {
+            return true
         }
-        return self.timelineDefaultReadFilterType != .none
+        return self.isReadFeedsFiltered
     }
 
     var timelineDefaultReadFilterType: ReadFilterType {

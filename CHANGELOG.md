@@ -13,9 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Timeline navigation bar now shows the actual feed or smart feed name (Today, All Unread, Starred, feed title, folder name) instead of a hardcoded "Timeline" label
 - Timeline navigation bar now displays the feed icon next to the title (SF Symbol icons for smart feeds, favicons for regular feeds)
+- Unified read filter into a single global toggle — filter button on feed list and timeline now share the same state; toggling either one filters both read feeds and read articles
 - Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
 
 ### Fixed
+- Feed list filter button now uses `.prominent` style and accent tint when active (matching the timeline filter button); inactive state uses system default tint instead of `.label`
 - "Move to Folder" not moving feed when creating a new folder from the picker — the stored index path became stale after folder creation changed the tree; now captures the feed and source container directly
 - Assertion crash when deleting a folder — `removeFolder` called `addTask()` once but had two `completeTask()` calls (one for `findFeedExternalIDs`, one for `removeFolder`); also rewrote to follow the local-first pattern (remove locally, then best-effort CloudKit sync) so folder deletion works offline and on Simulator
 - CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`

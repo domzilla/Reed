@@ -16,29 +16,16 @@ extension SceneCoordinator {
     }
 
     func toggleReadFeedsFilter() {
-        if self.isReadFeedsFiltered {
-            self.treeControllerDelegate.isReadFiltered = false
-            AppDefaults.shared.hideReadFeeds = false
-        } else {
-            self.treeControllerDelegate.isReadFiltered = true
-            AppDefaults.shared.hideReadFeeds = true
-        }
+        let newValue = !self.isReadFeedsFiltered
+        self.treeControllerDelegate.isReadFiltered = newValue
+        AppDefaults.shared.hideReadFeeds = newValue
         rebuildBackingStores()
         self.mainFeedCollectionViewController?.updateUI()
+        self.refreshTimeline(resetScroll: false)
     }
 
     func toggleReadArticlesFilter() {
-        guard let sidebarItemID = timelineFeed?.sidebarItemID else {
-            return
-        }
-
-        if self.isReadArticlesFiltered {
-            self.sidebarItemsHidingReadArticles.remove(sidebarItemID)
-        } else {
-            self.sidebarItemsHidingReadArticles.insert(sidebarItemID)
-        }
-
-        self.refreshTimeline(resetScroll: false)
+        self.toggleReadFeedsFilter()
     }
 
     func beginSearching() {
@@ -107,9 +94,5 @@ extension SceneCoordinator {
             self.lastSearchString = searchString
             self.lastSearchScope = searchScope
         }
-    }
-
-    func saveReadFilterEnabledTableToUserDefaults() {
-        AppDefaults.shared.sidebarItemsHidingReadArticles = self.sidebarItemsHidingReadArticles
     }
 }
