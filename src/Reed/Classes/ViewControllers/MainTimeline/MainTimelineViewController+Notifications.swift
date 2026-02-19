@@ -44,6 +44,9 @@ extension MainTimelineViewController {
         guard let feed = note.userInfo?[AppConstants.NotificationKey.feed] as? Feed else {
             return
         }
+        if let timelineFeed = self.timelineFeed as? Feed, timelineFeed == feed {
+            self.updateNavigationBarIcon()
+        }
         self.tableView.indexPathsForVisibleRows?.forEach { indexPath in
             guard let article = dataSource.itemIdentifier(for: indexPath) else {
                 return
@@ -86,6 +89,7 @@ extension MainTimelineViewController {
     @objc
     func faviconDidBecomeAvailable(_: Notification) {
         self.queueReloadAvailableCells()
+        self.updateNavigationBarIcon()
     }
 
     @objc

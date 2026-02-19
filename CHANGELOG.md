@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
 
 ### Changed
+- Timeline navigation bar now shows the actual feed or smart feed name (Today, All Unread, Starred, feed title, folder name) instead of a hardcoded "Timeline" label
+- Timeline navigation bar now displays the feed icon next to the title (SF Symbol icons for smart feeds, favicons for regular feeds)
 - Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
 
 ### Fixed

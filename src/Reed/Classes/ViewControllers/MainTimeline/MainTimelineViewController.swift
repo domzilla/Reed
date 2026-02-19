@@ -119,19 +119,40 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         return self.keyboardManager.keyCommands
     }
 
-    private var navigationBarTitleLabel: UILabel {
+    private lazy var titleIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.cornerRadius = 4
+        imageView.clipsToBounds = true
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 20),
+            imageView.heightAnchor.constraint(equalToConstant: 20),
+        ])
+        imageView.isHidden = true
+        return imageView
+    }()
+
+    private lazy var titleLabel: UILabel = {
         let label = UILabel()
         let font = UIFont.preferredFont(forTextStyle: .subheadline)
         label.font = font.fontDescriptor.withSymbolicTraits(.traitBold).map { UIFont(descriptor: $0, size: 0) } ?? font
-        label.isUserInteractionEnabled = true
         label.numberOfLines = 1
         label.textAlignment = .center
-        let tap = UITapGestureRecognizer(target: self, action: #selector(showFeedInspector(_:)))
-        label.addGestureRecognizer(tap)
-        let pointerInteraction = UIPointerInteraction(delegate: nil)
-        label.addInteraction(pointerInteraction)
         return label
-    }
+    }()
+
+    private lazy var navigationBarTitleView: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [self.titleIconImageView, self.titleLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        let tap = UITapGestureRecognizer(target: self, action: #selector(showFeedInspector(_:)))
+        stack.addGestureRecognizer(tap)
+        stack.isUserInteractionEnabled = true
+        stack.addInteraction(UIPointerInteraction(delegate: nil))
+        return stack
+    }()
 
     private var navigationBarSubtitleTitleLabel: UILabel {
         let label = UILabel()
@@ -262,7 +283,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         }
         gesture.allowedScrollTypesMask = []
 
-        navigationItem.titleView = self.navigationBarTitleLabel
+        navigationItem.titleView = self.navigationBarTitleView
         navigationItem.subtitleView = self.navigationBarSubtitleTitleLabel
     }
 
@@ -274,9 +295,10 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         if navigationController?.navigationBar.isHidden ?? false {
             navigationController?.navigationBar.alpha = 0
         }
-        // Use "Timeline" as title to match storyboard behavior
-        self.updateNavigationBarTitle(NSLocalizedString("Timeline", comment: "Timeline"))
-        // Clear subtitle to match storyboard (no subtitle)
+        self.updateNavigationBarTitle(self.timelineFeed?.nameForDisplay ?? NSLocalizedString(
+            "Timeline",
+            comment: "Timeline"
+        ))
         self.updateNavigationBarSubtitle("")
     }
 
@@ -413,10 +435,23 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     }
 
     func updateNavigationBarTitle(_ text: String) {
-        if let label = navigationItem.titleView as? UILabel {
-            label.text = text
-            label.isUserInteractionEnabled = ((self.coordinator?.timelineFeed as? PseudoFeed) == nil)
-            label.sizeToFit()
+        self.titleLabel.text = text
+        self.navigationBarTitleView.isUserInteractionEnabled = ((self.coordinator?.timelineFeed as? PseudoFeed) == nil)
+        self.updateNavigationBarIcon()
+    }
+
+    func updateNavigationBarIcon() {
+        if let iconImage = self.coordinator?.timelineIconImage {
+            self.titleIconImageView.image = iconImage.image
+            if iconImage.isSymbol, let preferredColor = iconImage.preferredColor {
+                self.titleIconImageView.tintColor = UIColor(cgColor: preferredColor)
+            } else {
+                self.titleIconImageView.tintColor = nil
+            }
+            self.titleIconImageView.layer.cornerRadius = iconImage.isSymbol ? 0 : 4
+            self.titleIconImageView.isHidden = false
+        } else {
+            self.titleIconImageView.isHidden = true
         }
     }
 
