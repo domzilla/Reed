@@ -24,21 +24,6 @@ extension MainFeedCollectionViewController {
                     menuElements.append(UIMenu(title: "", options: .displayInline, children: [inspectorAction]))
                 }
 
-                if let homePageAction = self.homePageAction(indexPath: indexPath) {
-                    menuElements.append(UIMenu(title: "", options: .displayInline, children: [homePageAction]))
-                }
-
-                var pageActions = [UIAction]()
-                if let copyFeedPageAction = self.copyFeedPageAction(indexPath: indexPath) {
-                    pageActions.append(copyFeedPageAction)
-                }
-                if let copyHomePageAction = self.copyHomePageAction(indexPath: indexPath) {
-                    pageActions.append(copyHomePageAction)
-                }
-                if !pageActions.isEmpty {
-                    menuElements.append(UIMenu(title: "", options: .displayInline, children: pageActions))
-                }
-
                 if let markAllAction = self.markAllAsReadAction(indexPath: indexPath) {
                     menuElements.append(UIMenu(title: "", options: .displayInline, children: [markAllAction]))
                 }
@@ -108,31 +93,6 @@ extension MainFeedCollectionViewController {
 // MARK: - Action Builders
 
 extension MainFeedCollectionViewController {
-    func homePageAction(indexPath: IndexPath) -> UIAction? {
-        guard self.coordinator.homePageURLForFeed(indexPath) != nil else {
-            return nil
-        }
-
-        let title = NSLocalizedString("Open Home Page", comment: "Open Home Page")
-        let action = UIAction(title: title, image: Assets.Images.safari) { [weak self] _ in
-            self?.coordinator.showBrowserForFeed(indexPath)
-        }
-        return action
-    }
-
-    func homePageAlertAction(indexPath: IndexPath, completion: @escaping (Bool) -> Void) -> UIAlertAction? {
-        guard self.coordinator.homePageURLForFeed(indexPath) != nil else {
-            return nil
-        }
-
-        let title = NSLocalizedString("Open Home Page", comment: "Open Home Page")
-        let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
-            self?.coordinator.showBrowserForFeed(indexPath)
-            completion(true)
-        }
-        return action
-    }
-
     func moveToFolderAction(indexPath: IndexPath) -> UIAction? {
         guard self.coordinator.nodeFor(indexPath)?.representedObject is Feed else {
             return nil
@@ -164,100 +124,19 @@ extension MainFeedCollectionViewController {
         present(navController, animated: true)
     }
 
-    func copyFeedPageAction(indexPath: IndexPath) -> UIAction? {
-        guard
-            let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed,
-            let url = URL(string: feed.url) else
-        {
-            return nil
-        }
-
-        let title = NSLocalizedString("Copy Feed URL", comment: "Copy Feed URL")
-        let action = UIAction(title: title, image: Assets.Images.copy) { _ in
-            UIPasteboard.general.url = url
-        }
-        return action
-    }
-
-    func copyFeedPageAlertAction(indexPath: IndexPath, completion: @escaping (Bool) -> Void) -> UIAlertAction? {
-        guard
-            let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed,
-            let url = URL(string: feed.url) else
-        {
-            return nil
-        }
-
-        let title = NSLocalizedString("Copy Feed URL", comment: "Copy Feed URL")
-        let action = UIAlertAction(title: title, style: .default) { _ in
-            UIPasteboard.general.url = url
-            completion(true)
-        }
-        return action
-    }
-
-    func copyHomePageAction(indexPath: IndexPath) -> UIAction? {
-        guard
-            let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed,
-            let homePageURL = feed.homePageURL,
-            let url = URL(string: homePageURL) else
-        {
-            return nil
-        }
-
-        let title = NSLocalizedString("Copy Home Page URL", comment: "Copy Home Page URL")
-        let action = UIAction(title: title, image: Assets.Images.copy) { _ in
-            UIPasteboard.general.url = url
-        }
-        return action
-    }
-
-    func copyHomePageAlertAction(indexPath: IndexPath, completion: @escaping (Bool) -> Void) -> UIAlertAction? {
-        guard
-            let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed,
-            let homePageURL = feed.homePageURL,
-            let url = URL(string: homePageURL) else
-        {
-            return nil
-        }
-
-        let title = NSLocalizedString("Copy Home Page URL", comment: "Copy Home Page URL")
-        let action = UIAlertAction(title: title, style: .default) { _ in
-            UIPasteboard.general.url = url
-            completion(true)
-        }
-        return action
-    }
-
     func markAllAsReadAlertAction(indexPath: IndexPath, completion: @escaping (Bool) -> Void) -> UIAlertAction? {
         guard
             let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed,
             feed.unreadCount > 0,
-            let articles = try? feed.fetchArticles(),
-            let contentView = self.collectionView.cellForItem(at: indexPath)?.contentView else
+            let articles = try? feed.fetchArticles() else
         {
             return nil
         }
 
-        let localizedMenuText = NSLocalizedString("Mark All as Read in \u{201C}%@\u{201D}", comment: "Command")
-        let title = NSString.localizedStringWithFormat(localizedMenuText as NSString, feed.nameForDisplay) as String
-        let cancel = {
-            completion(true)
-        }
-
+        let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
         let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
-            guard let self else {
-                cancel()
-                return
-            }
-            let alert = UIAlertController.markAsReadActionSheet(
-                confirmTitle: title,
-                source: contentView,
-                onCancel: cancel
-            ) { [weak self] in
-                self?.coordinator.markAllAsRead(Array(articles))
-                completion(true)
-            }
-            self.present(alert, animated: true)
+            self?.coordinator.markAllAsRead(Array(articles))
+            completion(true)
         }
         return action
     }
@@ -288,7 +167,7 @@ extension MainFeedCollectionViewController {
         }
         let container = node.parent?.representedObject as? Container
 
-        let title = NSLocalizedString("Get Info", comment: "Get Info")
+        let title = NSLocalizedString("Info", comment: "Info")
         let action = UIAction(title: title, image: Assets.Images.info) { [weak self] _ in
             self?.coordinator.showFeedInspector(for: feed, in: container)
         }
@@ -304,7 +183,7 @@ extension MainFeedCollectionViewController {
         }
         let container = node.parent?.representedObject as? Container
 
-        let title = NSLocalizedString("Get Info", comment: "Get Info")
+        let title = NSLocalizedString("Info", comment: "Info")
         let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
             self?.coordinator.showFeedInspector(for: feed, in: container)
             completion(true)
@@ -315,53 +194,31 @@ extension MainFeedCollectionViewController {
     func markAllAsReadAction(indexPath: IndexPath) -> UIAction? {
         guard
             let sidebarItem = coordinator.nodeFor(indexPath)?.representedObject as? SidebarItem,
-            let contentView = self.collectionView.cellForItem(at: indexPath)?.contentView,
             sidebarItem.unreadCount > 0 else
         {
             return nil
         }
 
-        let localizedMenuText = NSLocalizedString("Mark All as Read in \u{201C}%@\u{201D}", comment: "Command")
-        let title = NSString.localizedStringWithFormat(
-            localizedMenuText as NSString,
-            sidebarItem.nameForDisplay
-        ) as String
+        let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
         let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] _ in
-            guard let self else { return }
-            let alert = UIAlertController
-                .markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
-                    if let articles = try? sidebarItem.fetchUnreadArticles() {
-                        self?.coordinator.markAllAsRead(Array(articles))
-                    }
-                }
-            self.present(alert, animated: true)
+            if let articles = try? sidebarItem.fetchUnreadArticles() {
+                self?.coordinator.markAllAsRead(Array(articles))
+            }
         }
 
         return action
     }
 
-    func markAllAsReadAction(dataStore: DataStore, contentView: UIView?) -> UIAction? {
-        guard dataStore.unreadCount > 0, let contentView else {
+    func markAllAsReadAction(dataStore: DataStore, contentView _: UIView?) -> UIAction? {
+        guard dataStore.unreadCount > 0 else {
             return nil
         }
 
-        let localizedMenuText = NSLocalizedString("Mark All as Read in \u{201C}%@\u{201D}", comment: "Command")
-        let title = NSString.localizedStringWithFormat(
-            localizedMenuText as NSString,
-            dataStore.nameForDisplay
-        ) as String
+        let title = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
         let action = UIAction(title: title, image: Assets.Images.markAllAsRead) { [weak self] _ in
-            guard let self else { return }
-            let alert = UIAlertController
-                .markAsReadActionSheet(confirmTitle: title, source: contentView) { [weak self] in
-                    // If you don't have this delay the screen flashes when it executes this code
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        if let articles = try? dataStore.fetchArticles(.unread()) {
-                            self?.coordinator.markAllAsRead(Array(articles))
-                        }
-                    }
-                }
-            self.present(alert, animated: true)
+            if let articles = try? dataStore.fetchArticles(.unread()) {
+                self?.coordinator.markAllAsRead(Array(articles))
+            }
         }
 
         return action

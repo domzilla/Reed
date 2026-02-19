@@ -245,18 +245,6 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
                             alert.addAction(action)
                         }
 
-                        if let action = self.homePageAlertAction(indexPath: indexPath, completion: completion) {
-                            alert.addAction(action)
-                        }
-
-                        if let action = self.copyFeedPageAlertAction(indexPath: indexPath, completion: completion) {
-                            alert.addAction(action)
-                        }
-
-                        if let action = self.copyHomePageAlertAction(indexPath: indexPath, completion: completion) {
-                            alert.addAction(action)
-                        }
-
                         if let action = self.markAllAsReadAlertAction(indexPath: indexPath, completion: completion) {
                             alert.addAction(action)
                         }

@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Removed 3 dead forward declarations in `NSData+RSParser.m` and fixed 2 compiler warnings (`unused binding in ShareFolderPickerController`, `unnecessary nonisolated(unsafe) in DataStore`)
 - Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
+### Removed
+- Simplified feed context menu — removed "Open Home Page", "Copy Feed URL", and "Copy Home Page URL" actions; renamed "Get Info" to "Info"; shortened "Mark All as Read in …" to "Mark All as Read"; removed confirmation dialog for marking all as read
+
 ### Changed
 - Reorganized `Classes/` into strict MVC structure — created `ViewControllers/`, `Views/`, `Model/` top-level layers with feature subdirectories mirrored across layers; moved ~30 flat directories into 6 clean top-level groups (`App/`, `ViewControllers/`, `Views/`, `Model/`, `Extensions/`, `Utilities/`); grouped persistence layers under `Model/Persistence/` (Database, ArticlesDatabase, SyncDatabase), networking under `Model/Network/` (Downloader, Favicons, FeedFinder, Images), sync under `Model/Sync/` (CloudKitSync, Timer), and domain models under `Model/Core/` (Commands, Protocols, SmartFeeds, Timeline, Tree); merged `Articles/` domain models into `Model/Article/` alongside rendering and feature helpers
 - Refactored `MarkAsReadAlertController` — replaced custom struct with `UIAlertController.markAsReadActionSheet()` static factory method in `UIAlertController+Reed.swift`; replaced `MarkAsReadAlertControllerSourceType` protocol with `PopoverSource`; caller now handles presentation; updated all 12 call sites
