@@ -83,8 +83,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     /// `viewDidAppear(_:)` after a delay to allow the deselection animation to complete.
     private var isAnimating: Bool = false
 
-    /// Tracks the index path of the feed being moved via the "Move to..." context menu action
-    var feedIndexPathBeingMoved: IndexPath?
+    /// Tracks the feed being moved via the "Move to..." context menu action
+    var feedBeingMoved: (feed: Feed, sourceContainer: Container)?
 
     override func viewDidLoad() {
         super.viewDidLoad()

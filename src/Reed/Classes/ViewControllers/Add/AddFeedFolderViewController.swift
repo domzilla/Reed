@@ -42,6 +42,11 @@ final class AddFeedFolderViewController: UITableViewController {
             target: self,
             action: #selector(self.cancel(_:))
         )
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(self.createNewFolder(_:))
+        )
 
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "FolderCell")
@@ -100,7 +105,48 @@ final class AddFeedFolderViewController: UITableViewController {
         dismissViewController()
     }
 
-    // MARK: Actions
+    // MARK: - Actions
+
+    @objc
+    func createNewFolder(_: Any) {
+        guard let dataStore = dataStoreForNewFolder() else { return }
+
+        let alertTitle = NSLocalizedString("New Folder", comment: "New Folder")
+        let alert = UIAlertController(title: alertTitle, message: nil, preferredStyle: .alert)
+
+        alert.addTextField { textField in
+            textField.placeholder = NSLocalizedString("Name", comment: "Name")
+            textField.autocapitalizationType = .words
+            textField.autocorrectionType = .no
+        }
+
+        let addTitle = NSLocalizedString("Add", comment: "Add")
+        let addAction = UIAlertAction(title: addTitle, style: .default) { [weak self] _ in
+            guard let self else { return }
+            guard
+                let folderName = alert.textFields?.first?.text,
+                !folderName.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+
+            Task { @MainActor in
+                do {
+                    let folder = try await dataStore.addFolder(folderName)
+                    self.delegate?.didSelect(container: folder)
+                    self.dismissViewController()
+                } catch {
+                    self.presentError(error)
+                }
+            }
+        }
+
+        let cancelTitle = NSLocalizedString("Cancel", comment: "Cancel")
+        let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel)
+
+        alert.addAction(cancelAction)
+        alert.addAction(addAction)
+        alert.preferredAction = addAction
+
+        present(alert, animated: true)
+    }
 
     @objc
     func cancel(_: Any) {
@@ -109,6 +155,17 @@ final class AddFeedFolderViewController: UITableViewController {
 }
 
 extension AddFeedFolderViewController {
+    private func dataStoreForNewFolder() -> DataStore? {
+        if let dataStore = initialContainer as? DataStore {
+            return dataStore
+        }
+        if let dataStore = initialContainer?.dataStore {
+            return dataStore
+        }
+        return self.containers.lazy.compactMap { $0 as? DataStore }.first
+            ?? self.containers.lazy.compactMap(\.dataStore).first
+    }
+
     private func dismissViewController() {
         dismiss(animated: true)
     }

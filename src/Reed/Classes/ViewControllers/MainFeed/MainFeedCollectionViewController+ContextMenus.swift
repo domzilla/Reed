@@ -106,18 +106,16 @@ extension MainFeedCollectionViewController {
     }
 
     func showFolderPickerForMoving(indexPath: IndexPath) {
-        self.feedIndexPathBeingMoved = indexPath
+        guard
+            let node = coordinator.nodeFor(indexPath),
+            let feed = node.representedObject as? Feed,
+            let sourceContainer = node.parent?.representedObject as? Container else { return }
+
+        self.feedBeingMoved = (feed: feed, sourceContainer: sourceContainer)
 
         let folderViewController = AddFeedFolderViewController()
         folderViewController.delegate = self
-
-        // Set initial container to current parent
-        if
-            let node = coordinator.nodeFor(indexPath),
-            let parentContainer = node.parent?.representedObject as? Container
-        {
-            folderViewController.initialContainer = parentContainer
-        }
+        folderViewController.initialContainer = sourceContainer
 
         let navController = UINavigationController(rootViewController: folderViewController)
         navController.modalPresentationStyle = .formSheet
@@ -342,17 +340,9 @@ extension MainFeedCollectionViewController {
 
 extension MainFeedCollectionViewController: AddFeedFolderViewControllerDelegate {
     func didSelect(container: Container) {
-        guard
-            let indexPath = feedIndexPathBeingMoved,
-            let node = coordinator.nodeFor(indexPath),
-            let feed = node.representedObject as? Feed,
-            let sourceContainer = node.parent?.representedObject as? Container else
-        {
-            self.feedIndexPathBeingMoved = nil
-            return
-        }
+        guard let (feed, sourceContainer) = feedBeingMoved else { return }
 
-        self.feedIndexPathBeingMoved = nil
+        self.feedBeingMoved = nil
 
         if sourceContainer.dataStore == container.dataStore {
             moveFeedInAccount(feed: feed, sourceContainer: sourceContainer, destinationContainer: container)

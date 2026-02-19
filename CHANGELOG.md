@@ -7,12 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Folder picker ("Select Folder") now has a `+` button to create a new folder inline — creates the folder and auto-selects it
 - Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
 
 ### Changed
 - Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
 
 ### Fixed
+- "Move to Folder" not moving feed when creating a new folder from the picker — the stored index path became stale after folder creation changed the tree; now captures the feed and source container directly
 - CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
 - Widget deep links using `nnw://` scheme instead of `reed://`
 - Open in Browser activity type still referencing `com.rancharo.NetNewsWire-Evergreen`
