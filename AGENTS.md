@@ -186,6 +186,46 @@ required init?(coder: NSCoder) {
 }
 ```
 
+### CloudKit Sync Pattern (MANDATORY)
+All `CloudKitSyncProvider` operations **must** follow this local-first pattern:
+
+1. **Do the local operation first** (modify tree, clear metadata, etc.) — this always succeeds
+2. **Check `iCloudAccountMonitor.shared.isAvailable`** before any CloudKit calls
+3. **If available**: attempt CloudKit sync; on recoverable errors, queue via `queue*Operation()`; on non-recoverable errors, log but do NOT throw (local state is authoritative)
+4. **If not available**: queue the operation for later sync via `queue*Operation()`
+5. **Skip CloudKit entirely** if the entity has a `local-` prefixed external ID (not yet synced)
+
+```swift
+// Pattern used by createFolder, renameFolder, removeFeed, moveFeed, addFeed, removeFolder:
+func someOperation(for dataStore: DataStore, ...) async throws {
+    // 1. Local operation first
+    dataStore.doLocalChange(...)
+
+    // 2. Guard: need real external ID for CloudKit
+    guard let extID = entity.externalID, !extID.hasPrefix("local-") else { return }
+
+    // 3. Check iCloud availability
+    if iCloudAccountMonitor.shared.isAvailable {
+        do {
+            try await feedsZone.doCloudKitOperation(...)
+        } catch {
+            if iCloudAccountMonitor.isRecoverableError(error) {
+                queueSomeOperation(...)
+            } else {
+                DZLog("iCloud: error (local succeeded): \(error.localizedDescription)")
+            }
+        }
+    } else {
+        queueSomeOperation(...)
+    }
+}
+```
+
+Key files: `CloudKitSyncProvider+FeedOperations.swift`, `CloudKitSyncProvider+FolderOperations.swift`, `CloudKitSyncProvider+PendingOperations.swift`
+
+### DownloadProgress Bookkeeping
+`DownloadProgress` tracks sync tasks with `addTask()`/`addTasks(_:)` and `completeTask()`/`completeTasks(_:)`. Every `addTask` **must** have exactly one matching `completeTask` on all code paths (success, error, early return). Use `defer { syncProgress.completeTask() }` when possible. Mismatches cause assertion crashes.
+
 ---
 
 ## Notes

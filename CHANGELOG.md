@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 - "Move to Folder" not moving feed when creating a new folder from the picker — the stored index path became stale after folder creation changed the tree; now captures the feed and source container directly
+- Assertion crash when deleting a folder — `removeFolder` called `addTask()` once but had two `completeTask()` calls (one for `findFeedExternalIDs`, one for `removeFolder`); also rewrote to follow the local-first pattern (remove locally, then best-effort CloudKit sync) so folder deletion works offline and on Simulator
 - CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
 - Widget deep links using `nnw://` scheme instead of `reed://`
 - Open in Browser activity type still referencing `com.rancharo.NetNewsWire-Evergreen`

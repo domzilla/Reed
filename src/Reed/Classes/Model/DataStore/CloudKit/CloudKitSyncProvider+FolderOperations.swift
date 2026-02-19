@@ -84,54 +84,53 @@ extension CloudKitSyncProvider {
     }
 
     func removeFolder(for dataStore: DataStore, with folder: Folder) async throws {
-        self.syncProgress.addTask()
+        // Capture references before local removal
+        let folderExternalID = folder.externalID
+        let feeds = Array(folder.topLevelFeeds)
 
-        let feedExternalIDs: [String]
-        do {
-            feedExternalIDs = try await self.feedsZone.findFeedExternalIDs(for: folder)
-            self.syncProgress.completeTask()
-        } catch {
-            self.syncProgress.completeTask()
-            self.syncProgress.completeTask()
-            processSyncError(dataStore, error)
-            throw error
+        // Remove locally first — clear feed metadata and remove folder from tree
+        for feed in feeds {
+            dataStore.clearFeedMetadata(feed)
+        }
+        dataStore.removeFolderFromTree(folder)
+
+        // Try to sync to CloudKit (only if we have a real external ID)
+        guard let folderExtID = folderExternalID, !folderExtID.hasPrefix("local-") else {
+            return
         }
 
-        let feeds = feedExternalIDs.compactMap { dataStore.existingFeed(withExternalID: $0) }
-        var errorOccurred = false
-
-        await withTaskGroup(of: Result<Void, Error>.self) { group in
+        if iCloudAccountMonitor.shared.isAvailable {
+            // Remove feeds from CloudKit (best-effort, each handles its own progress)
             for feed in feeds {
-                group.addTask {
-                    do {
-                        try await self.removeFeedFromCloud(for: dataStore, with: feed, from: folder)
-                        return .success(())
-                    } catch {
-                        DZLog("CloudKit: Remove folder, remove feed error: \(error.localizedDescription)")
-                        return .failure(error)
-                    }
+                do {
+                    try await self.removeFeedFromCloud(for: dataStore, with: feed, from: folder)
+                } catch {
+                    DZLog("CloudKit: Remove folder, remove feed error: \(error.localizedDescription)")
                 }
             }
 
-            for await result in group {
-                if case .failure = result {
-                    errorOccurred = true
+            // Remove the folder from CloudKit
+            do {
+                try await self.feedsZone.removeFolder(folder)
+            } catch {
+                if iCloudAccountMonitor.isRecoverableError(error) {
+                    queueDeleteFolderOperation(folderExternalID: folderExtID)
+                    DZLog("iCloud: Queued deleteFolder operation for later sync")
+                } else {
+                    DZLog(
+                        "iCloud: Remove folder CloudKit error (local removal succeeded): \(error.localizedDescription)"
+                    )
                 }
             }
-        }
-
-        guard !errorOccurred else {
-            self.syncProgress.completeTask()
-            throw CloudKitSyncProviderError.unknown
-        }
-
-        do {
-            try await self.feedsZone.removeFolder(folder)
-            self.syncProgress.completeTask()
-            dataStore.removeFolderFromTree(folder)
-        } catch {
-            self.syncProgress.completeTask()
-            throw error
+        } else {
+            // Queue individual feed deletions and folder deletion for later sync
+            for feed in feeds {
+                if let feedExtID = feed.externalID, !feedExtID.hasPrefix("local-") {
+                    queueDeleteFeedOperation(feedExternalID: feedExtID, containerExternalID: folderExtID)
+                }
+            }
+            queueDeleteFolderOperation(folderExternalID: folderExtID)
+            DZLog("iCloud: Removed folder locally, queued for sync when iCloud available")
         }
     }
 
