@@ -35,10 +35,6 @@ extension MainTimelineViewController {
                     let cellData = configure(article: article)
                     cell.cellData = cellData
                 }
-                if let cell = tableView.cellForRow(at: indexPath) as? MainTimelineFeedCell {
-                    let cellData = configure(article: article)
-                    cell.cellData = cellData
-                }
             }
         }
     }
@@ -65,7 +61,7 @@ extension MainTimelineViewController {
 
     @objc
     func avatarDidBecomeAvailable(_ note: Notification) {
-        guard self.showIcons, let avatarURL = note.userInfo?[AppConstants.NotificationKey.url] as? String else {
+        guard let avatarURL = note.userInfo?[AppConstants.NotificationKey.url] as? String else {
             return
         }
         self.tableView.indexPathsForVisibleRows?.forEach { indexPath in
@@ -89,21 +85,7 @@ extension MainTimelineViewController {
 
     @objc
     func faviconDidBecomeAvailable(_: Notification) {
-        if self.showIcons {
-            self.queueReloadAvailableCells()
-        }
-    }
-
-    func userDefaultsDidChange() {
-        if
-            self.numberOfTextLines != AppDefaults.shared.timelineNumberOfLines || self.iconSize != AppDefaults.shared
-                .timelineIconSize
-        {
-            self.numberOfTextLines = AppDefaults.shared.timelineNumberOfLines
-            self.iconSize = AppDefaults.shared.timelineIconSize
-            self.reloadAllVisibleCells()
-        }
-        self.updateToolbar()
+        self.queueReloadAvailableCells()
     }
 
     @objc

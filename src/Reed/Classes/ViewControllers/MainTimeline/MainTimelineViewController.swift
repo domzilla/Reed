@@ -10,8 +10,6 @@ import UIKit
 import WebKit
 
 final class MainTimelineViewController: UITableViewController, UndoableCommandRunner {
-    var numberOfTextLines = 0
-    var iconSize = IconSize.medium
     private lazy var feedTapGestureRecognizer = UITapGestureRecognizer(
         target: self,
         action: #selector(showFeedInspector(_:))
@@ -53,11 +51,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     var timelineFeed: SidebarItem? {
         assert(self.coordinator != nil)
         return self.coordinator?.timelineFeed
-    }
-
-    var showIcons: Bool {
-        assert(self.coordinator != nil)
-        return self.coordinator?.showIcons ?? false
     }
 
     private var currentArticle: Article? {
@@ -158,7 +151,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
         // Register cells
         self.tableView.register(MainTimelineIconFeedCell.self, forCellReuseIdentifier: "MainTimelineIconFeedCell")
-        self.tableView.register(MainTimelineFeedCell.self, forCellReuseIdentifier: "MainTimelineFeedCell")
 
         // Set up toolbar items
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
@@ -206,12 +198,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             object: nil
         )
 
-        NotificationCenter.default
-            .addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in
-                    self?.userDefaultsDidChange()
-                }
-            }
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.contentSizeCategoryDidChange),
@@ -252,9 +238,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         // Configure the table
         self.tableView.dataSource = self.dataSource
         self.tableView.isPrefetchingEnabled = false
-
-        self.numberOfTextLines = AppDefaults.shared.timelineNumberOfLines
-        self.iconSize = AppDefaults.shared.timelineIconSize
 
         refreshControl = UIRefreshControl()
         refreshControl!.addTarget(self, action: #selector(self.refreshAccounts(_:)), for: .valueChanged)
@@ -822,22 +805,12 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         let dataSource: UITableViewDiffableDataSource<Int, Article> =
             MainTimelineDataSource(tableView: tableView, cellProvider: { [weak self] tableView, indexPath, article in
                 let cellData = self!.configure(article: article)
-                if self!.showIcons {
-                    let cell = tableView.dequeueReusableCell(
-                        withIdentifier: "MainTimelineIconFeedCell",
-                        for: indexPath
-                    ) as! MainTimelineIconFeedCell
-                    cell.cellData = cellData
-                    return cell
-                } else {
-                    let cell = tableView.dequeueReusableCell(
-                        withIdentifier: "MainTimelineFeedCell",
-                        for: indexPath
-                    ) as! MainTimelineFeedCell
-                    cell.cellData = cellData
-                    return cell
-                }
-
+                let cell = tableView.dequeueReusableCell(
+                    withIdentifier: "MainTimelineIconFeedCell",
+                    for: indexPath
+                ) as! MainTimelineIconFeedCell
+                cell.cellData = cellData
+                return cell
             })
         dataSource.defaultRowAnimation = .middle
         return dataSource
@@ -847,7 +820,8 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     func configure(article: Article) -> MainTimelineCellData {
         let iconImage = self.iconImageFor(article)
         let showFeedNames = self.coordinator?.showFeedNames ?? ShowFeedName.none
-        let showIcon = self.showIcons && iconImage != nil
+        let showIcon = iconImage != nil
+        let isCompact = traitCollection.horizontalSizeClass == .compact
         let cellData = MainTimelineCellData(
             article: article,
             showFeedName: showFeedNames,
@@ -855,17 +829,14 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             byline: article.byline(),
             iconImage: iconImage,
             showIcon: showIcon,
-            numberOfLines: self.numberOfTextLines,
-            iconSize: self.iconSize
+            numberOfLines: isCompact ? 2 : 3,
+            iconSize: isCompact ? .medium : .large
         )
         return cellData
     }
 
     func iconImageFor(_ article: Article) -> IconImage? {
-        if !self.showIcons {
-            return nil
-        }
-        return article.iconImage()
+        article.iconImage()
     }
 }
 

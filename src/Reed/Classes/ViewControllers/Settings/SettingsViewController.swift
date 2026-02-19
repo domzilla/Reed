@@ -147,7 +147,7 @@ final class SettingsViewController: UITableViewController {
         case 0: 1 // System Settings
         case 1: 1 // Display Options (Appearance)
         case 2: 2 // Feeds (Import/Export)
-        case 3: 4 // Timeline
+        case 3: 3 // Timeline
         case 4: // Articles
             traitCollection.userInterfaceIdiom == .phone ? 3 : 2
         default: 0
@@ -206,11 +206,6 @@ final class SettingsViewController: UITableViewController {
             cell.accessoryView = self.refreshClearsReadArticlesSwitch
             cell.selectionStyle = .none
             return cell
-        case (3, 3):
-            let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-            cell.textLabel?.text = NSLocalizedString("Timeline Layout", comment: "Timeline Layout")
-            cell.accessoryType = .disclosureIndicator
-            return cell
         // Section 4: Articles
         case (4, 0):
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
@@ -261,10 +256,6 @@ final class SettingsViewController: UITableViewController {
                 let sourceRect = tableView.rectForRow(at: indexPath)
                 exportOPML(sourceView: sourceView, sourceRect: sourceRect)
             }
-
-        case (3, 3):
-            let timeline = ModernTimelineCustomizerTableViewController()
-            navigationController?.pushViewController(timeline, animated: true)
 
         default:
             tableView.selectRow(at: nil, animated: true, scrollPosition: .none)

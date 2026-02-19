@@ -18,6 +18,15 @@ class MainTimelineIconFeedCell: UITableViewCell {
         return label
     }()
 
+    let articleSummary: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
     let authorByLine: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .subheadline)
@@ -68,8 +77,6 @@ class MainTimelineIconFeedCell: UITableViewCell {
         }
     }
 
-    var isPreview: Bool = false
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.setupViews()
@@ -87,6 +94,7 @@ class MainTimelineIconFeedCell: UITableViewCell {
         contentView.addSubview(self.indicatorView)
         contentView.addSubview(self.iconView)
         contentView.addSubview(self.articleTitle)
+        contentView.addSubview(self.articleSummary)
         contentView.addSubview(self.metaDataStackView)
 
         self.iconWidthConstraint = self.iconView.widthAnchor.constraint(equalToConstant: 48)
@@ -107,7 +115,11 @@ class MainTimelineIconFeedCell: UITableViewCell {
             self.articleTitle.leadingAnchor.constraint(equalTo: self.iconView.trailingAnchor, constant: 8),
             self.articleTitle.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
 
-            self.metaDataStackView.topAnchor.constraint(equalTo: self.articleTitle.bottomAnchor, constant: 4),
+            self.articleSummary.topAnchor.constraint(equalTo: self.articleTitle.bottomAnchor, constant: 2),
+            self.articleSummary.leadingAnchor.constraint(equalTo: self.articleTitle.leadingAnchor),
+            self.articleSummary.trailingAnchor.constraint(equalTo: self.articleTitle.trailingAnchor),
+
+            self.metaDataStackView.topAnchor.constraint(equalTo: self.articleSummary.bottomAnchor, constant: 4),
             self.metaDataStackView.leadingAnchor.constraint(equalTo: self.articleTitle.leadingAnchor),
             self.metaDataStackView.trailingAnchor
                 .constraint(lessThanOrEqualTo: contentView.layoutMarginsGuide.trailingAnchor),
@@ -133,8 +145,9 @@ class MainTimelineIconFeedCell: UITableViewCell {
 
     private func configure(_ cellData: MainTimelineCellData) {
         self.updateIndicatorView(cellData)
-        self.articleTitle.numberOfLines = cellData.numberOfLines
+        self.articleSummary.numberOfLines = cellData.numberOfLines
         self.applyTitleTextWithAttributes(configurationState)
+        self.applySummaryTextWithAttributes(configurationState)
 
         if cellData.showFeedName == .feed {
             self.authorByLine.text = cellData.feedName
@@ -192,8 +205,6 @@ class MainTimelineIconFeedCell: UITableViewCell {
     }
 
     private func applyTitleTextWithAttributes(_ state: UICellConfigurationState) {
-        let attributedCellText = NSMutableAttributedString()
-
         let isSelected = state.isSelected || state.isHighlighted || state.isFocused || state.isSwiped
         if self.cellData.title != "" {
             let paragraphStyle = NSMutableParagraphStyle()
@@ -205,10 +216,17 @@ class MainTimelineIconFeedCell: UITableViewCell {
                 .paragraphStyle: paragraphStyle,
                 .foregroundColor: isSelected ? UIColor.white : UIColor.label,
             ]
-            let titleWithNewline = self.cellData.title + (self.cellData.summary != "" ? "\n" : "")
-            let titleAttributed = NSAttributedString(string: titleWithNewline, attributes: titleAttributes)
-            attributedCellText.append(titleAttributed)
+            self.articleTitle.attributedText = NSAttributedString(
+                string: self.cellData.title,
+                attributes: titleAttributes
+            )
+        } else {
+            self.articleTitle.attributedText = nil
         }
+    }
+
+    private func applySummaryTextWithAttributes(_ state: UICellConfigurationState) {
+        let isSelected = state.isSelected || state.isHighlighted || state.isFocused || state.isSwiped
         if self.cellData.summary != "" {
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.minimumLineHeight = UIFont.preferredFont(forTextStyle: .body).pointSize
@@ -219,10 +237,13 @@ class MainTimelineIconFeedCell: UITableViewCell {
                 .paragraphStyle: paragraphStyle,
                 .foregroundColor: isSelected ? UIColor.white : UIColor.label,
             ]
-            let summaryAttributed = NSAttributedString(string: cellData.summary, attributes: summaryAttributes)
-            attributedCellText.append(summaryAttributed)
+            self.articleSummary.attributedText = NSAttributedString(
+                string: self.cellData.summary,
+                attributes: summaryAttributes
+            )
+        } else {
+            self.articleSummary.attributedText = nil
         }
-        self.articleTitle.attributedText = attributedCellText
     }
 
     override func updateConfiguration(using state: UICellConfigurationState) {
@@ -234,19 +255,21 @@ class MainTimelineIconFeedCell: UITableViewCell {
             backgroundConfig.edgesAddingLayoutMarginsToBackgroundInsets = [.leading, .trailing]
             backgroundConfig.backgroundInsets = NSDirectionalEdgeInsets(
                 top: 0,
-                leading: !self.isPreview ? -4 : -12,
+                leading: -4,
                 bottom: 0,
-                trailing: !self.isPreview ? -4 : -12
+                trailing: -4
             )
         }
 
         if state.isSelected || state.isHighlighted || state.isFocused || state.isSwiped {
             backgroundConfig.backgroundColor = Assets.Colors.primaryAccent
             self.applyTitleTextWithAttributes(state)
+            self.applySummaryTextWithAttributes(state)
             self.articleDate.textColor = .lightText
             self.authorByLine.textColor = .lightText
         } else {
             self.applyTitleTextWithAttributes(state)
+            self.applySummaryTextWithAttributes(state)
             self.articleDate.textColor = .secondaryLabel
             self.authorByLine.textColor = .secondaryLabel
         }

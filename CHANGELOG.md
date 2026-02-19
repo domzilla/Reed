@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
 
 ### Removed
+- Timeline Customizer screen and "Timeline Layout" settings row — icon size and preview lines are now hardcoded based on horizontal size class (compact: medium icons / 2 preview lines, regular: large icons / 3 preview lines); deleted `ModernTimelineCustomizerTableViewController`, `ModernTimelineSliderCell`, `SliderConfiguration` enum, `MainTimelineFeedCell` (replaced by always using icon cell), related `AppDefaults` keys/properties, and cell `isPreview` property
+- `showIcons` gating — icons now always show in the timeline; `MainTimelineIconFeedCell` headline and summary are now separate labels (unlimited headline lines, summary capped to preview line count)
 - Simplified feed context menu — removed "Open Home Page", "Copy Feed URL", and "Copy Home Page URL" actions; renamed "Get Info" to "Info"; shortened "Mark All as Read in …" to "Mark All as Read"; removed confirmation dialog for marking all as read
 
 ### Changed

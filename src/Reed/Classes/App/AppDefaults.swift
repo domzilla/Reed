@@ -43,8 +43,6 @@ final class AppDefaults: Sendable {
         static let firstRunDate = "firstRunDate"
         static let timelineGroupByFeed = "timelineGroupByFeed"
         static let refreshClearsReadArticles = "refreshClearsReadArticles"
-        static let timelineNumberOfLines = "timelineNumberOfLines"
-        static let timelineIconDimension = "timelineIconSize"
         static let timelineSortDirection = "timelineSortDirection"
         static let articleFullscreenAvailable = "articleFullscreenAvailable"
         static let articleFullscreenEnabled = "articleFullscreenEnabled"
@@ -196,25 +194,6 @@ final class AppDefaults: Sendable {
         }
     }
 
-    var timelineNumberOfLines: Int {
-        get {
-            AppDefaults.int(for: Key.timelineNumberOfLines)
-        }
-        set {
-            AppDefaults.setInt(for: Key.timelineNumberOfLines, newValue)
-        }
-    }
-
-    var timelineIconSize: IconSize {
-        get {
-            let rawValue = AppDefaults.store.integer(forKey: Key.timelineIconDimension)
-            return IconSize(rawValue: rawValue) ?? IconSize.medium
-        }
-        set {
-            AppDefaults.store.set(newValue.rawValue, forKey: Key.timelineIconDimension)
-        }
-    }
-
     var hideReadFeeds: Bool {
         get {
             UserDefaults.standard.bool(forKey: Key.hideReadFeeds)
@@ -315,8 +294,6 @@ final class AppDefaults: Sendable {
             Key.userInterfaceColorPalette: UserInterfaceColorPalette.automatic.rawValue,
             Key.timelineGroupByFeed: false,
             Key.refreshClearsReadArticles: false,
-            Key.timelineNumberOfLines: 2,
-            Key.timelineIconDimension: IconSize.medium.rawValue,
             Key.timelineSortDirection: ComparisonResult.orderedDescending.rawValue,
             Key.articleFullscreenAvailable: false,
             Key.articleFullscreenEnabled: false,
