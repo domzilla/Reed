@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
 
 ### Fixed
+- Search modal: moved search field from navigation bar into a table header view to avoid nav bar height constraints; navigation bar now shows "Search" title with close button
 - Feed list filter button now uses `.prominent` style and accent tint when active (matching the timeline filter button); inactive state uses system default tint instead of `.label`
 - "Move to Folder" not moving feed when creating a new folder from the picker — the stored index path became stale after folder creation changed the tree; now captures the feed and source container directly
 - Assertion crash when deleting a folder — `removeFolder` called `addTask()` once but had two `completeTask()` calls (one for `findFeedExternalIDs`, one for `removeFolder`); also rewrote to follow the local-first pattern (remove locally, then best-effort CloudKit sync) so folder deletion works offline and on Simulator

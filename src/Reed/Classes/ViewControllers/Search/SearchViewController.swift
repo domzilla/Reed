@@ -24,18 +24,18 @@ final class SearchViewController: UITableViewController {
     private var articles = ArticleArray()
     private var searchTask: Task<Void, Never>?
 
-    private lazy var searchBar: UISearchBar = {
-        let bar = UISearchBar()
-        bar.delegate = self
-        bar.autocapitalizationType = .none
-        bar.autocorrectionType = .no
+    private lazy var searchTextField: UISearchTextField = {
+        let field = UISearchTextField()
+        field.autocapitalizationType = .none
+        field.autocorrectionType = .no
+        field.addTarget(self, action: #selector(self.searchTextDidChange(_:)), for: .editingChanged)
         switch self.searchScope {
         case .global:
-            bar.placeholder = NSLocalizedString("Search All Articles", comment: "Search All Articles")
+            field.placeholder = NSLocalizedString("Search All Articles", comment: "Search All Articles")
         case .timeline:
-            bar.placeholder = NSLocalizedString("Search Articles", comment: "Search Articles")
+            field.placeholder = NSLocalizedString("Search Articles", comment: "Search Articles")
         }
-        return bar
+        return field
     }()
 
     // MARK: - Initialization
@@ -56,12 +56,23 @@ final class SearchViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationItem.titleView = self.searchBar
+        title = NSLocalizedString("Search", comment: "Search")
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .cancel,
             target: self,
             action: #selector(self.dismissSearch)
         )
+
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 52))
+        self.searchTextField.translatesAutoresizingMaskIntoConstraints = false
+        headerView.addSubview(self.searchTextField)
+        NSLayoutConstraint.activate([
+            self.searchTextField.leadingAnchor.constraint(equalTo: headerView.layoutMarginsGuide.leadingAnchor),
+            self.searchTextField.trailingAnchor.constraint(equalTo: headerView.layoutMarginsGuide.trailingAnchor),
+            self.searchTextField.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
+            self.searchTextField.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8),
+        ])
+        self.tableView.tableHeaderView = headerView
 
         self.tableView.register(MainTimelineIconFeedCell.self, forCellReuseIdentifier: "MainTimelineIconFeedCell")
     }
@@ -73,7 +84,7 @@ final class SearchViewController: UITableViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.searchBar.becomeFirstResponder()
+        self.searchTextField.becomeFirstResponder()
     }
 
     // MARK: - Actions
@@ -82,6 +93,11 @@ final class SearchViewController: UITableViewController {
     private func dismissSearch() {
         self.searchTask?.cancel()
         dismiss(animated: true)
+    }
+
+    @objc
+    private func searchTextDidChange(_ textField: UISearchTextField) {
+        self.performSearch(textField.text ?? "")
     }
 
     // MARK: - Search
@@ -158,17 +174,5 @@ final class SearchViewController: UITableViewController {
         navigationController?.pushViewController(articleVC, animated: true)
 
         tableView.deselectRow(at: indexPath, animated: true)
-    }
-}
-
-// MARK: - UISearchBarDelegate
-
-extension SearchViewController: UISearchBarDelegate {
-    func searchBar(_: UISearchBar, textDidChange searchText: String) {
-        self.performSearch(searchText)
-    }
-
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
     }
 }
