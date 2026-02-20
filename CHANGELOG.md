@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
 
 ### Changed
+- Search results now push the article directly within the search modal instead of dismissing and navigating through the feed timeline; extracted `BaseArticleViewController` as shared base class for `ArticleViewController` and `SearchArticleViewController`
 - Search is no longer an always-visible search bar; replaced with a toolbar button that presents a modal search view
 - Timeline navigation bar now shows the actual feed or smart feed name (Today, All Unread, Starred, feed title, folder name) instead of a hardcoded "Timeline" label
 - Timeline navigation bar now displays the feed icon next to the title (SF Symbol icons for smart feeds, favicons for regular feeds)

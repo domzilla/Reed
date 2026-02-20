@@ -10,7 +10,7 @@ import SafariServices
 import UIKit
 import WebKit
 
-final class ArticleViewController: UIViewController {
+final class ArticleViewController: BaseArticleViewController {
     typealias State = (windowScrollY: Int, placeholder: Bool)
 
     // MARK: - UI Elements
@@ -48,37 +48,6 @@ final class ArticleViewController: UIViewController {
         return item
     }()
 
-    private lazy var readBarButtonItem: UIBarButtonItem = {
-        let item = UIBarButtonItem(
-            image: Assets.Images.circleOpen,
-            style: .plain,
-            target: self,
-            action: #selector(self.toggleRead(_:))
-        )
-        return item
-    }()
-
-    private lazy var starBarButtonItem: UIBarButtonItem = {
-        let item = UIBarButtonItem(
-            image: Assets.Images.starOpen,
-            style: .plain,
-            target: self,
-            action: #selector(self.toggleStar(_:))
-        )
-        return item
-    }()
-
-    private lazy var actionBarButtonItem: UIBarButtonItem = {
-        let item = UIBarButtonItem(
-            image: UIImage(systemName: "square.and.arrow.up"),
-            style: .plain,
-            target: self,
-            action: #selector(showActivityDialog(_:))
-        )
-        item.accessibilityLabel = NSLocalizedString("Share", comment: "Share")
-        return item
-    }()
-
     private lazy var searchBar: ArticleSearchBar = {
         let bar = ArticleSearchBar(frame: .zero)
         bar.translatesAutoresizingMaskIntoConstraints = false
@@ -91,15 +60,13 @@ final class ArticleViewController: UIViewController {
 
     private var pageViewController: UIPageViewController!
 
-    private var currentWebViewController: WebViewController? {
+    override var currentWebViewController: WebViewController? {
         self.pageViewController?.viewControllers?.first as? WebViewController
     }
 
-    weak var coordinator: SceneCoordinator!
-
     private let poppableDelegate = PoppableGestureRecognizerDelegate()
 
-    var article: Article? {
+    override var article: Article? {
         didSet {
             if let controller = currentWebViewController, controller.article != article {
                 controller.setArticle(self.article)
@@ -141,8 +108,6 @@ final class ArticleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemBackground
-
         // Set up toolbar items
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         toolbarItems = [
@@ -162,12 +127,6 @@ final class ArticleViewController: UIViewController {
             self,
             selector: #selector(self.unreadCountDidChange(_:)),
             name: .UnreadCountDidChange,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(self.statusesDidChange(_:)),
-            name: .StatusesDidChange,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -320,52 +279,19 @@ final class ArticleViewController: UIViewController {
         }
     }
 
-    func updateUI() {
-        guard let article else {
+    override func updateUI() {
+        super.updateUI()
+
+        guard self.article != nil else {
             self.nextUnreadBarButtonItem.isEnabled = false
             self.prevArticleBarButtonItem.isEnabled = false
             self.nextArticleBarButtonItem.isEnabled = false
-            self.readBarButtonItem.isEnabled = false
-            self.starBarButtonItem.isEnabled = false
-            self.actionBarButtonItem.isEnabled = false
             return
         }
 
         self.nextUnreadBarButtonItem.isEnabled = self.coordinator.isAnyUnreadAvailable
         self.prevArticleBarButtonItem.isEnabled = self.coordinator.isPrevArticleAvailable
         self.nextArticleBarButtonItem.isEnabled = self.coordinator.isNextArticleAvailable
-        self.readBarButtonItem.isEnabled = true
-        self.starBarButtonItem.isEnabled = true
-
-        let permalinkPresent = article.preferredLink != nil
-        self.actionBarButtonItem.isEnabled = permalinkPresent
-
-        if article.status.read {
-            self.readBarButtonItem.image = Assets.Images.circleOpen
-            self.readBarButtonItem.isEnabled = article.isAvailableToMarkUnread
-            self.readBarButtonItem.accLabelText = NSLocalizedString(
-                "Mark Article Unread",
-                comment: "Mark Article Unread"
-            )
-        } else {
-            self.readBarButtonItem.image = Assets.Images.circleClosed
-            self.readBarButtonItem.isEnabled = true
-            self.readBarButtonItem.accLabelText = NSLocalizedString(
-                "Selected - Mark Article Unread",
-                comment: "Selected - Mark Article Unread"
-            )
-        }
-
-        if article.status.starred {
-            self.starBarButtonItem.image = Assets.Images.starClosed
-            self.starBarButtonItem.accLabelText = NSLocalizedString(
-                "Selected - Star Article",
-                comment: "Selected - Star Article"
-            )
-        } else {
-            self.starBarButtonItem.image = Assets.Images.starOpen
-            self.starBarButtonItem.accLabelText = NSLocalizedString("Star Article", comment: "Star Article")
-        }
     }
 
     // MARK: Notifications
@@ -373,19 +299,6 @@ final class ArticleViewController: UIViewController {
     @objc
     dynamic func unreadCountDidChange(_: Notification) {
         self.updateUI()
-    }
-
-    @objc
-    func statusesDidChange(_ note: Notification) {
-        guard let articleIDs = note.userInfo?[DataStore.UserInfoKey.articleIDs] as? Set<String> else {
-            return
-        }
-        guard let article else {
-            return
-        }
-        if articleIDs.contains(article.articleID) {
-            self.updateUI()
-        }
     }
 
     @objc
@@ -426,21 +339,6 @@ final class ArticleViewController: UIViewController {
     @objc
     func nextArticle(_: Any) {
         self.coordinator.selectNextArticle()
-    }
-
-    @objc
-    func toggleRead(_: Any) {
-        self.coordinator.toggleReadForCurrentArticle()
-    }
-
-    @objc
-    func toggleStar(_: Any) {
-        self.coordinator.toggleStarredForCurrentArticle()
-    }
-
-    @objc
-    func showActivityDialog(_: Any) {
-        self.currentWebViewController?.showActivityDialog(popOverBarButtonItem: self.actionBarButtonItem)
     }
 
     // MARK: Keyboard Shortcuts

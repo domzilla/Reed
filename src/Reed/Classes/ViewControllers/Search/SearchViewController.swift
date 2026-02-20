@@ -66,6 +66,11 @@ final class SearchViewController: UITableViewController {
         self.tableView.register(MainTimelineIconFeedCell.self, forCellReuseIdentifier: "MainTimelineIconFeedCell")
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setToolbarHidden(true, animated: animated)
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.searchBar.becomeFirstResponder()
@@ -147,25 +152,10 @@ final class SearchViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let article = self.articles[indexPath.row]
-        self.searchTask?.cancel()
 
-        dismiss(animated: true) { [weak self] in
-            guard let coordinator = self?.coordinator else { return }
-
-            switch self?.searchScope {
-            case .timeline:
-                coordinator.selectArticle(article, animations: [.navigation, .scroll])
-
-            case .global:
-                guard let feed = article.feed else { return }
-                coordinator.discloseFeed(feed, animations: [.navigation]) {
-                    coordinator.selectArticleInCurrentFeed(article.articleID)
-                }
-
-            case .none:
-                break
-            }
-        }
+        guard let coordinator else { return }
+        let articleVC = SearchArticleViewController(article: article, coordinator: coordinator)
+        navigationController?.pushViewController(articleVC, animated: true)
 
         tableView.deselectRow(at: indexPath, animated: true)
     }
