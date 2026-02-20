@@ -24,6 +24,7 @@ final class iCloudAccountMonitor {
     private(set) var accountStatus: CKAccountStatus = .couldNotDetermine
 
     private let container: CKContainer
+    private var notificationObserver: Any?
 
     private init() {
         self.container = AppConstants.cloudKitContainer
@@ -79,18 +80,19 @@ final class iCloudAccountMonitor {
     }
 
     private func setupNotificationObserver() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(self.accountChanged),
-            name: .CKAccountChanged,
-            object: nil
-        )
-    }
-
-    @objc
-    private func accountChanged(_: Notification) {
-        Task {
-            await self.checkAccountStatus()
+        // Use block-based observer with queue: .main because .CKAccountChanged is posted
+        // by CloudKit from its internal background CKProcessStateManager.notificationQueue.
+        // Selector-based observers are called synchronously on the posting queue, which
+        // triggers a @MainActor dispatch assertion crash in Swift 6.
+        self.notificationObserver = NotificationCenter.default.addObserver(
+            forName: .CKAccountChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            Task {
+                await self.checkAccountStatus()
+            }
         }
     }
 
