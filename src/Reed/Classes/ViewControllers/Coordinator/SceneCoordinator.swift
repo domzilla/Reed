@@ -90,13 +90,6 @@ final class SceneCoordinator: NSObject, UndoableCommandRunner {
     // Flattened tree structure for the Sidebar
     var shadowTable = [(sectionID: String, feedNodes: [FeedNode])]()
 
-    var preSearchTimelineFeed: SidebarItem?
-    var lastSearchString = ""
-    var lastSearchScope: SearchScope?
-    var isSearching: Bool = false
-    var savedSearchArticles: ArticleArray?
-    var savedSearchArticleIds: Set<String>?
-
     var isTimelineViewControllerPending = false
     var isArticleViewControllerPending = false
 

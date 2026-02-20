@@ -7,10 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Unified modal search — search button in toolbar opens a modal search view; same UI on both main feed (global scope) and timeline (scoped to current feed)
 - Folder picker ("Select Folder") now has a `+` button to create a new folder inline — creates the folder and auto-selects it
 - Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
 
 ### Changed
+- Search is no longer an always-visible search bar; replaced with a toolbar button that presents a modal search view
 - Timeline navigation bar now shows the actual feed or smart feed name (Today, All Unread, Starred, feed title, folder name) instead of a hardcoded "Timeline" label
 - Timeline navigation bar now displays the feed icon next to the title (SF Symbol icons for smart feeds, favicons for regular feeds)
 - Unified read filter into a single global toggle — filter button on feed list and timeline now share the same state; toggling either one filters both read feeds and read articles

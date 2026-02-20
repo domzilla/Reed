@@ -127,10 +127,6 @@ extension SceneCoordinator {
         animations: Animations = [],
         completion: (() -> Void)? = nil
     ) {
-        if self.isSearching {
-            self.mainTimelineViewController?.hideSearch()
-        }
-
         guard let dataStore = feed.dataStore else {
             completion?()
             return

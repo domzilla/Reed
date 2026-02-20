@@ -101,10 +101,6 @@ extension SceneCoordinator {
             return
         }
 
-        if self.isSearching {
-            self.mainTimelineViewController?.hideSearch()
-        }
-
         self.selectNextUnreadFeed {
             self.selectNextUnreadArticleInTimeline()
         }

@@ -48,6 +48,17 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         return item
     }()
 
+    private lazy var searchButton: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "magnifyingglass"),
+            style: .plain,
+            target: self,
+            action: #selector(self.showSearch(_:))
+        )
+        item.accessibilityLabel = NSLocalizedString("Search", comment: "Search")
+        return item
+    }()
+
     private lazy var settingsButton: UIBarButtonItem = {
         let item = UIBarButtonItem(
             image: UIImage(systemName: "gear"),
@@ -92,9 +103,9 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         // Set up navigation bar (filter on right, matching storyboard)
         navigationItem.rightBarButtonItem = self.filterButton
 
-        // Set up toolbar (settings left, add right, matching storyboard)
+        // Set up toolbar (settings left, search center, add right)
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbarItems = [self.settingsButton, flexSpace, self.addNewItemButton]
+        toolbarItems = [self.settingsButton, flexSpace, self.searchButton, self.addNewItemButton]
 
         self.registerForNotifications()
         self.configureCollectionView()
@@ -300,6 +311,11 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     @objc
     func settings(_: UIBarButtonItem) {
         self.coordinator.showSettings()
+    }
+
+    @objc
+    func showSearch(_: UIBarButtonItem) {
+        self.coordinator.showSearch(scope: .global)
     }
 
     // MARK: UICollectionViewDataSource

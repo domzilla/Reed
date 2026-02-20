@@ -42,7 +42,17 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     )
 
     lazy var dataSource = makeDataSource()
-    private let searchController = UISearchController(searchResultsController: nil)
+
+    private lazy var searchButton: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "magnifyingglass"),
+            style: .plain,
+            target: self,
+            action: #selector(self.showSearch(_:))
+        )
+        item.accessibilityLabel = NSLocalizedString("Search", comment: "Search")
+        return item
+    }()
 
     weak var coordinator: SceneCoordinator?
     var undoableCommands = [UndoableCommand]()
@@ -179,7 +189,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
         // Set up toolbar items
         let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbarItems = [self.markAllAsReadButton, flexSpace]
+        toolbarItems = [self.markAllAsReadButton, flexSpace, self.searchButton]
 
         NotificationCenter.default.addObserver(
             self,
@@ -242,24 +252,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             object: nil
         )
 
-        // Setup the Search Controller
-        self.searchController.delegate = self
-        self.searchController.searchResultsUpdater = self
-        self.searchController.obscuresBackgroundDuringPresentation = false
-        self.searchController.searchBar.delegate = self
-        self.searchController.searchBar.placeholder = NSLocalizedString("Search Articles", comment: "Search Articles")
-        self.searchController.searchBar.scopeButtonTitles = [
-            NSLocalizedString("Here", comment: "Here"),
-            NSLocalizedString("All Articles", comment: "All Articles"),
-        ]
-        navigationItem.searchController = self.searchController
-
-        if traitCollection.userInterfaceIdiom == .pad {
-            self.searchController.searchBar.selectedScopeButtonIndex = 1
-            navigationItem.searchBarPlacementAllowsExternalIntegration = true
-        }
-        definesPresentationContext = true
-
         // Configure the table
         self.tableView.dataSource = self.dataSource
         self.tableView.isPrefetchingEnabled = false
@@ -267,7 +259,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         refreshControl = UIRefreshControl()
         refreshControl!.addTarget(self, action: #selector(self.refreshAccounts(_:)), for: .valueChanged)
 
-        self.configureToolbar()
         self.resetUI(resetScroll: true)
 
         // Load the table and then scroll to the saved position if available
@@ -379,6 +370,12 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     }
 
     @objc
+    func showSearch(_: Any) {
+        let articleIDs = Set(self.coordinator?.articles.map(\.articleID) ?? [])
+        self.coordinator?.showSearch(scope: .timeline, articleIDs: articleIDs)
+    }
+
+    @objc
     func refreshAccounts(_: Any) {
         refreshControl?.endRefreshing()
 
@@ -486,16 +483,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     func updateUI() {
         self.refreshProgressView?.update()
         self.updateToolbar()
-    }
-
-    func hideSearch() {
-        navigationItem.searchController?.isActive = false
-    }
-
-    func showSearchAll() {
-        navigationItem.searchController?.isActive = true
-        navigationItem.searchController?.searchBar.selectedScopeButtonIndex = 1
-        navigationItem.searchController?.searchBar.becomeFirstResponder()
     }
 
     func focus() {
@@ -758,18 +745,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     }
 
     // MARK: - Private
-
-    func searchArticles(_ searchString: String, _ searchScope: SearchScope) {
-        assert(self.coordinator != nil)
-        self.coordinator?.searchArticles(searchString, searchScope)
-    }
-
-    private func configureToolbar() {
-        if traitCollection.userInterfaceIdiom == .phone {
-            toolbarItems?.insert(.flexibleSpace(), at: 1)
-            toolbarItems?.insert(navigationItem.searchBarPlacementBarButtonItem, at: 2)
-        }
-    }
 
     private func resetUI(resetScroll: Bool) {
         switch self.timelineDefaultReadFilterType {
