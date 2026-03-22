@@ -123,44 +123,6 @@ SwiftFormat configuration is defined in `.swiftformat` at the project root. This
 - Lazy properties for UI elements (replaces IBOutlets)
 - `@objc` methods for actions (replaces IBActions)
 
-### Project Structure
-```
-src/
-  Reed/                      # Main iOS app
-    Classes/                 # All Swift source files
-      SceneDelegate.swift        # Window/coordinator setup
-      SceneCoordinator.swift     # Navigation logic
-      RootSplitViewController.swift
-      MainFeed/              # Feed list (collection view)
-      MainTimeline/          # Article list (table view)
-      Article/               # Article detail (web view)
-      Settings/              # Settings screens
-      Add/                   # Add feed/folder flows
-      Inspector/             # Feed inspector
-      Articles/              # Article models
-      ArticlesDatabase/      # Article persistence
-      CloudKitSync/          # iCloud sync
-      Commands/              # User commands
-      DataStore/             # Data layer
-      Exporters/             # Export functionality
-      Extensions/            # Swift extensions
-      Favicons/              # Favicon handling
-      FeedFinder/            # Feed discovery
-      Images/                # Image handling
-      SmartFeeds/            # Smart feed filters
-      SyncDatabase/          # Sync persistence
-      Timeline/              # Timeline logic
-      Tree/                  # Tree data structure
-      UserNotifications/     # Push notifications
-      Widget/                # Widget support
-    Resources/               # Assets, icons, launch screen
-  Shared/                    # Shared code (app + extension)
-  ShareExtension/            # Share extension
-  Reed.xcodeproj             # Xcode project
-vendor/
-  NetNewsWire/               # Upstream submodule (RS* modules)
-```
-
 ### Cell Registration Pattern
 ```swift
 override func viewDidLoad() {
