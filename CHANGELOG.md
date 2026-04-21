@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- `RDOPMLParser` `RDParseOPML()`: Modernized `DISPATCH_QUEUE_PRIORITY_DEFAULT` to `QOS_CLASS_DEFAULT` in the OPML parsing dispatch. No semantic change — both map to the same medium-priority global queue; `QOS_CLASS_*` is the form Apple documents in new code.
+
 ### Added
 - Unified modal search — search button in toolbar opens a modal search view; same UI on both main feed (global scope) and timeline (scoped to current feed)
 - Folder picker ("Select Folder") now has a `+` button to create a new folder inline — creates the folder and auto-selects it
