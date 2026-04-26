@@ -6,331 +6,147 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-- `RDOPMLParser` `RDParseOPML()`: Modernized `DISPATCH_QUEUE_PRIORITY_DEFAULT` to `QOS_CLASS_DEFAULT` in the OPML parsing dispatch. No semantic change — both map to the same medium-priority global queue; `QOS_CLASS_*` is the form Apple documents in new code.
-
 ### Added
-- Unified modal search — search button in toolbar opens a modal search view; same UI on both main feed (global scope) and timeline (scoped to current feed)
-- Folder picker ("Select Folder") now has a `+` button to create a new folder inline — creates the folder and auto-selects it
-- Centralized `AppConstants` for all app-wide identifiers (CloudKit container, app group, shortcuts, background tasks, activity types, deep link scheme)
+- Unified modal search opened from a toolbar button, available on both the main feed (global scope) and the timeline (scoped to the current feed).
+- Folder picker now offers a "+" button to create a new folder inline, which is then auto-selected.
 
 ### Changed
-- Search results now push the article directly within the search modal instead of dismissing and navigating through the feed timeline; extracted `BaseArticleViewController` as shared base class for `ArticleViewController` and `SearchArticleViewController`
-- Search is no longer an always-visible search bar; replaced with a toolbar button that presents a modal search view
-- Timeline navigation bar now shows the actual feed or smart feed name (Today, All Unread, Starred, feed title, folder name) instead of a hardcoded "Timeline" label
-- Timeline navigation bar now displays the feed icon next to the title (SF Symbol icons for smart feeds, favicons for regular feeds)
-- Unified read filter into a single global toggle — filter button on feed list and timeline now share the same state; toggling either one filters both read feeds and read articles
-- Feed inspector: Home Page URL now has dedicated copy and open buttons instead of making the whole cell tappable; Feed URL now has a copy button
+- Search results open the article directly inside the search modal instead of bouncing back through the timeline.
+- The timeline navigation bar now shows the current feed or smart feed name and icon instead of a generic "Timeline" label.
+- The "show read" filter is now a single global toggle that applies to both feeds and articles.
+- Feed inspector now exposes dedicated copy and open buttons for the home page and feed URLs.
 
 ### Fixed
-- Crash on iPad (`_dispatch_assert_queue_fail` on `CKProcessStateManager.notificationQueue`) — `iCloudAccountMonitor` used selector-based `NotificationCenter` observer for `.CKAccountChanged`, which is posted on CloudKit's internal background queue; Swift 6's `@MainActor` enforcement triggered a dispatch assertion; switched to block-based observer with `queue: .main`
-- Search modal: moved search field from navigation bar into a table header view to avoid nav bar height constraints; navigation bar now shows "Search" title with close button
-- Feed list filter button now uses `.prominent` style and accent tint when active (matching the timeline filter button); inactive state uses system default tint instead of `.label`
-- "Move to Folder" not moving feed when creating a new folder from the picker — the stored index path became stale after folder creation changed the tree; now captures the feed and source container directly
-- Assertion crash when deleting a folder — `removeFolder` called `addTask()` once but had two `completeTask()` calls (one for `findFeedExternalIDs`, one for `removeFolder`); also rewrote to follow the local-first pattern (remove locally, then best-effort CloudKit sync) so folder deletion works offline and on Simulator
-- CloudKit sync failing with "Bad Container" error — container ID was constructed as `iCloud.{orgID}.NetNewsWire` instead of `iCloud.net.domzilla.reed`
-- Widget deep links using `nnw://` scheme instead of `reed://`
-- Open in Browser activity type still referencing `com.rancharo.NetNewsWire-Evergreen`
-- Assertion crash in `DownloadProgress.completeTasks()` — recursive `selectForProcessing()` called `completeTask()` more times than tasks were added
-- "Updated" timestamp in navbar never updating — DownloadSession.downloadSessionDidComplete() was never called because updateDownloadProgress() had its body commented out upstream
-- CloudKit sync errors could permanently deadlock syncProgress, silently blocking all future refreshes for the app session
-- Removed 3 dead forward declarations in `NSData+RSParser.m` and fixed 2 compiler warnings (`unused binding in ShareFolderPickerController`, `unnecessary nonisolated(unsafe) in DataStore`)
-- Infinite recursion crash on launch — `DataStore.startManager()` observed `UnreadCountDidInitialize` from itself, causing a re-post loop that overflowed the stack
+- Fixed a crash on iPad caused by CloudKit account change notifications arriving on a background queue.
+- Fixed the feed list filter button styling so it matches the timeline filter button when active.
+- "Move to Folder" now correctly moves the feed when a new folder is created from the picker.
+- Deleting a folder no longer triggers an assertion crash and works offline.
+- Fixed CloudKit sync failing with a "Bad Container" error.
+- Widget deep links now open in Reed instead of the upstream app.
+- Fixed a recursive crash in the download progress tracker.
+- The "Updated" timestamp in the navigation bar now refreshes after a sync.
+- CloudKit sync errors no longer permanently block future refreshes.
+- Fixed an infinite recursion crash on launch.
 
 ### Removed
-- Timeline Customizer screen and "Timeline Layout" settings row — icon size and preview lines are now hardcoded based on horizontal size class (compact: medium icons / 2 preview lines, regular: large icons / 3 preview lines); deleted `ModernTimelineCustomizerTableViewController`, `ModernTimelineSliderCell`, `SliderConfiguration` enum, `MainTimelineFeedCell` (replaced by always using icon cell), related `AppDefaults` keys/properties, and cell `isPreview` property
-- `showIcons` gating — icons now always show in the timeline; `MainTimelineIconFeedCell` headline and summary are now separate labels (unlimited headline lines, summary capped to preview line count)
-- Simplified feed context menu — removed "Open Home Page", "Copy Feed URL", and "Copy Home Page URL" actions; renamed "Get Info" to "Info"; shortened "Mark All as Read in …" to "Mark All as Read"; removed confirmation dialog for marking all as read
-
-### Changed
-- Reorganized `Classes/` into strict MVC structure — created `ViewControllers/`, `Views/`, `Model/` top-level layers with feature subdirectories mirrored across layers; moved ~30 flat directories into 6 clean top-level groups (`App/`, `ViewControllers/`, `Views/`, `Model/`, `Extensions/`, `Utilities/`); grouped persistence layers under `Model/Persistence/` (Database, ArticlesDatabase, SyncDatabase), networking under `Model/Network/` (Downloader, Favicons, FeedFinder, Images), sync under `Model/Sync/` (CloudKitSync, Timer), and domain models under `Model/Core/` (Commands, Protocols, SmartFeeds, Timeline, Tree); merged `Articles/` domain models into `Model/Article/` alongside rendering and feature helpers
-- Refactored `MarkAsReadAlertController` — replaced custom struct with `UIAlertController.markAsReadActionSheet()` static factory method in `UIAlertController+Reed.swift`; replaced `MarkAsReadAlertControllerSourceType` protocol with `PopoverSource`; caller now handles presentation; updated all 12 call sites
-- Renamed 5 ObjC extension files — `FMDatabase+RDExtras` → `FMDatabase+Reed`, `FMResultSet+RDExtras` → `FMResultSet+Reed`, `NSString+RDDatabase` → `NSString+Database`, `NSData+RDParser` → `NSData+Parser`, `NSString+RDParser` → `NSString+Parser`; updated all category names, imports, and bridging header
-- Dissolved `UserInfoKey` enum — split into `AppConstants.NotificationKey` (feed, url, articlePath) and `AppConstants.StateRestorationKey` (window/filter/sidebar state keys); removed 7 dead constants
-- Restructured `Classes/` directory hierarchy — created `App/`, `Coordinator/`, `Protocols/`, `Utilities/`, `UIComponents/`, `Icons/` directories; dissolved `Core/` (redistributed to Extensions, Utilities, Protocols, UIComponents, App); cleaned up `Extensions/` (moved non-extension types to Articles, Icons, Protocols, UIComponents); standardized extension naming to `+Reed` suffix; renamed directories with spaces (`Collection View Cells/` → `Cells/`, `Related Objects/` → `RelatedObjects/`); flattened `ArticlesDatabase/Extensions/` into parent; extracted FMDB to `src/Reed/Vendor/FMDB/`; merged `UIImage+ImageProcessing` + `UIImage+Extensions` → `UIImage+Reed`, `URL+Core` + `URL+Web` → `URL+Reed`; removed empty `ArticlesDatabase/Operations/`
-- Decomposed `MainFeedCollectionViewController.swift` (1,501 LOC) into 2 extension files — `+ContextMenus` (context menu builders, all action builders, rename/delete flows, AddFeedFolderViewControllerDelegate) and `+KeyboardCommands` (keyboard shortcut handlers); main file retains class declaration, properties, view lifecycle, collection view data source/delegate, cell configuration, notifications, and small delegate conformances
-- Decomposed `MainTimelineViewController.swift` (1,376 LOC) into 3 extension files — `+Actions` (all article action builders, share dialog, action helpers), `+Search` (UISearchControllerDelegate, UISearchResultsUpdating, UISearchBarDelegate), and `+Notifications` (all notification handlers); main file retains class declaration, properties, view lifecycle, table view delegate/swipe actions, data source, toolbar, and state management
-- Decomposed `DataStore.swift` (1,612 LOC) into 6 focused extension files — `DataStore+ArticleFetching`, `DataStore+UnreadCounts`, `DataStore+FeedFolderOperations`, `DataStore+Notifications`, `DataStore+ContainerTree`, `DataStore+ManagerAPI`; main file retains class declaration, init, properties, protocol conformances, and lifecycle
-- Renamed all RS-prefixed (Ranchero Software) identifiers across 123 files — ObjC types/functions/methods use `RD` prefix, Swift types have prefix removed; renamed module folders `RSCore`→`Core`, `RSDatabase`→`Database`, `RSParser`→`Parser`, `RSWeb`→`Web`, `RSTree`→`Tree`
-- Replaced all `os.Logger` usage with `DZFoundation` (`DZLog`) across 5 files — `DownloadSession`, `Downloader`, `RSImage`, `DatabaseQueue`, `HTMLMetadataDownloader`
-- Removed all `#if os(macOS)` conditional compilation paths and `RSImage` typealias across 8 files — app is iOS-only
-- Inlined 11 trivial extension files into their callers — `Calendar+RSCore`, `NotificationCenter+RSCore`, `Bundle+RSCore`, `UIActivityViewController+Extras`, `AddFeedDefaultContainer`, `CacheCleaner`, `UIView+RSCore`, `UICollectionView+RSCore`, `UIPageViewController+RSCore`, `UIFont+RSCore`, `String+RSParser` each had 1–2 call sites and didn't justify separate files
-- Merged 3 extension file pairs — `UIViewController+RSCore` into `UIViewController+Extras`, `ExtensionContainers+DataStore` into `ExtensionContainersFile+MainApp`, `CGImage+RSCore` into `IconImage.swift`
-- Inlined 8 single-use wrapper types — `RSMarkdown`, `RSSParser`, `AtomParser`, `InitialFeedDownloader`, `JSONUtilities`, `OPMLExporter`, `HTTPMethod`, `RSScreen` were each trivial enums/structs wrapping a single function call, used exactly once
-- Merged 10 tiny types into their sole consumers — `TopLevelRepresentedObject` into `Node`, `MainFeedRowIdentifier`/`WrapperScriptMessageHandler`/`CroppingPreviewParameters`/`SingleArticleFetcher`/`FaviconGenerator` into their respective callers, `Blocks.swift` typealias into `RSImage.swift`, `JSONTypes.swift` into `JSONFeedParser`
-- Merged 4 file pairs — `TitleActivityItemSource` into `ArticleActivityItemSource`, `OpenInSafariActivity` into `FindInArticleActivity`, `HTTPResponseHeader` into `HTTPRequestHeader`, `NonIntrinsicLabel` into `NonIntrinsicImageView`
-- Replaced all NetNewsWire references with Reed throughout codebase (file headers, OPML export comments, Share Extension title, variable names)
-- Removed multi-account legacy layer: ~15 typealiases (`Account`, `AccountType`, `AccountError`, `AccountManager`, `AccountBehavior`), ~10 backward-compat extension shims (`.accountID`, `.account`, `.behaviors`), and notification aliases
-- Replaced all `Account`/`account` references with canonical `DataStore`/`dataStore` names across ~30 source files
-- Simplified `markArticles()` from multi-account `DispatchGroup` pattern to single `defaultDataStore` call
-- Renamed `AccountRefreshTimer` → `AutoRefreshTimer`, `LocalAccountRefresher` → `FeedRefresher`
-- Renamed `ExtensionAccount` → `ExtensionDataStore` in Share Extension (preserving on-disk JSON keys for backward compat)
-- Consolidated `SmartFeedDelegate` protocol into direct `SmartFeed` configuration — eliminated 5 delegate files, SmartFeed now takes identifier/name/fetchType/icon/closure directly
-- Replaced `DataStoreManager` singleton with `DataStore.shared` — removed vestigial multi-account manager layer (327 lines), moved manager API directly into `DataStore`
-- Converted `MainThreadOperation` subclasses to `async/await` — replaced `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation` with direct async calls; simplified `WebViewProvider` queue management
-- Replaced `FetchRequestOperation` + `FetchRequestQueue` operation-based pattern with `Task`-based cancellation — deleted `FetchRequestOperation` (105 LOC), simplified `FetchRequestQueue` to a single `Task<Void, Never>?` with cancel-and-replace semantics
-- Merged 6 trivially small files into logical neighbors — `PseudoFeed` protocol into `SmartFeed.swift`, `AppNotifications` into `SceneCoordinator.swift`, `SyncConstants` into `SyncStatus.swift`, `DatabaseObject+Database` into `RelatedObjectsMap+Database.swift`, `MainTimelineDataSource` into `MainTimelineViewController.swift`, `ErrorHandler` into `UIViewController+Extras.swift` + inlined at call sites
-- Consolidated `AuthorAvatarDownloader` into `ImageDownloader` — avatar caching, scaling, and notification logic now lives directly in `ImageDownloader`, eliminating the intermediate NotificationCenter hop between the two classes
-- Decomposed `CloudKitSyncProvider` (1,439 LOC) into 4 focused extension files — `+FeedOperations` (feed CRUD and cloud sync pipeline), `+FolderOperations` (folder CRUD), `+ArticleStatus` (article status sync and change storage), `+PendingOperations` (offline queue and operation processing); main file retains class declaration, init, lifecycle, and refresh orchestration
-- Inlined vendor RS* modules (RSCore, RSParser, RSWeb, RSDatabase, RSTree, RSMarkdown) into the app target — removed git submodule, 6 package targets, and all cross-module `import`/`public` boilerplate; ObjC headers now go through the bridging header
-- Removed dead `TransportError` pattern matching from `DataStoreError` (nothing throws `TransportError` after removing `Transport.swift`)
-- Removed 3 unused `AppDefaults` properties (`isDeveloperBuild`, `refreshInterval`, `currentThemeName`) and supporting constant `defaultThemeName`
-- Deleted orphaned `RefreshInterval.swift` — only consumer was the removed `refreshInterval` property
-- Dissolved `readFilterEnabledTable` computed property — callers now use `sidebarItemsHidingReadArticles` `Set` directly instead of converting to `[SidebarItemIdentifier: Bool]` dict
-
-### Removed
-- Dead notification `DataStoreRefreshDidBegin` — posted but never observed
-- Dead methods from `ArticleArray`: `anyArticleIsStarred()`, `anyArticleIsUnstarred()`, `anyArticleIsReadAndCanMarkUnread()`, `articlesForIndexes(_:)`, `representSameArticlesInSameOrder(as:)`
-- Dead methods from `URL+Reed`: `appendingQueryItem(_:)`, `appendingQueryItems(_:)`, `preparedForOpeningInBrowser()`, `absoluteStringWithHTTPOrHTTPSPrefixRemoved()` and fileprivate `String.stringByRemovingCaseInsensitivePrefix(_:)` helper
-- Dead call chain from `Node+Reed`: `[Node].sortedAlphabetically()` and `Node.nodesSortedAlphabetically()`
-- Dead method `UIImage.tinted(color:)` and always-false `debugLoggingEnabled` constant with 9 dead `if` branches in `UIImage+Reed`
-- Dead method `ArticleStatusSyncTimer.fireOldTimer()`
-- Dead initializer `HTTPConditionalGetInfo.init?(headers:)`
-- 6 unused HTTP header constants: `HTTPRequestHeader.authorization`, `.contentType`, `HTTPResponseHeader.contentType`, `.location`, `.link`, `.date`
-- 3 unused `NetworkMonitor` properties: `connectionType`, `isExpensive`, `isConstrained`
-- ~57 unused `HTTPResponseCode` constants (kept 8 that are referenced)
-- Stale `@IBDesignable` annotations from `ArticleSearchBar`, `IconView`, `InteractiveLabel` (project uses programmatic UI only)
-- Legacy state restoration migration: `StateRestorationInfo.init(legacyState:)` (~90 LOC), `AppDefaults.didMigrateLegacyStateRestorationInfo` property and UserDefaults key
-- 17 unnecessary extension files deleted — 3 entirely dead code (`UniformTypeIdentifiers+RSCore`, `FileManager+RSCore`, `URLComponents+RSWeb`), 11 inlined into callers, 3 merged into existing files
-- Dead code: `IconImage.appIcon`, `UIImage.appIconImage`, `NSAttributedString.adding(font:)`, `Bundle.appName`, `Bundle.buildNumber`
-- Dead vendor module files: 10 unused files deleted (Transport.swift, TransportJSON.swift, MacWebBrowser.swift, Dictionary+RSWeb.swift, HTTPDateInfo.swift, HTTPLinkPagingInfo.swift, MimeType.swift, String+RSWeb.swift, URLRequest+RSWeb.swift, UIStoryboard+RSCore.swift, ModalNavigationController.swift, RSParser/Exports.swift)
-- `DataStoreType` enum and all associated dead code — Reed uses CloudKit exclusively, so the `.onMyMac`/`.cloudKit` distinction was unnecessary
-- All legacy data store migration code (`migrateFromLegacyDataStores`, `migrateDataStoreData`, `cleanupLegacyDataStoreFolders`)
-- Dead `accountLocalPad` and `accountLocalPhone` image assets (only used in the removed `.onMyMac` branch)
-- `isDeveloperRestricted` property from Share Extension (was only defined on the removed `DataStoreType`)
-- `type` property from `ExtensionDataStore` serialization (always hardcoded to `.cloudKit`)
-- `OrganizationIdentifier` and `AppGroup` keys from Info.plist (replaced by `AppConstants` and `SharedConstants`)
-- Dead `.x-netnewswire-hide` CSS rule from `core.css` (never wired up in rendering pipeline)
-- Dead `AccountBehavior` enum and all behavior-check code paths (`.disallowFeedInRootFolder`, `.disallowFolderManagement`, `.disallowFeedInMultipleFolders`) — behaviors always returned `[]`
-- `Container.account` protocol member and default implementation
-- Multi-account iteration helpers (`accountAndArticlesDictionary()`, `substituteContainerIfNeeded()`)
-- Dead UI classes: `VibrantLabel`, `VibrantButton`, `VibrantBasicTableViewCell`
-- Dead cells: `SettingsComboTableViewCell`, `SelectComboTableViewCell` (never instantiated)
-- Dead file: `CloudKitWebDocumentation.swift` (stale NNW URL)
-- Unused imports: `MessageUI` from `WebViewController`, `SwiftUI` from `SettingsViewController`
-- Unused notifications: `InspectableObjectsDidChange`, `WebInspectorEnabledDidChange`
-- `SmartFeedDelegate` protocol and 4 delegate files (`StarredFeedDelegate`, `TodayFeedDelegate`, `SearchFeedDelegate`, `SearchTimelineFeedDelegate`)
-- `DataStoreManager` class (replaced by `DataStore.shared`)
-- 4 `MainThreadOperation` subclasses: `CloudKitReceiveStatusOperation`, `CloudKitSendStatusOperation`, `CloudKitRemoteNotificationOperation`, `FetchAllUnreadCountsOperation`
+- Removed the Timeline Customizer screen; icon size and preview line count are now chosen automatically based on screen size.
+- Simplified the feed context menu by removing redundant "Open Home Page", "Copy Feed URL", and "Copy Home Page URL" actions, and dropping the "Mark All as Read" confirmation dialog.
 
 ## [January 2026]
 
 ### Added
-- Move to Folder functionality for feeds
-- Article navigation buttons and Appearance setting
-- Missing settings button to main feed toolbar
-- Missing Info.plist keys and UserDefaults suite name fix
-- NetNewsWire as submodule for RS* modules (pinned to fork point)
-- Queuestack integration for issue tracking
+- Move feeds to a different folder.
+- Article navigation buttons and an Appearance setting.
+- Settings button on the main feed toolbar.
 
 ### Changed
-- Replaced os.Logger and print() with DZFoundation logging
-- Migrated to new Xcode project structure
-- Migrated from storyboards to programmatic UI
-- Renamed Account to DataStore with simplified single iCloud sync
-- Renamed 'iCloud' section header to 'Feeds'
-- Unified codebase structure and removed macOS abstractions
-- Made iCloud optional with local-first operations
-- Updated code comments to use consistent terminology
-- Stay in timeline after marking all as read
+- Renamed the "iCloud" section header to "Feeds".
+- iCloud is now optional, with local-first operations.
+- The timeline stays open after marking all as read.
 
 ### Fixed
-- Feed name not updating in sidebar after rename via Inspector
-- Crash in CloudKit sync when no pending items exist
-- Swift 6 concurrency errors by changing default actor isolation
-- Crash when adding feed or folder
-- Remaining layout issues for storyboard parity
+- Feed name now updates in the sidebar after renaming via the inspector.
+- Fixed a crash in CloudKit sync when no pending items exist.
+- Fixed a crash when adding a feed or folder.
+- Fixed remaining layout issues from the storyboard migration.
 
 ### Removed
-- Stale Main storyboard reference from build settings
-- Confirm Mark All as Read setting
-- Help section and Add NNW News Feed from Settings
-- Obsolete files and dependencies
-- -warnings-as-errors from packages (interferes with main project settings)
+- Removed the "Confirm Mark All as Read" setting.
+- Removed the Help section and "Add NNW News Feed" entry from Settings.
 
 ## [December 2025]
 
 ### Added
-- SwiftFormat configuration
-- State restoration using UserDefaults
-- ArticleSpecifier for saving article references to disk
-- Method for fetching a single article (for state restoration)
+- State restoration so the app reopens where you left off.
 
 ### Changed
-- Consolidated app-specific modules into Shared/
-- Replaced bundle identifiers for Reed fork
-- Tuned Sepia theme styling
+- Tuned the Sepia theme styling.
 
 ### Fixed
-- Settings crash: adjusted row count after theme removal
-- Black screen: updated SceneDelegate class name to Reed module
-- Unread counts not displaying correctly
-- Assets crash that was not using symbol
-- Codesign setup and inheritance
-- Crash with -1 row indexes (#4861)
-- OPML UTI detection by filename extension
+- Fixed a Settings crash after theme removal.
+- Fixed a black screen on launch.
+- Fixed unread counts not displaying correctly.
+- Fixed OPML detection by file extension.
 
 ### Removed
-- Secrets module
-- Buildscripts directory
-- Theme UI from Settings storyboard
-- Default feeds functionality
-- Theme bundles
-- Phase 2: Sync services, widgets, and features for lightweight Reed
-- Phase 1: All macOS-specific code for iOS-only Reed fork
+- Removed default feeds.
+- Removed theme bundles.
 
 ## [November 2025]
 
 ### Added
-- NewsBlur module
-- FeedFinder module
-- CloudKitSync module (moved from RSCore)
-- Async wrappers to Transport
-- Clear button on the name text field
-- FMDatabase and FMResultSet categories
-- Scripts folder and symbolication scripts
+- NewsBlur account support.
+- Improved feed discovery.
+- "Clear" button on the name text field.
 
 ### Changed
-- Converted entire codebase to async/await pattern
-- Converted ArticlesDatabase, RSDatabase, RSWeb, RSCore, RSParser to approachable concurrency
-- Made SyncDatabase an actor
-- Used Swift 6.2 tools and Swift 6 language mode
-- Made AccountManager, FaviconDownloader, UserNotificationManager, ArticleStatusSyncTimer singletons
-- Renamed WebFeed class to Feed
-- Renamed Feed to SidebarItem (#4752)
-- Renamed WebFeedMetadata to FeedMetadata (#4754)
-- Replaced Reachability with modern NWPathMonitor
-- Coalesced Feedly models into single FeedlyModel.swift
-- Converted AppAssets to shared Assets struct
-- Simplified MainThreadOperation (class instead of protocol)
-- Required macOS and iOS 26
+- Switched to modern network reachability monitoring.
+- Now requires iOS 26.
 
 ### Fixed
-- Various Swift 6 concurrency issues throughout codebase
-- AppleScript implementation concurrency errors
-- Refresh progress task counting in ReaderAPI
-- Article.link not being set to nil (#4828)
-- Build script issues (filtered spurious Core Data messages)
-- Refresh feeds running on main thread
+- Fixed article link being cleared incorrectly.
+- Refresh no longer runs on the main thread.
 
 ### Removed
-- Technotes menu item from Help menu
-- References to MAC_APP_STORE
-- Unused TickMarkSlider
-- Unused RSCoreTests
-- Deliberate crash when failing to delete folder
-- UIDesignRequiresCompatibility for Liquid Glass display
+- Removed the "Liquid Glass display" compatibility flag.
 
 ## [October 2025]
 
 ### Added
-- RSMarkdown module for Markdown rendering
-- Markdown support to RSS parser (source:markdown)
-- Markdown column to articles table
-- Shared DownloadCache for URLSessions
-- LastCheckDate to feed metadata
-- ConditionalGetInfoDate tracking
-- Special case FeedSpecifier and timing features
-- Faster strippingHTML implementation in C (5x-75x faster)
-- Scripting support for getting articles from folders
-- Function to write multiple URLs to clipboard
-- Shared cloudKitLogger
+- Markdown rendering in articles.
+- Faster HTML stripping (5x to 75x faster).
+- AppleScript support for getting articles from folders.
 
 ### Changed
-- Made Article a reference type (improves scrolling performance)
-- Replaced OSLog with Logger throughout codebase
-- Show web view after navigation commit instead of didFinish (#4030)
-- Cache responses for 10+ minutes to be kind to feed publishers (#4700)
-- Cache 4xx responses for 53 hours instead of app session (#4700)
-- Drop conditional GET info every 8 days for buggy servers
-- Set sidebar collapse state synchronously (no visible collapsing on launch)
-- Find suitable images in one pass instead of three
-- Check unread count instead of database fetch for mark-all-read (#4630)
-- Increased article preview to 300 characters (#4782)
-- Turn on treat-warnings-as-errors
+- Article previews now show up to 300 characters.
+- Web view now appears when navigation commits, reducing flashes of blank content.
+- Responses are cached for at least 10 minutes to be kinder to feed publishers.
+- 4xx responses are cached for 53 hours instead of just the app session.
+- Smarter, faster image discovery for articles.
 
 ### Fixed
-- CloudKit deprecations
-- iCloud progress not reaching zero tasks
-- Daring Fireball's crossed permalinks and external links
-- Relative home page URLs in Atom feeds
-- Container hierarchy for AppleScript selectedArticles() (#4218)
-- AppleScript access to articles in feeds in folders (#4412)
-- Crash when adding a folder
-- Multiple selection for copy-article-url commands (#3681)
-- App icon unread count badge on foreground/background (#4365)
-
-### Removed
-- Flaky testFeedOPML tests
-- Scripts requiring keystroke-sending
+- Fixed crossed permalinks and external links from Daring Fireball.
+- Fixed relative home page URLs in Atom feeds.
+- Fixed AppleScript access to articles inside folders.
+- Fixed a crash when adding a folder.
+- Fixed multiple-selection support for "Copy Article URL".
+- Fixed the app icon unread count badge updating on foreground/background transitions.
 
 ## [September 2025]
 
 ### Added
-- Shared WebViewConfiguration
-- Shared HelpURL for help URLs
-- Shared AddCloudKitAccount.swift for common error handling
-- Error recovery to UIViewController.presentError extension
-- hasiCloudAccount computed var
-- Option to disable JavaScript on iOS devices (#4323)
-- Device name localization (#4322)
-- Formatter for unread counts (#3892)
-- Script to clean up whitespace-only lines
+- Option to disable JavaScript on iOS.
+- Localised device names.
 
 ### Changed
-- Made Sidebar first toolbar item by default
-- Moved Open Application Support Folder to Help menu (#4800)
-- Renamed URL.reparingIfRequired to URL.encodeSpacesIfNeeded
-- Updated window color palette only on setting changes
-- Separated code of conduct into separate file (#4035)
-- Improved explanation text on Accounts settings pane
-- Mark classes as final when possible (#4751)
+- Sidebar is now the first toolbar item by default.
+- Improved the explanation text on the Accounts settings pane.
 
 ### Fixed
-- Context preview glitches (#4794)
-- Keyboard reappearing after dismissal
-- Drag into empty account (#3825)
-- Root author element in Atom feeds (#2797)
-- iCloud Drive missing error dialog on iOS (#4785)
-- Horizontal white bar in account inspectors (#3765)
-- App icon unread count badge on launch (#4537)
-- Window force-unwrap crash (#3827)
-- Images as links underlining (#4574)
-- Feed finder scoring for index.xml and JSON (#4136)
-- GUID permalink with space detection (#1230)
-- Feed finding in HTML pages without body tag (#4521)
+- Fixed context menu preview glitches.
+- Fixed the keyboard reappearing after dismissal.
+- Fixed dragging into an empty account.
+- Fixed root author element handling in Atom feeds.
+- Fixed a missing iCloud Drive error dialog on iOS.
+- Fixed the app icon unread badge on launch.
+- Fixed several launch and window crashes.
+- Fixed underlines on linked images.
+- Improved feed discovery in pages without a `<body>` tag.
 
 ### Removed
-- Support for multiple scenes (#4798)
-- Canvas code (CORS failures)
-- Debug UIResponder code
+- Removed support for multiple scenes.
 
 ## [August 2025]
 
 ### Added
-- Custom title/subtitle views for timeline (#4722)
-- NSMutableParagraphStyle truncation support
+- Custom title and subtitle views in the timeline.
 
 ### Changed
-- Timeline Customizer uses new cells (#4723)
-- Made state restoration explicit (legacy vs secure)
-- Use semibold instead of bold for styling (#4718)
-- Embedded indicator in add button (#4716)
+- Timeline Customizer now uses the new cells.
+- Switched to semibold from bold for selected styling.
 
 ### Fixed
-- Rendering bug with some favicons (proper scaling)
-- Unread trailing alignment
-- Sort order (#4727)
-- Avatar display and removed unused code
-- Paragraph style adjustments (#4719)
-- Folder count appearing on load (#4717)
-- Unread count bold when selected (#4718)
-- Various UI issues (#4714, #4715)
-
-### Removed
-- Old timeline cell code (#4723)
-- MainFeedViewController from Storyboard
-- willChangeTo displayMode method
-- MacStateRestoration.md (no longer needed)
-- Spaces from file names
-
+- Fixed favicon scaling for some sites.
+- Fixed unread count alignment and bold-when-selected styling.
+- Fixed timeline sort order.
+- Fixed the folder count appearing on load.
