@@ -82,6 +82,7 @@ This project uses **File System Synchronized Groups** (internally `PBXFileSystem
 **Bottom line:** Modify source files in `Classes/` and `Resources/` freely. Just never touch the `.xcodeproj` files themselves.
 
 ## Build & Format Commands
+**MANDATORY:** Never write build output into the project directory; use Xcode's default DerivedData location or pass `-derivedDataPath` pointing outside the project tree.
 ```bash
 # Build
 xcodebuild -project src/Reed.xcodeproj -scheme "Reed" -destination "generic/platform=iOS Simulator" build
