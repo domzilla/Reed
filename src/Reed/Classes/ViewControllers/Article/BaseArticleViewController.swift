@@ -15,7 +15,9 @@ class BaseArticleViewController: UIViewController {
 
     var article: Article?
 
-    var currentWebViewController: WebViewController? { nil }
+    var currentWebViewController: WebViewController? {
+        nil
+    }
 
     // MARK: - UI Elements
 
@@ -26,6 +28,7 @@ class BaseArticleViewController: UIViewController {
             target: self,
             action: #selector(self.toggleRead(_:))
         )
+        item.accessibilityIdentifier = "BaseArticleViewController.readBarButtonItem"
         return item
     }()
 
@@ -36,6 +39,7 @@ class BaseArticleViewController: UIViewController {
             target: self,
             action: #selector(self.toggleStar(_:))
         )
+        item.accessibilityIdentifier = "BaseArticleViewController.starBarButtonItem"
         return item
     }()
 
@@ -46,7 +50,12 @@ class BaseArticleViewController: UIViewController {
             target: self,
             action: #selector(self.showActivityDialog(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Share", comment: "Share")
+        item.accessibilityLabel = NSLocalizedString(
+            "Share",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Share button"
+        )
+        item.accessibilityIdentifier = "BaseArticleViewController.actionBarButtonItem"
         return item
     }()
 
@@ -83,29 +92,33 @@ class BaseArticleViewController: UIViewController {
             self.readBarButtonItem.image = Assets.Images.circleOpen
             self.readBarButtonItem.isEnabled = article.isAvailableToMarkUnread
             self.readBarButtonItem.accLabelText = NSLocalizedString(
-                "Mark Article Unread",
-                comment: "Mark Article Unread"
+                "Mark as unread",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the read button when it marks the article as unread"
             )
         } else {
             self.readBarButtonItem.image = Assets.Images.circleClosed
             self.readBarButtonItem.isEnabled = true
             self.readBarButtonItem.accLabelText = NSLocalizedString(
-                "Selected - Mark Article Unread",
-                comment: "Selected - Mark Article Unread"
+                "Mark as read",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the read button when it marks the article as read"
             )
         }
 
         if article.status.starred {
             self.starBarButtonItem.image = Assets.Images.starClosed
             self.starBarButtonItem.accLabelText = NSLocalizedString(
-                "Selected - Star Article",
-                comment: "Selected - Star Article"
+                "Unstar",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the star button when it removes the star"
             )
         } else {
             self.starBarButtonItem.image = Assets.Images.starOpen
             self.starBarButtonItem.accLabelText = NSLocalizedString(
-                "Star Article",
-                comment: "Star Article"
+                "Star",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the star button when it stars the article"
             )
         }
     }

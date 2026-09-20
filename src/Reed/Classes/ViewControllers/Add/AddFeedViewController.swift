@@ -14,7 +14,16 @@ final class AddFeedViewController: UITableViewController {
     private var folderLabel = ""
     private var userCancelled = false
 
-    private let activityIndicator = UIActivityIndicatorView(style: .medium)
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.accessibilityLabel = NSLocalizedString(
+            "Adding feed",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the spinner shown while the feed is being added"
+        )
+        indicator.accessibilityIdentifier = "AddFeedViewController.activityIndicator"
+        return indicator
+    }()
 
     var initialFeed: String?
     var initialFeedName: String?
@@ -31,12 +40,14 @@ final class AddFeedViewController: UITableViewController {
             action: #selector(add(_:))
         )
         button.isEnabled = false
+        button.accessibilityIdentifier = "AddFeedViewController.addButton"
         return button
     }()
 
     private lazy var urlTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = NSLocalizedString("URL", comment: "URL")
+        textField.accessibilityIdentifier = "AddFeedViewController.urlTextField"
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
         textField.keyboardType = .URL
@@ -51,6 +62,7 @@ final class AddFeedViewController: UITableViewController {
     private lazy var nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = NSLocalizedString("Title (Optional)", comment: "Title (Optional)")
+        textField.accessibilityIdentifier = "AddFeedViewController.nameTextField"
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .words
         textField.returnKeyType = .done
@@ -79,12 +91,14 @@ final class AddFeedViewController: UITableViewController {
 
         title = NSLocalizedString("Add Web Feed", comment: "Add Web Feed")
         // Use text "Cancel" button to match storyboard (not X icon)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let cancelButton = UIBarButtonItem(
             title: NSLocalizedString("Cancel", comment: "Cancel"),
             style: .plain,
             target: self,
             action: #selector(self.cancel(_:))
         )
+        cancelButton.accessibilityIdentifier = "AddFeedViewController.cancelButton"
+        navigationItem.leftBarButtonItem = cancelButton
         navigationItem.rightBarButtonItem = self.addButton
 
         if self.initialFeed == nil, let urlString = UIPasteboard.general.string {

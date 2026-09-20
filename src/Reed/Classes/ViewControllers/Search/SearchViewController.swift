@@ -35,6 +35,7 @@ final class SearchViewController: UITableViewController {
         case .timeline:
             field.placeholder = NSLocalizedString("Search Articles", comment: "Search Articles")
         }
+        field.accessibilityIdentifier = "SearchViewController.searchTextField"
         return field
     }()
 
@@ -57,11 +58,13 @@ final class SearchViewController: UITableViewController {
         super.viewDidLoad()
 
         title = NSLocalizedString("Search", comment: "Search")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let cancelButton = UIBarButtonItem(
             barButtonSystemItem: .cancel,
             target: self,
             action: #selector(self.dismissSearch)
         )
+        cancelButton.accessibilityIdentifier = "SearchViewController.cancelButton"
+        navigationItem.leftBarButtonItem = cancelButton
 
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 52))
         self.searchTextField.translatesAutoresizingMaskIntoConstraints = false

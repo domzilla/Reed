@@ -66,6 +66,7 @@ final class RefreshProgressView: UIView {
 
         isAccessibilityElement = true
         accessibilityTraits = [.updatesFrequently, .notEnabled]
+        accessibilityIdentifier = "RefreshProgressView.refreshStatus"
     }
 
     func update() {
@@ -134,6 +135,21 @@ extension RefreshProgressView {
         } else {
             self.label.isHidden = true
             self.progressView.isHidden = false
+            accessibilityLabel = NSLocalizedString(
+                "Refreshing",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the refresh progress indicator while feeds are refreshing"
+            )
+            let valueFormat = NSLocalizedString(
+                "%1$ld of %2$ld feeds refreshed",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing refresh progress as completed of total"
+            )
+            accessibilityValue = String.localizedStringWithFormat(
+                valueFormat,
+                progress.numberCompleted,
+                progress.numberOfTasks
+            )
             if isInViewHierarchy {
                 let percent = Float(progress.numberCompleted) / Float(progress.numberOfTasks)
 
@@ -170,6 +186,7 @@ extension RefreshProgressView {
         }
 
         accessibilityLabel = self.label.text
+        accessibilityValue = nil
     }
 
     private func scheduleUpdateRefreshLabel() {

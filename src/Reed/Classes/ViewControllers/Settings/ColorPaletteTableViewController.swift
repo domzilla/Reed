@@ -44,9 +44,16 @@ final class ColorPaletteTableViewController: UITableViewController {
         cell.textLabel?.text = String(describing: rowColorPalette)
         if rowColorPalette == AppDefaults.userInterfaceColorPalette {
             cell.accessoryType = .checkmark
+            cell.accessibilityValue = NSLocalizedString(
+                "Selected",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing that this appearance row is the selected one"
+            )
         } else {
             cell.accessoryType = .none
+            cell.accessibilityValue = nil
         }
+        cell.accessibilityIdentifier = "ColorPaletteTableViewController.paletteCell"
         return cell
     }
 

@@ -18,6 +18,7 @@ final class ContextMenuPreviewViewController: UIViewController {
         label.font = .preferredFont(forTextStyle: .headline)
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "ContextMenuPreviewViewController.blogNameLabel"
         return label
     }()
 
@@ -27,6 +28,7 @@ final class ContextMenuPreviewViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "ContextMenuPreviewViewController.blogAuthorLabel"
         return label
     }()
 
@@ -35,6 +37,7 @@ final class ContextMenuPreviewViewController: UIViewController {
         label.font = .preferredFont(forTextStyle: .body)
         label.numberOfLines = 3
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "ContextMenuPreviewViewController.articleTitleLabel"
         return label
     }()
 
@@ -44,6 +47,7 @@ final class ContextMenuPreviewViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "ContextMenuPreviewViewController.dateTimeLabel"
         return label
     }()
 

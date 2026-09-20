@@ -35,6 +35,9 @@ final class AddComboTableViewCell: VibrantTableViewCell {
     }
 
     private func setupViews() {
+        self.iconImageView.isAccessibilityElement = false
+        self.nameLabel.accessibilityIdentifier = "AddComboTableViewCell.nameLabel"
+
         contentView.addSubview(self.iconImageView)
         contentView.addSubview(self.nameLabel)
 

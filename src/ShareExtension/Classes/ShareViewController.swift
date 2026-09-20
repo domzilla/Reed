@@ -45,6 +45,12 @@ final class ShareViewController: SLComposeServiceViewController, ShareFolderPick
         if let button = navigationController?.navigationBar.topItem?.rightBarButtonItem {
             button.title = "Add Feed"
             button.isEnabled = true
+            button.accessibilityLabel = NSLocalizedString(
+                "Add feed",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the Add Feed button"
+            )
+            button.accessibilityIdentifier = "ShareViewController.addFeedButton"
         }
 
         // Hack the bottom table rows to be smaller since the controller itself doesn't have enough sense to size itself

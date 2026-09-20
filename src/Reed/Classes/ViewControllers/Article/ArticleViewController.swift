@@ -22,7 +22,12 @@ final class ArticleViewController: BaseArticleViewController {
             target: self,
             action: #selector(self.nextUnread(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Next Unread", comment: "Next Unread")
+        item.accessibilityLabel = NSLocalizedString(
+            "Next unread",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Next Unread button"
+        )
+        item.accessibilityIdentifier = "ArticleViewController.nextUnreadBarButtonItem"
         return item
     }()
 
@@ -33,7 +38,12 @@ final class ArticleViewController: BaseArticleViewController {
             target: self,
             action: #selector(prevArticle(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Previous Article", comment: "Previous Article")
+        item.accessibilityLabel = NSLocalizedString(
+            "Previous article",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Previous Article button"
+        )
+        item.accessibilityIdentifier = "ArticleViewController.prevArticleBarButtonItem"
         return item
     }()
 
@@ -44,7 +54,12 @@ final class ArticleViewController: BaseArticleViewController {
             target: self,
             action: #selector(nextArticle(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Next Article", comment: "Next Article")
+        item.accessibilityLabel = NSLocalizedString(
+            "Next article",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Next Article button"
+        )
+        item.accessibilityIdentifier = "ArticleViewController.nextArticleBarButtonItem"
         return item
     }()
 
@@ -52,6 +67,7 @@ final class ArticleViewController: BaseArticleViewController {
         let bar = ArticleSearchBar(frame: .zero)
         bar.translatesAutoresizingMaskIntoConstraints = false
         bar.isHidden = true
+        bar.accessibilityIdentifier = "ArticleViewController.searchBar"
         return bar
     }()
 

@@ -37,16 +37,21 @@ final class AddFeedFolderViewController: UITableViewController {
         super.viewDidLoad()
 
         title = NSLocalizedString("Select Folder", comment: "Select Folder")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let cancelButton = UIBarButtonItem(
             barButtonSystemItem: .cancel,
             target: self,
             action: #selector(self.cancel(_:))
         )
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        cancelButton.accessibilityIdentifier = "AddFeedFolderViewController.cancelButton"
+        navigationItem.leftBarButtonItem = cancelButton
+
+        let addFolderButton = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
             action: #selector(self.createNewFolder(_:))
         )
+        addFolderButton.accessibilityIdentifier = "AddFeedFolderViewController.addFolderButton"
+        navigationItem.rightBarButtonItem = addFolderButton
 
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "AccountCell")
         self.tableView.register(AddComboTableViewCell.self, forCellReuseIdentifier: "FolderCell")
@@ -89,9 +94,16 @@ final class AddFeedFolderViewController: UITableViewController {
 
         if let compContainer = initialContainer, container === compContainer {
             cell.accessoryType = .checkmark
+            cell.accessibilityValue = NSLocalizedString(
+                "Selected",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing that this folder row is the selected one"
+            )
         } else {
             cell.accessoryType = .none
+            cell.accessibilityValue = nil
         }
+        cell.accessibilityIdentifier = "AddFeedFolderViewController.containerCell"
 
         return cell
     }

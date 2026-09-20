@@ -82,6 +82,7 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
         didSet {
             self.updateExpandedState(animate: true)
             self.updateUnreadCount()
+            self.updateDisclosureAccessibilityAction()
         }
     }
 
@@ -96,6 +97,11 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
     }
 
     private func setupViews() {
+        isAccessibilityElement = true
+        accessibilityIdentifier = "MainFeedCollectionViewFolderCell.cell"
+        self.disclosureButton.accessibilityIdentifier = "MainFeedCollectionViewFolderCell.disclosureButton"
+        self.updateDisclosureAccessibilityAction()
+
         contentView.addSubview(self.faviconView)
         contentView.addSubview(self.folderTitle)
         contentView.addSubview(self.unreadCountLabel)
@@ -173,13 +179,40 @@ class MainFeedCollectionViewFolderCell: UICollectionViewCell {
     override var accessibilityLabel: String? {
         set {}
         get {
-            if self.unreadCount > 0 {
-                let unreadLabel = NSLocalizedString("unread", comment: "Unread label for accessibility")
-                return "\(String(describing: self.folderTitle.text)) \(self.unreadCount) \(unreadLabel)"
-            } else {
-                return String(describing: self.folderTitle.text)
-            }
+            self.folderTitle.text
         }
+    }
+
+    override var accessibilityValue: String? {
+        set {}
+        get {
+            guard self.unreadCount > 0 else { return nil }
+            let format = NSLocalizedString(
+                "%ld unread",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing how many articles in a folder row are unread"
+            )
+            return String.localizedStringWithFormat(format, self.unreadCount)
+        }
+    }
+
+    /// The cell reads as a single element, so the chevron is offered as a custom action instead.
+    private func updateDisclosureAccessibilityAction() {
+        let name = self.disclosureExpanded ? NSLocalizedString(
+            "Collapse",
+            tableName: "Accessibility",
+            comment: "Accessibility action that collapses the folder"
+        ) : NSLocalizedString(
+            "Expand",
+            tableName: "Accessibility",
+            comment: "Accessibility action that expands the folder"
+        )
+        accessibilityCustomActions = [
+            UIAccessibilityCustomAction(name: name) { [weak self] _ in
+                self?.toggleDisclosure()
+                return true
+            },
+        ]
     }
 
     override func updateConfiguration(using state: UICellConfigurationState) {

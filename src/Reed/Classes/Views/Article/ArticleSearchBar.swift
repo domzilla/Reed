@@ -118,6 +118,7 @@ extension ArticleSearchBar {
         doneButton.setTitleColor(UIColor.label, for: .normal)
         doneButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
         doneButton.isAccessibilityElement = true
+        doneButton.accessibilityIdentifier = "ArticleSearchBar.doneButton"
         doneButton.addTarget(self, action: #selector(donePressed), for: .touchUpInside)
         doneButton.isEnabled = true
         addArrangedSubview(doneButton)
@@ -128,6 +129,12 @@ extension ArticleSearchBar {
         self.searchField.autocorrectionType = .no
         self.searchField.returnKeyType = .search
         self.searchField.delegate = self
+        self.searchField.accessibilityLabel = NSLocalizedString(
+            "Find in article",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the find-in-article text field"
+        )
+        self.searchField.accessibilityIdentifier = "ArticleSearchBar.searchField"
 
         resultsLabel.font = .systemFont(ofSize: UIFont.smallSystemFontSize)
         resultsLabel.textColor = .secondaryLabel
@@ -142,14 +149,24 @@ extension ArticleSearchBar {
 
         self.prevButton = UIButton(type: .system)
         self.prevButton.setImage(UIImage(systemName: "chevron.up"), for: .normal)
-        self.prevButton.accessibilityLabel = "Previous Result"
+        self.prevButton.accessibilityLabel = NSLocalizedString(
+            "Previous result",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that selects the previous search result"
+        )
+        self.prevButton.accessibilityIdentifier = "ArticleSearchBar.prevButton"
         self.prevButton.isAccessibilityElement = true
         self.prevButton.addTarget(self, action: #selector(previousPressed), for: .touchUpInside)
         addArrangedSubview(self.prevButton)
 
         self.nextButton = UIButton(type: .system)
         self.nextButton.setImage(UIImage(systemName: "chevron.down"), for: .normal)
-        self.nextButton.accessibilityLabel = "Next Result"
+        self.nextButton.accessibilityLabel = NSLocalizedString(
+            "Next result",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that selects the next search result"
+        )
+        self.nextButton.accessibilityIdentifier = "ArticleSearchBar.nextButton"
         self.nextButton.isAccessibilityElement = true
         self.nextButton.addTarget(self, action: #selector(nextPressed), for: .touchUpInside)
         addArrangedSubview(self.nextButton)

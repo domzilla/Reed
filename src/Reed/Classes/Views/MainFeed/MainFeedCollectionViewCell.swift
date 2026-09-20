@@ -80,12 +80,20 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
     override var accessibilityLabel: String? {
         set {}
         get {
-            if self.unreadCount > 0 {
-                let unreadLabel = NSLocalizedString("unread", comment: "Unread label for accessibility")
-                return "\(String(describing: self.feedTitle.text)) \(self.unreadCount) \(unreadLabel)"
-            } else {
-                return String(describing: self.feedTitle.text)
-            }
+            self.feedTitle.text
+        }
+    }
+
+    override var accessibilityValue: String? {
+        set {}
+        get {
+            guard self.unreadCount > 0 else { return nil }
+            let format = NSLocalizedString(
+                "%ld unread",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing how many articles in a feed row are unread"
+            )
+            return String.localizedStringWithFormat(format, self.unreadCount)
         }
     }
 
@@ -100,6 +108,9 @@ class MainFeedCollectionViewCell: UICollectionViewCell {
     }
 
     private func setupViews() {
+        isAccessibilityElement = true
+        accessibilityIdentifier = "MainFeedCollectionViewCell.cell"
+
         contentView.addSubview(self.faviconView)
         contentView.addSubview(self.feedTitle)
         contentView.addSubview(self.unreadCountLabel)

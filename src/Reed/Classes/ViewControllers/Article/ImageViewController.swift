@@ -23,7 +23,12 @@ final class ImageViewController: UIViewController {
         button.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config), for: .normal)
         button.tintColor = .white
         button.imageView?.contentMode = .scaleAspectFit
-        button.accessibilityLabel = NSLocalizedString("Close", comment: "Close")
+        button.accessibilityLabel = NSLocalizedString(
+            "Close",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Close button"
+        )
+        button.accessibilityIdentifier = "ImageViewController.closeButton"
         button.addTarget(self, action: #selector(self.done(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -34,7 +39,12 @@ final class ImageViewController: UIViewController {
         let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .medium)
         button.setImage(UIImage(systemName: "square.and.arrow.up", withConfiguration: config), for: .normal)
         button.tintColor = .white
-        button.accessibilityLabel = NSLocalizedString("Share", comment: "Share")
+        button.accessibilityLabel = NSLocalizedString(
+            "Share",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Share button"
+        )
+        button.accessibilityIdentifier = "ImageViewController.shareButton"
         button.addTarget(self, action: #selector(self.share(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -43,6 +53,7 @@ final class ImageViewController: UIViewController {
     private lazy var imageScrollView: ImageScrollView = {
         let scrollView = ImageScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.accessibilityIdentifier = "ImageViewController.imageScrollView"
         return scrollView
     }()
 
@@ -52,6 +63,7 @@ final class ImageViewController: UIViewController {
         label.textColor = .white
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "ImageViewController.titleLabel"
         return label
     }()
 

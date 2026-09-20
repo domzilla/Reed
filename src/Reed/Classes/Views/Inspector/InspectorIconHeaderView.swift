@@ -22,6 +22,7 @@ final class InspectorIconHeaderView: UITableViewHeaderFooterView {
     }
 
     func commonInit() {
+        isAccessibilityElement = false
         addSubview(self.iconView)
     }
 

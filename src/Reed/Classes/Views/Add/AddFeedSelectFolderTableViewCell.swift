@@ -40,6 +40,9 @@ final class AddFeedSelectFolderTableViewCell: VibrantTableViewCell {
 
     private func setupViews() {
         accessoryType = .disclosureIndicator
+        accessibilityIdentifier = "AddFeedSelectFolderTableViewCell.cell"
+        self.folderLabel.accessibilityIdentifier = "AddFeedSelectFolderTableViewCell.folderLabel"
+        self.detailLabel.accessibilityIdentifier = "AddFeedSelectFolderTableViewCell.detailLabel"
 
         contentView.addSubview(self.folderLabel)
         contentView.addSubview(self.detailLabel)

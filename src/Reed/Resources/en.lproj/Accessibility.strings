@@ -1,0 +1,122 @@
+/* Accessibility value announcing refresh progress as completed of total */
+"%1$ld of %2$ld feeds refreshed" = "%1$ld of %2$ld feeds refreshed";
+
+/* Accessibility value announcing how many articles are unread */
+"%ld unread" = "%ld unread";
+
+/* Accessibility label for the account picker */
+"Account" = "Account";
+
+/* Accessibility label for the button that adds a feed or folder */
+"Add feed or folder" = "Add feed or folder";
+
+/* Accessibility label for the spinner shown while the feed is being added */
+"Adding feed" = "Adding feed";
+
+/* Accessibility label for the Close button */
+"Close" = "Close";
+
+/* Accessibility action that collapses the folder */
+"Collapse" = "Collapse";
+
+/* Accessibility value announcing that the account section is collapsed */
+"Collapsed" = "Collapsed";
+
+/* Accessibility label for the button that copies the feed URL */
+"Copy feed URL" = "Copy feed URL";
+
+/* Accessibility label for the button that copies the home page URL */
+"Copy home page URL" = "Copy home page URL";
+
+/* Accessibility label for the Delete swipe action */
+"Delete" = "Delete";
+
+/* Accessibility action that expands the folder */
+"Expand" = "Expand";
+
+/* Accessibility value announcing that the account section is expanded */
+"Expanded" = "Expanded";
+
+/* Accessibility hint for the account section header */
+"Expands or collapses this section." = "Expands or collapses this section.";
+
+/* Accessibility label for the find-in-article text field */
+"Find in article" = "Find in article";
+
+/* Accessibility label for the button that jumps to the first unread article */
+"First unread" = "First unread";
+
+/* Accessibility label for the filter button when read articles are still shown */
+"Hide read articles" = "Hide read articles";
+
+/* Accessibility label for the filter button when read feeds are still shown */
+"Hide read feeds" = "Hide read feeds";
+
+/* Accessibility label for the Mark All as Read button */
+"Mark all as read" = "Mark all as read";
+
+/* Accessibility label for the read button when it marks the article as read */
+"Mark as read" = "Mark as read";
+
+/* Accessibility label for the read button when it marks the article as unread */
+"Mark as unread" = "Mark as unread";
+
+/* Accessibility label for the More swipe action */
+"More" = "More";
+
+/* Accessibility label for the Next Article button */
+"Next article" = "Next article";
+
+/* Accessibility label for the button that selects the next search result */
+"Next result" = "Next result";
+
+/* Accessibility label for the Next Unread button */
+"Next unread" = "Next unread";
+
+/* Accessibility label for the button that opens the home page */
+"Open home page" = "Open home page";
+
+/* Accessibility label for the Previous Article button */
+"Previous article" = "Previous article";
+
+/* Accessibility label for the button that selects the previous search result */
+"Previous result" = "Previous result";
+
+/* Accessibility label for the refresh progress indicator while feeds are refreshing */
+"Refreshing" = "Refreshing";
+
+/* Accessibility label for the Rename swipe action */
+"Rename" = "Rename";
+
+/* Accessibility label for the Search button */
+"Search" = "Search";
+
+/* Accessibility value announcing that this row is the selected one */
+"Selected" = "Selected";
+
+/* Accessibility label for the Settings button */
+"Settings" = "Settings";
+
+/* Accessibility label for the Share button */
+"Share" = "Share";
+
+/* Accessibility label for the filter button when read articles are hidden */
+"Show read articles" = "Show read articles";
+
+/* Accessibility label for the filter button when read feeds are hidden */
+"Show read feeds" = "Show read feeds";
+
+/* Accessibility hint for the timeline title, which opens the feed inspector */
+"Shows information about the current feed." = "Shows information about the current feed.";
+
+/* Accessibility label for the star button when it stars the article */
+"Star" = "Star";
+
+/* Accessibility value announcing that the article is starred */
+"Starred" = "Starred";
+
+/* Accessibility value announcing that the article is unread */
+"Unread" = "Unread";
+
+/* Accessibility label for the star button when it removes the star */
+"Unstar" = "Unstar";

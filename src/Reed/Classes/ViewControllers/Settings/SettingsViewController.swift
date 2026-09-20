@@ -16,40 +16,46 @@ final class SettingsViewController: UITableViewController {
     private lazy var timelineSortOrderSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchTimelineOrder(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.timelineSortOrderSwitch"
         return toggle
     }()
 
     private lazy var groupByFeedSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchGroupByFeed(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.groupByFeedSwitch"
         return toggle
     }()
 
     private lazy var refreshClearsReadArticlesSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchClearsReadArticles(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.refreshClearsReadArticlesSwitch"
         return toggle
     }()
 
     private lazy var showFullscreenArticlesSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchFullscreenArticles(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.showFullscreenArticlesSwitch"
         return toggle
     }()
 
     private lazy var openLinksInReedSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchBrowserPreference(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.openLinksInReedSwitch"
         return toggle
     }()
 
     private lazy var enableJavaScriptSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.switchJavaScriptPreference(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "SettingsViewController.enableJavaScriptSwitch"
         return toggle
     }()
 
-    // Section titles
+    /// Section titles
     private let sectionTitles = [
         NSLocalizedString("Notifications, Badge, Data, & More", comment: "Notifications, Badge, Data, & More"),
         NSLocalizedString("Display Options", comment: "Display Options"),
@@ -76,11 +82,13 @@ final class SettingsViewController: UITableViewController {
 
         title = NSLocalizedString("Settings", comment: "Settings")
         // Use X button to match storyboard
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        let doneButton = UIBarButtonItem(
             barButtonSystemItem: .close,
             target: self,
             action: #selector(self.done(_:))
         )
+        doneButton.accessibilityIdentifier = "SettingsViewController.doneButton"
+        navigationItem.rightBarButtonItem = doneButton
 
         NotificationCenter.default.addObserver(
             self,
@@ -189,12 +197,14 @@ final class SettingsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
             cell.textLabel?.text = NSLocalizedString("Sort Oldest to Newest", comment: "Sort Oldest to Newest")
             cell.accessoryView = self.timelineSortOrderSwitch
+            self.timelineSortOrderSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         case (3, 1):
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
             cell.textLabel?.text = NSLocalizedString("Group by Feed", comment: "Group by Feed")
             cell.accessoryView = self.groupByFeedSwitch
+            self.groupByFeedSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         case (3, 2):
@@ -204,6 +214,7 @@ final class SettingsViewController: UITableViewController {
                 comment: "Refresh to Clear Read Articles"
             )
             cell.accessoryView = self.refreshClearsReadArticlesSwitch
+            self.refreshClearsReadArticlesSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         // Section 4: Articles
@@ -214,18 +225,21 @@ final class SettingsViewController: UITableViewController {
                 comment: "Enable Full Screen Articles"
             )
             cell.accessoryView = self.showFullscreenArticlesSwitch
+            self.showFullscreenArticlesSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         case (4, 1):
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
             cell.textLabel?.text = NSLocalizedString("Open Links in App", comment: "Open Links in App")
             cell.accessoryView = self.openLinksInReedSwitch
+            self.openLinksInReedSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         case (4, 2):
             let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath)
             cell.textLabel?.text = NSLocalizedString("Enable JavaScript", comment: "Enable JavaScript")
             cell.accessoryView = self.enableJavaScriptSwitch
+            self.enableJavaScriptSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
         default:

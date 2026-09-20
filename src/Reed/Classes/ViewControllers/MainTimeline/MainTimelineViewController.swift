@@ -24,22 +24,41 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             target: self,
             action: #selector(markAllAsReadAction(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Mark All as Read", comment: "Mark All as Read")
+        item.accessibilityLabel = NSLocalizedString(
+            "Mark all as read",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Mark All as Read button"
+        )
+        item.accessibilityIdentifier = "MainTimelineViewController.markAllAsReadButton"
         return item
     }()
 
-    private lazy var filterButton = UIBarButtonItem(
-        image: Assets.Images.filter,
-        style: .plain,
-        target: self,
-        action: #selector(toggleFilter(_:))
-    )
-    private lazy var firstUnreadButton = UIBarButtonItem(
-        image: Assets.Images.nextUnread,
-        style: .plain,
-        target: self,
-        action: #selector(firstUnread(_:))
-    )
+    private lazy var filterButton: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: Assets.Images.filter,
+            style: .plain,
+            target: self,
+            action: #selector(self.toggleFilter(_:))
+        )
+        item.accessibilityIdentifier = "MainTimelineViewController.filterButton"
+        return item
+    }()
+
+    private lazy var firstUnreadButton: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: Assets.Images.nextUnread,
+            style: .plain,
+            target: self,
+            action: #selector(self.firstUnread(_:))
+        )
+        item.accessibilityLabel = NSLocalizedString(
+            "First unread",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that jumps to the first unread article"
+        )
+        item.accessibilityIdentifier = "MainTimelineViewController.firstUnreadButton"
+        return item
+    }()
 
     lazy var dataSource = makeDataSource()
 
@@ -50,7 +69,12 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             target: self,
             action: #selector(self.showSearch(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Search", comment: "Search")
+        item.accessibilityLabel = NSLocalizedString(
+            "Search",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Search button"
+        )
+        item.accessibilityIdentifier = "MainTimelineViewController.searchButton"
         return item
     }()
 
@@ -140,6 +164,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             imageView.heightAnchor.constraint(equalToConstant: 20),
         ])
         imageView.isHidden = true
+        imageView.isAccessibilityElement = false
         return imageView
     }()
 
@@ -149,6 +174,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         label.font = font.fontDescriptor.withSymbolicTraits(.traitBold).map { UIFont(descriptor: $0, size: 0) } ?? font
         label.numberOfLines = 1
         label.textAlignment = .center
+        label.isAccessibilityElement = false
         return label
     }()
 
@@ -161,6 +187,8 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         stack.addGestureRecognizer(tap)
         stack.isUserInteractionEnabled = true
         stack.addInteraction(UIPointerInteraction(delegate: nil))
+        stack.isAccessibilityElement = true
+        stack.accessibilityIdentifier = "MainTimelineViewController.navigationBarTitleView"
         return stack
     }()
 
@@ -432,8 +460,24 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
     }
 
     func updateNavigationBarTitle(_ text: String) {
+        let isInteractive = (self.coordinator?.timelineFeed as? PseudoFeed) == nil
+
         self.titleLabel.text = text
-        self.navigationBarTitleView.isUserInteractionEnabled = ((self.coordinator?.timelineFeed as? PseudoFeed) == nil)
+        self.navigationBarTitleView.accessibilityLabel = text
+        self.navigationBarTitleView.isUserInteractionEnabled = isInteractive
+
+        if isInteractive {
+            self.navigationBarTitleView.accessibilityTraits = .button
+            self.navigationBarTitleView.accessibilityHint = NSLocalizedString(
+                "Shows information about the current feed.",
+                tableName: "Accessibility",
+                comment: "Accessibility hint for the timeline title, which opens the feed inspector"
+            )
+        } else {
+            self.navigationBarTitleView.accessibilityTraits = .none
+            self.navigationBarTitleView.accessibilityHint = nil
+        }
+
         self.updateNavigationBarIcon()
     }
 
@@ -759,13 +803,18 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             self.filterButton.style = .prominent
             self.filterButton.tintColor = Assets.Colors.primaryAccent
             self.filterButton.accLabelText = NSLocalizedString(
-                "Selected - Filter Read Articles",
-                comment: "Selected - Filter Read Articles"
+                "Show read articles",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the filter button when read articles are hidden"
             )
         } else {
             self.filterButton.style = .plain
             self.filterButton.tintColor = nil
-            self.filterButton.accLabelText = NSLocalizedString("Filter Read Articles", comment: "Filter Read Articles")
+            self.filterButton.accLabelText = NSLocalizedString(
+                "Hide read articles",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the filter button when read articles are still shown"
+            )
         }
 
         self.tableView.selectRow(at: nil, animated: false, scrollPosition: .top)
@@ -836,7 +885,7 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
         let showFeedNames = self.coordinator?.showFeedNames ?? ShowFeedName.none
         let showIcon = self.showIcons && iconImage != nil
         let isCompact = traitCollection.horizontalSizeClass == .compact
-        let cellData = MainTimelineCellData(
+        return MainTimelineCellData(
             article: article,
             showFeedName: showFeedNames,
             feedName: article.feed?.nameForDisplay,
@@ -846,7 +895,6 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
             numberOfLines: isCompact ? 2 : 3,
             iconSize: isCompact ? .medium : .large
         )
-        return cellData
     }
 
     func iconImageFor(_ article: Article) -> IconImage? {
@@ -857,10 +905,13 @@ final class MainTimelineViewController: UITableViewController, UndoableCommandRu
 
 // MARK: - MainTimelineDataSource
 
-final class MainTimelineDataSource<SectionIdentifierType, ItemIdentifierType>: UITableViewDiffableDataSource<
+final class MainTimelineDataSource<
+    SectionIdentifierType: Hashable,
+    ItemIdentifierType: Hashable
+>: UITableViewDiffableDataSource<
     SectionIdentifierType,
     ItemIdentifierType
-> where SectionIdentifierType: Hashable, ItemIdentifierType: Hashable {
+> {
     override func tableView(_: UITableView, canEditRowAt _: IndexPath) -> Bool {
         true
     }

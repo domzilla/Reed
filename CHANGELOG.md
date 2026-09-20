@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- VoiceOver support across the app: localized accessibility labels, hints and values for toolbar buttons, switches, text fields and list rows, with feed, folder and article rows now read as a single coherent item.
 - Unified modal search opened from a toolbar button, available on both the main feed (global scope) and the timeline (scoped to the current feed).
 - Folder picker now offers a "+" button to create a new folder inline, which is then auto-selected.
 
@@ -27,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The "Updated" timestamp in the navigation bar now refreshes after a sync.
 - CloudKit sync errors no longer permanently block future refreshes.
 - Fixed an infinite recursion crash on launch.
+- VoiceOver now reads feed names correctly instead of announcing them wrapped in "Optional(...)".
 
 ### Removed
 - Removed the Timeline Customizer screen; icon size and preview line count are now chosen automatically based on screen size.

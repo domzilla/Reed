@@ -36,6 +36,9 @@ final class ShareFolderPickerCell: UITableViewCell {
 
     private func setupViews() {
         accessoryType = .disclosureIndicator
+        accessibilityIdentifier = "ShareFolderPickerCell.cell"
+        self.iconImageView.isAccessibilityElement = false
+        self.nameLabel.accessibilityIdentifier = "ShareFolderPickerCell.nameLabel"
 
         contentView.addSubview(self.iconImageView)
         contentView.addSubview(self.nameLabel)

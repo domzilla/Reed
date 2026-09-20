@@ -45,12 +45,14 @@ final class AddFolderViewController: UITableViewController {
             action: #selector(add(_:))
         )
         button.isEnabled = false
+        button.accessibilityIdentifier = "AddFolderViewController.addButton"
         return button
     }()
 
     private lazy var nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = NSLocalizedString("Name", comment: "Name")
+        textField.accessibilityIdentifier = "AddFolderViewController.nameTextField"
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .words
         textField.returnKeyType = .done
@@ -67,12 +69,19 @@ final class AddFolderViewController: UITableViewController {
         label.adjustsFontForContentSizeCategory = true
         label.textColor = .secondaryLabel
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "AddFolderViewController.accountLabel"
         return label
     }()
 
     private lazy var accountPickerView: UIPickerView = {
         let picker = UIPickerView()
         picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.accessibilityLabel = NSLocalizedString(
+            "Account",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the account picker"
+        )
+        picker.accessibilityIdentifier = "AddFolderViewController.accountPickerView"
         return picker
     }()
 
@@ -93,11 +102,13 @@ final class AddFolderViewController: UITableViewController {
         super.viewDidLoad()
 
         title = NSLocalizedString("Add Folder", comment: "Add Folder")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let cancelButton = UIBarButtonItem(
             barButtonSystemItem: .cancel,
             target: self,
             action: #selector(self.cancel(_:))
         )
+        cancelButton.accessibilityIdentifier = "AddFolderViewController.cancelButton"
+        navigationItem.leftBarButtonItem = cancelButton
         navigationItem.rightBarButtonItem = self.addButton
 
         self.dataStores = DataStore.shared.sortedActiveDataStores

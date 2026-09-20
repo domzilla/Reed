@@ -90,6 +90,9 @@ class MainTimelineIconFeedCell: UITableViewCell {
     }
 
     private func setupViews() {
+        isAccessibilityElement = true
+        accessibilityIdentifier = "MainTimelineIconFeedCell.cell"
+
         self.metaDataStackView.addArrangedSubview(self.authorByLine)
         self.metaDataStackView.addArrangedSubview(self.articleDate)
 
@@ -258,6 +261,44 @@ class MainTimelineIconFeedCell: UITableViewCell {
             )
         } else {
             self.articleSummary.attributedText = nil
+        }
+    }
+
+    override var accessibilityLabel: String? {
+        set {}
+        get {
+            guard let cellData = self.cellData else { return nil }
+            return [
+                cellData.title,
+                cellData.summary,
+                self.authorByLine.text ?? "",
+                cellData.dateString,
+            ]
+            .filter { !$0.isEmpty }
+            .joined(separator: ", ")
+        }
+    }
+
+    override var accessibilityValue: String? {
+        set {}
+        get {
+            guard let cellData = self.cellData else { return nil }
+            var states = [String]()
+            if !cellData.read {
+                states.append(NSLocalizedString(
+                    "Unread",
+                    tableName: "Accessibility",
+                    comment: "Accessibility value announcing that the article is unread"
+                ))
+            }
+            if cellData.starred {
+                states.append(NSLocalizedString(
+                    "Starred",
+                    tableName: "Accessibility",
+                    comment: "Accessibility value announcing that the article is starred"
+                ))
+            }
+            return states.isEmpty ? nil : states.joined(separator: ", ")
         }
     }
 

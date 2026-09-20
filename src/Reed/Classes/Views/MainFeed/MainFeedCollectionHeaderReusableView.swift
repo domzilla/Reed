@@ -47,23 +47,37 @@ final class MainFeedCollectionHeaderReusableView: UICollectionReusableView {
     override var accessibilityLabel: String? {
         set {}
         get {
-            if self.unreadCount > 0 {
-                let unreadLabel = NSLocalizedString("unread", comment: "Unread label for accessibility")
-                return "\(self.headerTitle.text ?? "") \(self.unreadCount) \(unreadLabel) \(self.expandedStateMessage) "
-            } else {
-                return "\(self.headerTitle.text ?? "") \(self.expandedStateMessage) "
-            }
+            self.headerTitle.text
+        }
+    }
+
+    override var accessibilityValue: String? {
+        set {}
+        get {
+            guard self.unreadCount > 0 else { return self.expandedStateMessage }
+            let format = NSLocalizedString(
+                "%ld unread",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing how many articles in an account section are unread"
+            )
+            let unreadValue = String.localizedStringWithFormat(format, self.unreadCount)
+            return "\(unreadValue), \(self.expandedStateMessage)"
         }
     }
 
     private var expandedStateMessage: String {
-        set {}
-        get {
-            if self.disclosureExpanded {
-                return NSLocalizedString("Expanded", comment: "Disclosure button expanded state for accessibility")
-            }
-            return NSLocalizedString("Collapsed", comment: "Disclosure button collapsed state for accessibility")
+        if self.disclosureExpanded {
+            return NSLocalizedString(
+                "Expanded",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing that the account section is expanded"
+            )
         }
+        return NSLocalizedString(
+            "Collapsed",
+            tableName: "Accessibility",
+            comment: "Accessibility value announcing that the account section is collapsed"
+        )
     }
 
     private var _unreadCount: Int = 0
@@ -97,6 +111,15 @@ final class MainFeedCollectionHeaderReusableView: UICollectionReusableView {
     }
 
     private func setupViews() {
+        isAccessibilityElement = true
+        accessibilityTraits = [.header, .button]
+        accessibilityIdentifier = "MainFeedCollectionHeaderReusableView.header"
+        accessibilityHint = NSLocalizedString(
+            "Expands or collapses this section.",
+            tableName: "Accessibility",
+            comment: "Accessibility hint for the account section header, which expands or collapses the section"
+        )
+
         addSubview(self.headerTitle)
         addSubview(self.disclosureIndicator)
         addSubview(self.unreadCountLabel)

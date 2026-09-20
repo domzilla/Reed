@@ -50,8 +50,14 @@ final class ShareFolderPickerController: UITableViewController {
 
         if let containerID = container?.containerID, containerID == selectedContainerID {
             cell.accessoryType = .checkmark
+            cell.accessibilityValue = NSLocalizedString(
+                "Selected",
+                tableName: "Accessibility",
+                comment: "Accessibility value announcing that this folder row is the selected one"
+            )
         } else {
             cell.accessoryType = .none
+            cell.accessibilityValue = nil
         }
 
         return cell

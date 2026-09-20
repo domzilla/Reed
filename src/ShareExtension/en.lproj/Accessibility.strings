@@ -1,0 +1,5 @@
+/* Accessibility label for the Add Feed button */
+"Add feed" = "Add feed";
+
+/* Accessibility value announcing that this row is the selected one */
+"Selected" = "Selected";

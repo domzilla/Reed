@@ -32,6 +32,7 @@ final class FeedInspectorViewController: UITableViewController {
     private lazy var nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = NSLocalizedString("Name", comment: "Name")
+        textField.accessibilityIdentifier = "FeedInspectorViewController.nameTextField"
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .words
         textField.returnKeyType = .done
@@ -46,12 +47,14 @@ final class FeedInspectorViewController: UITableViewController {
     private lazy var notifyAboutNewArticlesSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.notifyAboutNewArticlesChanged(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "FeedInspectorViewController.notifyAboutNewArticlesSwitch"
         return toggle
     }()
 
     private lazy var alwaysShowReaderViewSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.addTarget(self, action: #selector(self.alwaysShowReaderViewChanged(_:)), for: .valueChanged)
+        toggle.accessibilityIdentifier = "FeedInspectorViewController.alwaysShowReaderViewSwitch"
         return toggle
     }()
 
@@ -62,6 +65,7 @@ final class FeedInspectorViewController: UITableViewController {
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "FeedInspectorViewController.homePageLabel"
         return label
     }()
 
@@ -72,6 +76,7 @@ final class FeedInspectorViewController: UITableViewController {
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.accessibilityIdentifier = "FeedInspectorViewController.feedURLLabel"
         return label
     }()
 
@@ -82,12 +87,24 @@ final class FeedInspectorViewController: UITableViewController {
         copyButton.setImage(UIImage(systemName: "doc.on.doc", withConfiguration: symbolConfig), for: .normal)
         copyButton.tintColor = .secondaryLabel
         copyButton.addTarget(self, action: #selector(self.copyHomePageURL), for: .touchUpInside)
+        copyButton.accessibilityLabel = NSLocalizedString(
+            "Copy home page URL",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that copies the home page URL"
+        )
+        copyButton.accessibilityIdentifier = "FeedInspectorViewController.copyHomePageButton"
         copyButton.sizeToFit()
 
         let openButton = UIButton(type: .system)
         openButton.setImage(UIImage(systemName: "arrow.up.forward.app", withConfiguration: symbolConfig), for: .normal)
         openButton.tintColor = .secondaryLabel
         openButton.addTarget(self, action: #selector(self.openHomePageURL), for: .touchUpInside)
+        openButton.accessibilityLabel = NSLocalizedString(
+            "Open home page",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that opens the home page"
+        )
+        openButton.accessibilityIdentifier = "FeedInspectorViewController.openHomePageButton"
         openButton.sizeToFit()
 
         let stack = UIStackView(arrangedSubviews: [copyButton, openButton])
@@ -107,6 +124,12 @@ final class FeedInspectorViewController: UITableViewController {
         copyButton.setImage(UIImage(systemName: "doc.on.doc", withConfiguration: symbolConfig), for: .normal)
         copyButton.tintColor = .secondaryLabel
         copyButton.addTarget(self, action: #selector(self.copyFeedURL), for: .touchUpInside)
+        copyButton.accessibilityLabel = NSLocalizedString(
+            "Copy feed URL",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that copies the feed URL"
+        )
+        copyButton.accessibilityIdentifier = "FeedInspectorViewController.copyFeedURLButton"
         copyButton.sizeToFit()
         return copyButton
     }
@@ -128,11 +151,13 @@ final class FeedInspectorViewController: UITableViewController {
         super.viewDidLoad()
 
         // Checkmark on left to match storyboard
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        let doneButton = UIBarButtonItem(
             barButtonSystemItem: .done,
             target: self,
             action: #selector(self.done(_:))
         )
+        doneButton.accessibilityIdentifier = "FeedInspectorViewController.doneButton"
+        navigationItem.leftBarButtonItem = doneButton
 
         self.tableView.register(InspectorIconHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeader")
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TextFieldCell")
@@ -295,6 +320,7 @@ final class FeedInspectorViewController: UITableViewController {
             cell.textLabel?.numberOfLines = 2
             cell.detailTextLabel?.text = self.feed.notificationDisplayName.capitalized
             cell.accessoryView = self.notifyAboutNewArticlesSwitch
+            self.notifyAboutNewArticlesSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
 
@@ -305,6 +331,7 @@ final class FeedInspectorViewController: UITableViewController {
             cell.textLabel?.font = .preferredFont(forTextStyle: .body)
             cell.textLabel?.adjustsFontForContentSizeCategory = true
             cell.accessoryView = self.alwaysShowReaderViewSwitch
+            self.alwaysShowReaderViewSwitch.accessibilityLabel = cell.textLabel?.text
             cell.selectionStyle = .none
             return cell
 

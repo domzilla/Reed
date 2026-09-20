@@ -38,13 +38,23 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
             target: self,
             action: #selector(self.toggleFilter(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
+        item.accessibilityLabel = NSLocalizedString(
+            "Hide read feeds",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the filter button when read feeds are still shown"
+        )
+        item.accessibilityIdentifier = "MainFeedCollectionViewController.filterButton"
         return item
     }()
 
     private lazy var addNewItemButton: UIBarButtonItem = {
         let item = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: nil, action: nil)
-        item.accessibilityLabel = NSLocalizedString("Add", comment: "Add")
+        item.accessibilityLabel = NSLocalizedString(
+            "Add feed or folder",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the button that adds a feed or folder"
+        )
+        item.accessibilityIdentifier = "MainFeedCollectionViewController.addNewItemButton"
         return item
     }()
 
@@ -55,7 +65,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
             target: self,
             action: #selector(self.showSearch(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Search", comment: "Search")
+        item.accessibilityLabel = NSLocalizedString(
+            "Search",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Search button"
+        )
+        item.accessibilityIdentifier = "MainFeedCollectionViewController.searchButton"
         return item
     }()
 
@@ -66,7 +81,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
             target: self,
             action: #selector(settings(_:))
         )
-        item.accessibilityLabel = NSLocalizedString("Settings", comment: "Settings")
+        item.accessibilityLabel = NSLocalizedString(
+            "Settings",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the Settings button"
+        )
+        item.accessibilityIdentifier = "MainFeedCollectionViewController.settingsButton"
         return item
     }()
 
@@ -129,12 +149,12 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         if traitCollection.userInterfaceIdiom == .phone {
             self.navigationController?.navigationBar.prefersLargeTitles = false
 
-            /// On iPhone, we want to deselect the feed when the user navigates
-            /// back to the feeds view. To prevent the user from selecting a new feed while
-            /// the current feed is being deselected, set `isAnimating` to true.
-            ///
-            /// `shouldSelectItemAt()` will not allow selection when `isAnimating`
-            /// is `true.`
+            // On iPhone, we want to deselect the feed when the user navigates
+            // back to the feeds view. To prevent the user from selecting a new feed while
+            // the current feed is being deselected, set `isAnimating` to true.
+            //
+            // `shouldSelectItemAt()` will not allow selection when `isAnimating`
+            // is `true.`
             if let _ = collectionView.indexPathsForSelectedItems {
                 self.isAnimating = true
             }
@@ -144,8 +164,8 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        /// On iPhone, once the deselection animation has completed, set `isAnimating`
-        /// to false and this will allow selection.
+        // On iPhone, once the deselection animation has completed, set `isAnimating`
+        // to false and this will allow selection.
         if traitCollection.userInterfaceIdiom == .phone {
             if let _ = collectionView.indexPathsForSelectedItems {
                 self.coordinator.selectFeed(indexPath: nil, animations: [.select])
@@ -208,33 +228,40 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         config.headerMode = .supplementary
 
         config.trailingSwipeActionsConfigurationProvider = { [unowned self] indexPath in
-            if indexPath.section == 0 { return UISwipeActionsConfiguration(actions: []) }
+            if indexPath.section == 0 {
+                return UISwipeActionsConfiguration(actions: [])
+            }
             var actions = [UIContextualAction]()
 
             // Set up the delete action
-            let deleteTitle = NSLocalizedString("Delete", comment: "Delete")
             let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] _, _, completion in
                 self?.delete(indexPath: indexPath)
                 completion(true)
             }
             deleteAction.image = UIImage(systemName: "trash")
-            deleteAction.accessibilityLabel = deleteTitle
+            deleteAction.accessibilityLabel = NSLocalizedString(
+                "Delete",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the Delete swipe action"
+            )
             deleteAction.backgroundColor = UIColor.systemRed
             actions.append(deleteAction)
 
             // Set up the rename action
-            let renameTitle = NSLocalizedString("Rename", comment: "Rename")
             let renameAction = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completion in
                 self?.rename(indexPath: indexPath)
                 completion(true)
             }
             renameAction.backgroundColor = UIColor.systemOrange
             renameAction.image = UIImage(systemName: "pencil")
-            renameAction.accessibilityLabel = renameTitle
+            renameAction.accessibilityLabel = NSLocalizedString(
+                "Rename",
+                tableName: "Accessibility",
+                comment: "Accessibility label for the Rename swipe action"
+            )
             actions.append(renameAction)
 
             if let feed = coordinator.nodeFor(indexPath)?.representedObject as? Feed {
-                let moreTitle = NSLocalizedString("More", comment: "More")
                 let moreAction = UIContextualAction(style: .normal, title: nil) { [weak self] _, view, completion in
                     if let self {
                         let alert = UIAlertController(
@@ -271,7 +298,11 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
 
                 moreAction.backgroundColor = UIColor.systemGray
                 moreAction.image = UIImage(systemName: "ellipsis")
-                moreAction.accessibilityLabel = moreTitle
+                moreAction.accessibilityLabel = NSLocalizedString(
+                    "More",
+                    tableName: "Accessibility",
+                    comment: "Accessibility label for the More swipe action"
+                )
                 actions.append(moreAction)
             }
 
@@ -415,9 +446,11 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
      }
      */
 
-    // Uncomment this method to specify if the specified item should be selected
+    /// Uncomment this method to specify if the specified item should be selected
     override func collectionView(_: UICollectionView, shouldSelectItemAt _: IndexPath) -> Bool {
-        if traitCollection.userInterfaceIdiom == .pad { return true }
+        if traitCollection.userInterfaceIdiom == .pad {
+            return true
+        }
         return !self.isAnimating
     }
 
@@ -676,7 +709,9 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         {
             return nil
         }
-        if sectionIndex == 0 { return nil }
+        if sectionIndex == 0 {
+            return nil
+        }
 
         return self.collectionView.supplementaryView(
             forElementKind: UICollectionView.elementKindSectionHeader,
@@ -694,15 +729,20 @@ final class MainFeedCollectionViewController: UICollectionViewController, Undoab
         self.filterButton.style = .prominent
         self.filterButton.tintColor = Assets.Colors.primaryAccent
         self.filterButton.accLabelText = NSLocalizedString(
-            "Selected - Filter Read Feeds",
-            comment: "Selected - Filter Read Feeds"
+            "Show read feeds",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the filter button when read feeds are hidden"
         )
     }
 
     func setFilterButtonToInactive() {
         self.filterButton.style = .plain
         self.filterButton.tintColor = nil
-        self.filterButton.accLabelText = NSLocalizedString("Filter Read Feeds", comment: "Filter Read Feeds")
+        self.filterButton.accLabelText = NSLocalizedString(
+            "Hide read feeds",
+            tableName: "Accessibility",
+            comment: "Accessibility label for the filter button when read feeds are still shown"
+        )
     }
 
     // MARK: - Notifications
