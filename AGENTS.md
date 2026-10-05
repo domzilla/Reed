@@ -1,14 +1,14 @@
-# Reed RSS Reader for iOS (NetNewsWire Fork)
+# Reed - AGENTS.md
 
 ## Project Overview
-RSS/Atom/JSON Feed reader for iOS. Fork of NetNewsWire with customizations.
+RSS/Atom/JSON Feed reader for iOS and iPadOS. Fork of NetNewsWire with customizations.
 
 ## Tech Stack
-- **Language**: Swift
+- **Languages**: Swift (primary), Objective-C (`Model/Parser/ObjC`, `Model/Persistence/Database/ObjC`, `Extensions/ObjC`, `Utilities/ObjC` under `src/Reed/Classes/`, plus vendored FMDB)
 - **UI Framework**: UIKit
 - **Programmatic UI only** - No storyboards or XIBs (except launch screens)
 - **IDE**: Xcode
-- **Platforms**: iOS
+- **Platforms**: iOS, iPadOS
 
 ## Guides (MANDATORY)
 Read `~/Agents/Guides/xcode-project-guide.md` in full before planning or editing anything.
@@ -18,13 +18,27 @@ Read these in full before touching the matching code:
 - Objective-C style (`.h`, `.m`): `~/Agents/Style/objc-style-guide.md`
 - Accessibility (UI code, XIBs, storyboards): `~/Agents/Guides/accessibility-guide.md`
 
+## Targets & Schemes
+- **Reed** (`src/Reed/`) — the app; scheme `Reed`.
+- **Reed Share Extension** (`src/ShareExtension/`) — share extension for adding feeds; scheme `Reed Share Extension`.
+- `src/Shared/` — code shared between the app and the extension.
+
+## Dependencies
+- **DZFoundation** — local Swift package (`~/GIT/Libraries/DZFoundation`), linked by both targets
+- **swift-markdown** — remote Swift package (`https://github.com/apple/swift-markdown.git`, product `Markdown`), app only
+- **FMDB** — vendored source in `src/Reed/Vendor/FMDB/`
+- **libxml2** — system library, app only
+
+## Localization (MANDATORY)
+- English only (`en`): `src/Reed/Resources/en.lproj/` and `src/ShareExtension/en.lproj/` (`Accessibility.strings`)
+
 ## Build Commands
 ```bash
 # Build
 xcodebuild -project src/Reed.xcodeproj -scheme "Reed" -destination "generic/platform=iOS Simulator" build
 
 # Clean
-xcodebuild -scheme "Reed" clean
+xcodebuild -project src/Reed.xcodeproj -scheme "Reed" clean
 ```
 
 ## Testing (MANDATORY)
@@ -46,7 +60,7 @@ No test targets exist in this project.
 ```swift
 override func viewDidLoad() {
     super.viewDidLoad()
-    tableView.register(MyCell.self, forCellReuseIdentifier: "MyCell")
+    self.tableView.register(MyCell.self, forCellReuseIdentifier: "MyCell")
 }
 ```
 
@@ -88,16 +102,16 @@ func someOperation(for dataStore: DataStore, ...) async throws {
     // 3. Check iCloud availability
     if iCloudAccountMonitor.shared.isAvailable {
         do {
-            try await feedsZone.doCloudKitOperation(...)
+            try await self.feedsZone.doCloudKitOperation(...)
         } catch {
             if iCloudAccountMonitor.isRecoverableError(error) {
-                queueSomeOperation(...)
+                self.queueSomeOperation(...)
             } else {
                 DZLog("iCloud: error (local succeeded): \(error.localizedDescription)")
             }
         }
     } else {
-        queueSomeOperation(...)
+        self.queueSomeOperation(...)
     }
 }
 ```
@@ -110,4 +124,4 @@ Key files: `CloudKitSyncProvider+FeedOperations.swift`, `CloudKitSyncProvider+Fo
 ## Notes
 - Coordinator must be set before `window.makeKeyAndVisible()` (for `prefersStatusBarHidden`)
 - Actor isolation: wrap background task callbacks in `Task { @MainActor in }`
-- iOS 26+: Use `.prominent` instead of deprecated `.done` for bar button style
+- Use `.prominent` instead of deprecated `.done` for bar button style
